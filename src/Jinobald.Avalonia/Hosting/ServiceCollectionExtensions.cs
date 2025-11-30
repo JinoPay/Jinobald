@@ -1,6 +1,8 @@
+using Jinobald.Avalonia.Services.Dialog;
 using Jinobald.Avalonia.Services.Events;
 using Jinobald.Avalonia.Services.Navigation;
 using Jinobald.Avalonia.Services.Theme;
+using Jinobald.Core.Services.Dialog;
 using Jinobald.Core.Services.Events;
 using Jinobald.Core.Services.Navigation;
 using Jinobald.Core.Services.Settings;
@@ -31,9 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISettingsService>(sp => new JsonSettingsService(settingsFilePath));
         services.AddSingleton<IThemeService>(sp =>
             new ThemeService(sp.GetRequiredService<ISettingsService>()));
-
-        // TODO: DialogService 추가 예정
-        // services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IDialogService, DialogService>();
 
         return services;
     }

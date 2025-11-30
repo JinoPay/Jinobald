@@ -36,9 +36,9 @@
 
 ### ⏳ 대기 중인 작업
 
-#### 5단계: Avalonia 서비스 구현 (진행 중)
+#### 5단계: Avalonia 서비스 구현
 - [x] ThemeService 구현 (SettingsService 통합)
-- [ ] DialogService 구현 (in-window overlay)
+- [x] DialogService 구현 (in-window overlay)
 - [ ] ApplicationBase 구현체 작성
 
 #### 6단계: WPF 구현
@@ -92,4 +92,13 @@
   - GetThemeColor/GetThemeResource: Avalonia 리소스 시스템 통합
   - ServiceCollectionExtensions에 ThemeService 등록
   - 빌드 검증 완료 (경고 0개, 오류 0개)
-- **다음 작업**: 5단계 - Avalonia DialogService 구현
+- **5단계 계속**: Avalonia DialogService 구현 완료
+  - `DialogService`: in-window overlay 방식 다이얼로그 서비스
+  - `MessageDialogView`: 메시지 다이얼로그 (확인 버튼만)
+  - `ConfirmDialogView`: 확인/취소 다이얼로그
+  - `SelectionDialogView`: 선택 다이얼로그
+  - `IDialogHost` 인터페이스를 통한 호스트 등록 메커니즘
+  - TaskCompletionSource 기반 비동기 대기
+  - ServiceCollectionExtensions에 DialogService 등록
+  - 빌드 검증 완료 (경고 0개, 오류 0개)
+- **다음 작업**: 5단계 - Avalonia ApplicationBase 구현체 작성
