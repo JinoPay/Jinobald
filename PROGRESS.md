@@ -51,6 +51,11 @@
   - HomeView, NavigationDemoView, DialogDemoView, ThemeDemoView 작성
   - 네비게이션이 포함된 MainWindow 구현
   - 빌드 검증 완료 (경고 0개, 오류 0개)
+- [x] 8단계: ApplicationBase 구조 재설계
+  - AvaloniaApplicationBase<TMainWindow, TSplashWindow> 구현
+  - WpfApplicationBase<TMainWindow, TSplashWindow> 구현
+  - App.axaml.cs가 직접 ApplicationBase 상속
+  - 제네릭 타입으로 간결한 사용법 제공
 
 ### 🔄 진행 중인 작업
 없음
@@ -140,4 +145,14 @@
   - 4개 데모 페이지: HomeView, NavigationDemoView, DialogDemoView, ThemeDemoView
   - ViewModels 자동 등록 및 Convention 기반 View 해석
   - 샘플 앱 빌드 검증 완료 (경고 0개, 오류 0개)
+- **8단계 완료**: ApplicationBase 구조 재설계 (사용자 피드백 반영)
+  - **개선사항**: App.axaml.cs가 직접 ApplicationBase를 상속받도록 변경
+  - `AvaloniaApplicationBase<TMainWindow, TSplashWindow>`: Avalonia.Application 상속
+  - `WpfApplicationBase<TMainWindow, TSplashWindow>`: System.Windows.Application 상속
+  - 제네릭 타입으로 메인 윈도우와 스플래시 윈도우 지정
+  - 메인 윈도우는 DI 컨테이너에서 자동 resolve
+  - 스플래시 윈도우는 new() 제약으로 자동 생성
+  - ConfigureServices()만 오버라이드하면 되는 간결한 사용법
+  - 샘플 앱 수정: `App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>`
+  - 빌드 검증 완료 (경고 0개, 오류 0개)
 - **프레임워크 개발 완료!** 🎉
