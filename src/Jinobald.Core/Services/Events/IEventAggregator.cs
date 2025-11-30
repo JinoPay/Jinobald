@@ -24,43 +24,51 @@ public enum ThreadOption
 /// <summary>
 ///     이벤트 집계기 인터페이스
 ///     Pub/Sub 패턴으로 느슨한 결합의 컴포넌트 간 통신을 지원
+///     모든 이벤트는 PubSubEvent를 상속해야 함
 /// </summary>
 public interface IEventAggregator
 {
     /// <summary>
+    ///     특정 타입의 이벤트를 가져옴 (Prism 스타일)
+    /// </summary>
+    /// <typeparam name="TEvent">이벤트 타입 (PubSubEvent 상속 필수)</typeparam>
+    /// <returns>타입 안전한 이벤트 객체</returns>
+    PubSubEvent<TEvent> GetEvent<TEvent>() where TEvent : PubSubEvent;
+
+    /// <summary>
     ///     이벤트 구독 (기본: UI 스레드)
     /// </summary>
-    /// <typeparam name="TEvent">이벤트 타입</typeparam>
+    /// <typeparam name="TEvent">이벤트 타입 (PubSubEvent 상속 필수)</typeparam>
     /// <param name="handler">이벤트 핸들러</param>
     /// <returns>구독 해제를 위한 토큰</returns>
-    SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler) where TEvent : class;
+    SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     이벤트 구독 (스레드 옵션 지정)
     /// </summary>
-    SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : class;
+    SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     비동기 이벤트 구독 (기본: UI 스레드)
     /// </summary>
-    SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class;
+    SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     비동기 이벤트 구독 (스레드 옵션 지정)
     /// </summary>
-    SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption) where TEvent : class;
+    SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     이벤트를 비동기로 발행
     /// </summary>
-    Task PublishAsync<TEvent>(TEvent eventData) where TEvent : class;
+    Task PublishAsync<TEvent>(TEvent eventData) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     이벤트를 발행
     /// </summary>
-    /// <typeparam name="TEvent">이벤트 타입</typeparam>
+    /// <typeparam name="TEvent">이벤트 타입 (PubSubEvent 상속 필수)</typeparam>
     /// <param name="eventData">이벤트 데이터</param>
-    void Publish<TEvent>(TEvent eventData) where TEvent : class;
+    void Publish<TEvent>(TEvent eventData) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     이벤트 구독 해제

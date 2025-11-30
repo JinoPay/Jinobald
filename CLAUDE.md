@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Jinobald is a cross-platform MVVM framework supporting both WPF and Avalonia. It provides core MVVM features including DI, navigation, event aggregation, commands, and dialogs.
 
-**Key Language:** C# with .NET 10.0 (LangVersion 14)
+**Key Language:** C# with .NET 9.0 (LangVersion 13)
 
 ## Build and Test Commands
 
@@ -131,6 +131,8 @@ Navigation triggers a precise lifecycle sequence managed by `NavigationService`:
 
 **Important:** Use `IEventAggregator` for pub/sub messaging, NOT CommunityToolkit.Mvvm's Messenger.
 
+**All events MUST inherit from `PubSubEvent` base class.**
+
 The `IEventAggregator` supports three threading models via `ThreadOption` enum:
 
 - `PublisherThread`: Execute handler on publishing thread (synchronous)
@@ -138,6 +140,24 @@ The `IEventAggregator` supports three threading models via `ThreadOption` enum:
 - `BackgroundThread`: Execute on ThreadPool
 
 Both sync (`Action<TEvent>`) and async (`Func<TEvent, Task>`) handlers supported.
+
+**Usage Patterns:**
+
+1. **Prism-style (Recommended):** Use `GetEvent<TEvent>()` to get a typed event object
+   ```csharp
+   public class UserLoggedInEvent : PubSubEvent { public int UserId { get; set; } }
+
+   var userEvent = _eventAggregator.GetEvent<UserLoggedInEvent>();
+   userEvent.Subscribe(e => HandleUserLogin(e), ThreadOption.UIThread);
+   userEvent.Publish(new UserLoggedInEvent { UserId = 123 });
+   ```
+
+2. **Direct Subscribe/Publish:** Call methods directly on `IEventAggregator`
+   ```csharp
+   var token = _eventAggregator.Subscribe<UserLoggedInEvent>(HandleUserLogin, ThreadOption.UIThread);
+   await _eventAggregator.PublishAsync(new UserLoggedInEvent { UserId = 123 });
+   _eventAggregator.Unsubscribe(token);
+   ```
 
 ### ViewModelLocator Convention
 
@@ -215,6 +235,7 @@ The framework wraps Microsoft.Extensions.DependencyInjection with a Prism-style 
 
 - **Target Framework:** All projects use .NET 9.0 (Jinobald.Wpf uses `net9.0-windows`)
 - **C# Language Version:** 13 with nullable reference types enabled
+- **Internal Visibility:** Jinobald.Core exposes internal types to Jinobald.Avalonia and Jinobald.Wpf via `InternalsVisibleTo`
 
 ### Code Conventions
 

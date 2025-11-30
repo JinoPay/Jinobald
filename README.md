@@ -33,9 +33,10 @@ Jinobald/
 ### 핵심 서비스
 
 - **INavigationService**: 비동기 네비게이션, 히스토리, Guard 기능
-- **IEventAggregator**: Pub/Sub 패턴 기반 이벤트 집계 (UI/Background 스레드 지원)
+- **IEventAggregator**: Pub/Sub 패턴 기반 이벤트 집계 (UI/Background 스레드 지원, PubSubEvent 상속 필수)
 - **IDialogService**: 다이얼로그 표시 (메시지, 확인, 선택, 커스텀)
-- **IThemeService**: 테마 관리 (Light/Dark/System)
+- **IThemeService**: 테마 스타일 관리
+- **ISettingsService**: 애플리케이션 설정 관리 (타입 안전, 자동 저장)
 
 ## 사용 방법
 
@@ -68,19 +69,26 @@ await _navigationService.GoBackAsync();
 ### 이벤트 집계
 
 ```csharp
-// 구독
+// 이벤트 정의 (PubSubEvent 상속 필수)
+public class UserLoggedInEvent : PubSubEvent
+{
+    public int UserId { get; set; }
+}
+
+// Prism 스타일 (권장)
+var userEvent = _eventAggregator.GetEvent<UserLoggedInEvent>();
+userEvent.Subscribe(e => Console.WriteLine($"User {e.UserId} logged in"), ThreadOption.UIThread);
+userEvent.Publish(new UserLoggedInEvent { UserId = 123 });
+
+// 직접 Subscribe/Publish 방식
 var token = _eventAggregator.Subscribe<UserLoggedInEvent>(OnUserLoggedIn, ThreadOption.UIThread);
-
-// 발행
 await _eventAggregator.PublishAsync(new UserLoggedInEvent { UserId = 123 });
-
-// 구독 해제
 _eventAggregator.Unsubscribe(token);
 ```
 
 ## 빌드 요구사항
 
-- **.NET 9.0 SDK**
+- **.NET 10.0 SDK**
 - **Jinobald.Core**: 크로스 플랫폼 (Windows, macOS, Linux)
 - **Jinobald.Avalonia**: 크로스 플랫폼 (Windows, macOS, Linux)
 - **Jinobald.Wpf**: **Windows 전용** (macOS/Linux에서는 빌드 불가)

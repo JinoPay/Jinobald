@@ -12,29 +12,41 @@ public sealed class EventAggregator : IEventAggregator
 {
     private readonly object _lock = new();
     private readonly ConcurrentDictionary<Type, List<Subscription>> _subscriptions = new();
+    private readonly ConcurrentDictionary<Type, object> _eventInstances = new();
 
-    public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler) where TEvent : class
+    public PubSubEvent<TEvent> GetEvent<TEvent>() where TEvent : PubSubEvent
+    {
+        var eventType = typeof(TEvent);
+        if (_eventInstances.TryGetValue(eventType, out var existingEvent))
+            return (PubSubEvent<TEvent>)existingEvent;
+
+        var newEvent = new PubSubEvent<TEvent>(this);
+        _eventInstances[eventType] = newEvent;
+        return newEvent;
+    }
+
+    public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler) where TEvent : PubSubEvent
     {
         return Subscribe(handler, ThreadOption.UIThread);
     }
 
-    public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : class
+    public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : PubSubEvent
     {
         return SubscribeInternal<TEvent>(handler, threadOption);
     }
 
-    public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class
+    public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : PubSubEvent
     {
         return Subscribe(handler, ThreadOption.UIThread);
     }
 
     public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption)
-        where TEvent : class
+        where TEvent : PubSubEvent
     {
         return SubscribeInternal<TEvent>(handler, threadOption);
     }
 
-    public async Task PublishAsync<TEvent>(TEvent eventData) where TEvent : class
+    public async Task PublishAsync<TEvent>(TEvent eventData) where TEvent : PubSubEvent
     {
         var eventType = typeof(TEvent);
         if (!_subscriptions.TryGetValue(eventType, out var subscriptions))
@@ -57,7 +69,7 @@ public sealed class EventAggregator : IEventAggregator
         if (tasks.Count > 0) await Task.WhenAll(tasks);
     }
 
-    public void Publish<TEvent>(TEvent eventData) where TEvent : class
+    public void Publish<TEvent>(TEvent eventData) where TEvent : PubSubEvent
     {
         var eventType = typeof(TEvent);
         if (!_subscriptions.TryGetValue(eventType, out var subscriptions))
@@ -84,7 +96,7 @@ public sealed class EventAggregator : IEventAggregator
     }
 
     private SubscriptionToken SubscribeInternal<TEvent>(Delegate handler, ThreadOption threadOption)
-        where TEvent : class
+        where TEvent : PubSubEvent
     {
         var eventType = typeof(TEvent);
         var token = new SubscriptionToken(eventType, Unsubscribe);
@@ -105,7 +117,7 @@ public sealed class EventAggregator : IEventAggregator
         return token;
     }
 
-    private async Task InvokeHandlerAsync<TEvent>(Delegate handler, TEvent eventData) where TEvent : class
+    private async Task InvokeHandlerAsync<TEvent>(Delegate handler, TEvent eventData) where TEvent : PubSubEvent
     {
         try
         {
@@ -119,7 +131,7 @@ public sealed class EventAggregator : IEventAggregator
         }
     }
 
-    private Task? ExecuteHandlerAsync<TEvent>(Subscription subscription, TEvent eventData) where TEvent : class
+    private Task? ExecuteHandlerAsync<TEvent>(Subscription subscription, TEvent eventData) where TEvent : PubSubEvent
     {
         try
         {
@@ -141,7 +153,7 @@ public sealed class EventAggregator : IEventAggregator
         }
     }
 
-    private void ExecuteHandler<TEvent>(Subscription subscription, TEvent eventData) where TEvent : class
+    private void ExecuteHandler<TEvent>(Subscription subscription, TEvent eventData) where TEvent : PubSubEvent
     {
         try
         {
@@ -166,7 +178,7 @@ public sealed class EventAggregator : IEventAggregator
         }
     }
 
-    private void InvokeHandler<TEvent>(Delegate handler, TEvent eventData) where TEvent : class
+    private void InvokeHandler<TEvent>(Delegate handler, TEvent eventData) where TEvent : PubSubEvent
     {
         try
         {
