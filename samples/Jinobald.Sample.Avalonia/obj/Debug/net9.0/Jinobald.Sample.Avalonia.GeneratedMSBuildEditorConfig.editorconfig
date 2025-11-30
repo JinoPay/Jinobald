@@ -27,9 +27,6 @@ build_property.EnableCodeStyleSeverity =
 [/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/MainWindow.axaml]
-build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
-
 [/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/DialogDemoView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

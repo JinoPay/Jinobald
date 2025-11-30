@@ -101,7 +101,7 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
             SplashScreen.UpdateProgress("메인 화면 로드 중...", 0.9);
 
             // 7. 스플래시 화면 닫기
-            await Task.Delay(2000); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
+            await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
             Logger.Information("애플리케이션 초기화 완료");

@@ -1,11 +1,12 @@
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
+using Jinobald.Sample.Avalonia.ViewModels;
 using Jinobald.Sample.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jinobald.Sample.Avalonia;
 
-public partial class App : AvaloniaApplicationBase<MainWindow, Views.SplashScreenWindow>
+public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>
 {
     public override void Initialize()
     {
@@ -15,9 +16,9 @@ public partial class App : AvaloniaApplicationBase<MainWindow, Views.SplashScree
     protected override void ConfigureServices(IServiceCollection services)
     {
         // ViewModels 등록
-        services.AddTransient<ViewModels.HomeViewModel>();
-        services.AddTransient<ViewModels.NavigationDemoViewModel>();
-        services.AddTransient<ViewModels.DialogDemoViewModel>();
-        services.AddTransient<ViewModels.ThemeDemoViewModel>();
+        services.AddTransient<HomeViewModel>();
+        services.AddTransient<NavigationDemoViewModel>();
+        services.AddTransient<DialogDemoViewModel>();
+        services.AddTransient<ThemeDemoViewModel>();
     }
 }
