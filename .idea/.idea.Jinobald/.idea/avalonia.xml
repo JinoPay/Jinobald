@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="samples/Jinobald.Sample.Avalonia/App.axaml" value="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
+        <entry key="samples/Jinobald.Sample.Avalonia/Views/SplashScreenWindow.axaml" value="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
         <entry key="src/Jinobald.Avalonia/Application/SplashScreenWindow.axaml" value="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
         <entry key="src/Jinobald.Avalonia/Services/Dialog/Views/ConfirmDialogView.axaml" value="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
         <entry key="src/Jinobald.Avalonia/Services/Dialog/Views/MessageDialogView.axaml" value="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
