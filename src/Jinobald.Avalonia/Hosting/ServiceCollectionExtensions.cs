@@ -1,10 +1,12 @@
 using Jinobald.Avalonia.Services.Dialog;
 using Jinobald.Avalonia.Services.Events;
 using Jinobald.Avalonia.Services.Navigation;
+using Jinobald.Avalonia.Services.Regions;
 using Jinobald.Avalonia.Services.Theme;
 using Jinobald.Core.Services.Dialog;
 using Jinobald.Core.Services.Events;
 using Jinobald.Core.Services.Navigation;
+using Jinobald.Core.Services.Regions;
 using Jinobald.Core.Services.Settings;
 using Jinobald.Core.Services.Theme;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +36,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IThemeService>(sp =>
             new ThemeService(sp.GetRequiredService<ISettingsService>()));
         services.AddSingleton<IDialogService, DialogService>();
+
+        // Region 서비스 등록
+        services.AddSingleton<IViewResolver, AvaloniaViewResolver>();
+        services.AddSingleton<IRegionManager>(sp =>
+            new RegionManager(sp.GetRequiredService<IViewResolver>()));
 
         return services;
     }
