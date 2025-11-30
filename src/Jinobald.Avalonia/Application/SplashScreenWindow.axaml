@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        x:Class="Jinobald.Avalonia.Application.SplashScreenWindow"
+        Title="Jinobald"
+        Width="400"
+        Height="300"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        ShowInTaskbar="False"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Border CornerRadius="8"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            BoxShadow="0 8 32 0 #60000000"
+            Padding="32">
+
+        <StackPanel VerticalAlignment="Center" Spacing="24">
+            <!-- 로고/타이틀 영역 -->
+            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBlock Text="Jinobald"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+
+                <TextBlock Text="MVVM Framework"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+            </StackPanel>
+
+            <!-- 진행 메시지 -->
+            <TextBlock x:Name="MessageTextBlock"
+                       Text="초기화 중..."
+                       FontSize="13"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       Margin="0,16,0,0" />
+
+            <!-- 진행률 바 -->
+            <ProgressBar x:Name="ProgressBar"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"
+                         Height="4"
+                         Margin="0,8,0,0" />
+        </StackPanel>
+    </Border>
+</Window>

@@ -86,7 +86,7 @@ public sealed class ThemeService : IThemeService
             return;
         }
 
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app == null)
         {
             _logger.Error("Application.Current가 null입니다.");
@@ -130,7 +130,7 @@ public sealed class ThemeService : IThemeService
         if (string.IsNullOrEmpty(colorKey))
             return null;
 
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app == null)
             return null;
 
@@ -150,7 +150,7 @@ public sealed class ThemeService : IThemeService
         if (string.IsNullOrEmpty(resourceKey))
             return null;
 
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app == null)
             return null;
 

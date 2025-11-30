@@ -30,16 +30,19 @@
   - `ViewModelBase` 클래스 (CommunityToolkit.Mvvm 기반)
   - `IThemeService` 강화 (색상/리소스 관리 추가)
   - Serilog sinks 추가 (Console, File)
+- [x] 4단계: Core & Avalonia 개선
+  - ViewModelBase, DialogViewModelBase, NavigationService 강화
+  - ContainerLocator 통합
+  - ServiceCollectionExtensions: 자동 서비스 등록
+- [x] 5단계: Avalonia 서비스 구현
+  - ThemeService 구현 (SettingsService 통합)
+  - DialogService 구현 (in-window overlay)
+  - AvaloniaApplicationHost 및 SplashScreenWindow 구현
 
 ### 🔄 진행 중인 작업
 없음
 
 ### ⏳ 대기 중인 작업
-
-#### 5단계: Avalonia 서비스 구현
-- [x] ThemeService 구현 (SettingsService 통합)
-- [x] DialogService 구현 (in-window overlay)
-- [ ] ApplicationBase 구현체 작성
 
 #### 6단계: WPF 구현
 - [ ] 모든 구현체 작성 (Avalonia 패턴 따름)
@@ -101,4 +104,15 @@
   - TaskCompletionSource 기반 비동기 대기
   - ServiceCollectionExtensions에 DialogService 등록
   - 빌드 검증 완료 (경고 0개, 오류 0개)
-- **다음 작업**: 5단계 - Avalonia ApplicationBase 구현체 작성
+- **5단계 완료**: Avalonia ApplicationBase 구현체 작성
+  - `AvaloniaApplicationHost<TMainWindow>`: ApplicationBase를 상속받은 Avalonia 전용 호스트
+  - 제네릭 타입으로 메인 윈도우 지정 가능
+  - `OnConfigureServices`: 파생 클래스에서 추가 서비스 등록
+  - `OnMainWindowShownAsync`: 메인 윈도우 표시 후 추가 초기화
+  - `RunAsync`: Avalonia Application과 통합하여 앱 초기화
+  - `SplashScreenWindow`: ISplashScreen 구현체, 기본 스플래시 화면
+  - 진행률 표시 및 메시지 업데이트 지원
+  - ThemeService 네임스페이스 충돌 해결 (global::Avalonia.Application)
+  - .gitignore 개선 (macOS, Windows 시스템 파일 추가)
+  - 빌드 검증 완료 (경고 0개, 오류 0개)
+- **다음 작업**: 6단계 - WPF 구현
