@@ -45,15 +45,19 @@
   - DialogService 구현 (in-window overlay)
   - WpfApplicationHost 및 SplashScreenWindow 구현
   - ServiceCollectionExtensions: 모든 서비스 자동 등록
+- [x] 7단계: 샘플 애플리케이션
+  - Jinobald.Sample.Avalonia 프로젝트 업데이트
+  - AvaloniaApplicationHost 기반 SampleApp 구현
+  - HomeView, NavigationDemoView, DialogDemoView, ThemeDemoView 작성
+  - 네비게이션이 포함된 MainWindow 구현
+  - 빌드 검증 완료 (경고 0개, 오류 0개)
 
 ### 🔄 진행 중인 작업
 없음
 
 ### ⏳ 대기 중인 작업
 
-#### 7단계: 검증
-- [ ] 샘플 애플리케이션 업데이트
-- [ ] 통합 테스트
+없음
 
 ---
 
