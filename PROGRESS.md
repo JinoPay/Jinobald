@@ -23,6 +23,13 @@
   - `MicrosoftDependencyInjectionExtension` 구현 클래스
   - `ContainerLocator` 정적 클래스 (Prism 스타일)
   - 확장 메서드 (`AsContainerExtension`, `BuildContainer`)
+- [x] 3단계: Jinobald.Core 기반 인프라 구축
+  - `ISettingsService` 인터페이스 및 `JsonSettingsService` 구현
+  - `ISplashScreen` 인터페이스 (필수 스플래시 화면)
+  - `ApplicationBase` 추상 클래스 (플랫폼 독립적)
+  - `ViewModelBase` 클래스 (CommunityToolkit.Mvvm 기반)
+  - `IThemeService` 강화 (색상/리소스 관리 추가)
+  - Serilog sinks 추가 (Console, File)
 
 ### 🔄 진행 중인 작업
 없음
@@ -72,4 +79,13 @@
   - `ContainerLocator.Current` 패턴 구현
   - 제네릭 제약 조건 적용 (class, notnull)
   - 빌드 검증 완료 (경고 0개, 오류 0개)
-- **다음 작업**: 3단계 - ApplicationBase 추상 클래스 구현
+- **3단계 완료**: Core 기반 인프라
+  - `ISettingsService`: 타입 안전 설정 관리 인터페이스
+  - `JsonSettingsService`: JSON 기반 설정 구현체 (자동 저장, 변경 알림)
+  - `ISplashScreen`: 필수 스플래시 화면 인터페이스
+  - `ApplicationBase`: 플랫폼 독립적 앱 기본 클래스 (스플래시 통합, DI 통합)
+  - `ViewModelBase`: CommunityToolkit.Mvvm 기반 ViewModel 베이스
+  - `IThemeService`: 커스텀 테마/색상 관리 기능 추가
+  - Serilog.Sinks.Console, Serilog.Sinks.File 추가
+  - 빌드 검증 완료
+- **다음 작업**: 4단계 - Avalonia 구현체 작성
