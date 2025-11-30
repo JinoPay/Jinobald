@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+             x:Class="Jinobald.Avalonia.Services.Dialog.ConfirmDialogView">
+
+    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+            CornerRadius="8"
+            Padding="24"
+            MaxWidth="500"
+            BoxShadow="0 8 32 0 #40000000">
+
+        <StackPanel Spacing="16">
+            <!-- 제목 -->
+            <TextBlock Text="{Binding Title}"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+
+            <!-- 메시지 -->
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       Margin="0,0,0,8" />
+
+            <!-- 버튼들 -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <!-- 취소 버튼 -->
+                <Button Content="{Binding CancelText}"
+                        Command="{Binding OnCancelCommand}"
+                        MinWidth="100"
+                        Padding="16,8" />
+
+                <!-- 확인 버튼 -->
+                <Button Content="{Binding ConfirmText}"
+                        Command="{Binding OnConfirmCommand}"
+                        MinWidth="100"
+                        Padding="16,8"
+                        Classes.Destructive="{Binding IsDestructive}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
