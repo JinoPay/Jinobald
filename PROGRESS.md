@@ -16,6 +16,13 @@
   - Jinobald.Avalonia: Serilog
   - Jinobald.Wpf: Serilog, Microsoft.Extensions.DependencyInjection.Abstractions
   - 타겟 프레임워크를 net9.0으로 수정
+- [x] 2단계: DI 래퍼 구현
+  - `IContainerProvider` 인터페이스 (서비스 해결)
+  - `IContainerRegistry` 인터페이스 (서비스 등록)
+  - `IContainerExtension` 인터페이스 (통합 인터페이스)
+  - `MicrosoftDependencyInjectionExtension` 구현 클래스
+  - `ContainerLocator` 정적 클래스 (Prism 스타일)
+  - 확장 메서드 (`AsContainerExtension`, `BuildContainer`)
 
 ### 🔄 진행 중인 작업
 없음
@@ -52,4 +59,10 @@
 - CLAUDE.md 작성 완료
 - 프로젝트 구조 분석 완료
 - 작업 계획 수립 완료
-- **다음 작업**: NuGet 패키지 추가 (CommunityToolkit.Mvvm, Serilog)
+- **1단계 완료**: NuGet 패키지 추가
+  - CommunityToolkit.Mvvm 8.3.2 추가 (Core)
+  - Serilog 4.1.0 추가 (모든 프로젝트)
+  - Microsoft.Extensions.DependencyInjection 9.0.0 추가 (Core)
+  - 타겟 프레임워크 net9.0으로 수정 (net10.0은 아직 존재하지 않음)
+  - 빌드 검증 완료
+- **다음 작업**: 2단계 - DI 래퍼 구현 (IContainerExtension, ContainerLocator)
