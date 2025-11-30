@@ -9,3 +9,4 @@
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/refint/Jinobald.Core.dll
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.pdb
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/ref/Jinobald.Core.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.csproj.AssemblyReference.cache

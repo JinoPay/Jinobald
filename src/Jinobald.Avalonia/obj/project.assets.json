@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {
+    "net9.0": {
       "Avalonia/11.2.2": {
         "type": "package",
         "dependencies": {
@@ -271,7 +271,7 @@
       },
       "Jinobald.Core/1.0.0": {
         "type": "project",
-        "framework": ".NETCoreApp,Version=v10.0",
+        "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "CommunityToolkit.Mvvm": "8.3.2",
           "Microsoft.Extensions.DependencyInjection": "9.0.0",
@@ -844,7 +844,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net10.0": [
+    "net9.0": [
       "Avalonia >= 11.2.2",
       "Jinobald.Core >= 1.0.0",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 9.0.0",
@@ -867,14 +867,15 @@
         "/Users/parkjinho/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net10.0"
+        "net9.0"
       ],
       "sources": {
+        "/opt/homebrew/Cellar/dotnet/9.0.8/libexec/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net10.0": {
-          "targetAlias": "net10.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "projectReferences": {
             "/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/Jinobald.Core.csproj": {
               "projectPath": "/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/Jinobald.Core.csproj"
@@ -890,13 +891,13 @@
       "restoreAuditProperties": {
         "enableAudit": "true",
         "auditLevel": "low",
-        "auditMode": "all"
+        "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
-      "net10.0": {
-        "targetAlias": "net10.0",
+      "net9.0": {
+        "targetAlias": "net9.0",
         "dependencies": {
           "Avalonia": {
             "target": "Package",
@@ -927,7 +928,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/Users/parkjinho/.dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/9.0.8/libexec/sdk/9.0.109/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

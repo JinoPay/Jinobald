@@ -11,9 +11,14 @@
 
 ### ✅ 완료된 작업
 - [x] CLAUDE.md 작성 (프레임워크 아키텍처 문서화)
+- [x] 1단계: NuGet 패키지 추가
+  - Jinobald.Core: CommunityToolkit.Mvvm, Serilog, Microsoft.Extensions.DependencyInjection
+  - Jinobald.Avalonia: Serilog
+  - Jinobald.Wpf: Serilog, Microsoft.Extensions.DependencyInjection.Abstractions
+  - 타겟 프레임워크를 net9.0으로 수정
 
 ### 🔄 진행 중인 작업
-- [ ] 1단계: NuGet 패키지 추가
+없음
 
 ### ⏳ 대기 중인 작업
 
