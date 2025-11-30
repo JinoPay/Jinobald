@@ -1,0 +1,11 @@
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/bin/Debug/net9.0/Jinobald.Core.deps.json
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/bin/Debug/net9.0/Jinobald.Core.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/bin/Debug/net9.0/Jinobald.Core.pdb
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.AssemblyInfoInputs.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.AssemblyInfo.cs
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.csproj.CoreCompileInputs.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/refint/Jinobald.Core.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/Jinobald.Core.pdb
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Core/obj/Debug/net9.0/ref/Jinobald.Core.dll

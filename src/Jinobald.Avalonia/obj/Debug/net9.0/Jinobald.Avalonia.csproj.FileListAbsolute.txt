@@ -1,0 +1,16 @@
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/bin/Debug/net9.0/Jinobald.Avalonia.deps.json
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/bin/Debug/net9.0/Jinobald.Avalonia.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/bin/Debug/net9.0/Jinobald.Avalonia.pdb
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/bin/Debug/net9.0/Jinobald.Core.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/bin/Debug/net9.0/Jinobald.Core.pdb
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.csproj.AssemblyReference.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Avalonia/Resources.Inputs.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.GeneratedMSBuildEditorConfig.editorconfig
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.AssemblyInfoInputs.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.AssemblyInfo.cs
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.csproj.CoreCompileInputs.cache
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.83AD0B73.Up2Date
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/refint/Jinobald.Avalonia.dll
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.pdb
+/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/ref/Jinobald.Avalonia.dll
