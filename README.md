@@ -137,14 +137,15 @@ Prism의 Region 시스템과 동일한 방식으로 UI를 구성하고 네비게
 
 #### XAML에서 Region 정의
 
+**Avalonia & WPF:**
 ```xml
-<Window xmlns:regions="clr-namespace:Jinobald.Avalonia.Services.Regions;assembly=Jinobald.Avalonia">
+<Window xmlns:jino="https://github.com/JinoPay/Jinobald">
     <Grid>
         <!-- ContentControl 리전 -->
-        <ContentControl regions:RegionManager.RegionName="MainRegion" />
+        <ContentControl jino:RegionManager.RegionName="MainRegion" />
 
         <!-- ItemsControl 리전 (다중 뷰) -->
-        <ItemsControl regions:RegionManager.RegionName="TabRegion" />
+        <ItemsControl jino:RegionManager.RegionName="TabRegion" />
     </Grid>
 </Window>
 ```
