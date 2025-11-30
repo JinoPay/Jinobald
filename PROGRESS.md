@@ -133,4 +133,11 @@
   - `ServiceCollectionExtensions`: 모든 WPF 서비스 자동 등록
   - Avalonia와 동일한 API 제공으로 플랫폼 간 일관성 확보
   - Core 및 Avalonia 빌드 검증 완료 (경고 0개, 오류 0개)
-- **다음 작업**: 7단계 - 검증 (샘플 애플리케이션 업데이트 및 통합 테스트)
+- **7단계 완료**: 샘플 애플리케이션
+  - `Jinobald.Sample.Avalonia` 프로젝트 업데이트 (net9.0, Avalonia 11.2.2)
+  - `SampleApp`: AvaloniaApplicationHost<MainWindow>를 상속받은 샘플 앱
+  - `MainWindow`: 사이드바 네비게이션과 ContentControl 기반 콘텐츠 영역
+  - 4개 데모 페이지: HomeView, NavigationDemoView, DialogDemoView, ThemeDemoView
+  - ViewModels 자동 등록 및 Convention 기반 View 해석
+  - 샘플 앱 빌드 검증 완료 (경고 0개, 오류 0개)
+- **프레임워크 개발 완료!** 🎉
