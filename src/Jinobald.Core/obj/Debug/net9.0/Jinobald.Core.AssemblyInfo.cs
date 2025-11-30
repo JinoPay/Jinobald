@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Jinobald.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ba79b2bba6f9f9bc53f8f6c71d566dc44c29d4d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa35200e67a4e10c31e9519f9cb06586c2fb911e")]
 [assembly: System.Reflection.AssemblyProductAttribute("Jinobald.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Jinobald.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
