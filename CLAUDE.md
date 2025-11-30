@@ -173,8 +173,8 @@ The framework wraps Microsoft.Extensions.DependencyInjection with a Prism-style 
 
 ## Development Notes
 
-- **Target Framework:** All projects use .NET 10.0 (Jinobald.Wpf uses `net10.0-windows`)
-- **C# Language Version:** 14 with nullable reference types enabled
+- **Target Framework:** All projects use .NET 9.0 (Jinobald.Wpf uses `net9.0-windows`)
+- **C# Language Version:** 13 with nullable reference types enabled
 
 ### Code Conventions
 
