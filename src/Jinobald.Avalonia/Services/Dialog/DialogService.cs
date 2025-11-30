@@ -1,5 +1,7 @@
+using Avalonia.Controls;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
+using Jinobald.Avalonia.Mvvm;
+using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Dialog;
 using Serilog;
 
@@ -13,7 +15,7 @@ public class DialogService : IDialogService
 {
     private readonly ILogger _logger;
     private IDialogHost? _dialogHost;
-    private TaskCompletionSource<object?>? _currentDialogTcs;
+    private TaskCompletionSource<IDialogResult?>? _currentDialogTcs;
 
     public DialogService(ILogger logger)
     {
@@ -31,82 +33,40 @@ public class DialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public async Task ShowMessageAsync(string title, string message, DialogMessageType type = DialogMessageType.Info)
+    public async Task<IDialogResult?> ShowDialogAsync<TViewModel>(IDialogParameters? parameters = null)
+        where TViewModel : IDialogAware
     {
-        _logger.Debug("메시지 다이얼로그 표시: {Title}, Type={Type}", title, type);
+        _logger.Debug("다이얼로그 표시: {ViewModelType}", typeof(TViewModel).Name);
 
-        var viewModel = new MessageDialogViewModel(title, message, type);
-        var view = new MessageDialogView { DataContext = viewModel };
-
-        await ShowDialogInternalAsync(view, viewModel);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> ShowConfirmAsync(
-        string title,
-        string message,
-        string confirmText = "확인",
-        string cancelText = "취소",
-        bool isDestructive = false)
-    {
-        _logger.Debug("확인 다이얼로그 표시: {Title}", title);
-
-        var viewModel = new ConfirmDialogViewModel(title, message, confirmText, cancelText, isDestructive);
-        var view = new ConfirmDialogView { DataContext = viewModel };
-
-        var result = await ShowDialogInternalAsync(view, viewModel);
-        return result is bool boolResult && boolResult;
-    }
-
-    /// <inheritdoc />
-    public async Task<T?> ShowSelectionAsync<T>(
-        string title,
-        string message,
-        IEnumerable<T> options,
-        Func<T, string> displaySelector) where T : class
-    {
-        _logger.Debug("선택 다이얼로그 표시: {Title}", title);
-
-        var viewModel = new SelectionDialogViewModel<T>(title, message, options, displaySelector);
-        var view = new SelectionDialogView { DataContext = viewModel };
-
-        var result = await ShowDialogInternalAsync(view, viewModel);
-        return result as T;
-    }
-
-    /// <inheritdoc />
-    public async Task<TResult> ShowCustomAsync<TResult>(object view, IDialogViewModel<TResult> viewModel)
-    {
-        _logger.Debug("커스텀 다이얼로그 표시: {ViewType}", view.GetType().Name);
-
-        var result = await ShowDialogInternalAsync(view, viewModel);
-        return result is TResult typedResult ? typedResult : default!;
-    }
-
-    /// <inheritdoc />
-    public void CloseDialog()
-    {
-        if (_dialogHost == null)
+        // ViewModel 생성
+        var viewModel = ContainerLocator.Current.Resolve<TViewModel>();
+        if (viewModel == null)
         {
-            _logger.Warning("다이얼로그 호스트가 등록되지 않음");
-            return;
+            _logger.Error("ViewModel을 생성할 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
+            return null;
         }
 
-        Dispatcher.UIThread.Post(() =>
+        // View 타입 추론
+        var viewType = ViewModelLocator.ResolveViewType(typeof(TViewModel));
+        if (viewType == null)
         {
-            _dialogHost.IsDialogOpen = false;
-            _dialogHost.DialogContent = null;
-            _currentDialogTcs?.TrySetResult(null);
-            _currentDialogTcs = null;
-        });
+            _logger.Error("View 타입을 찾을 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
+            return null;
+        }
 
-        _logger.Debug("다이얼로그 닫힘");
+        // View 생성
+        var view = Activator.CreateInstance(viewType);
+        if (view == null)
+        {
+            _logger.Error("View를 생성할 수 없습니다: {ViewType}", viewType.Name);
+            return null;
+        }
+
+        return await ShowDialogAsync(view, viewModel);
     }
 
-    /// <summary>
-    ///     다이얼로그를 내부적으로 표시하고 결과를 대기합니다.
-    /// </summary>
-    private async Task<object?> ShowDialogInternalAsync<TResult>(object view, IDialogViewModel<TResult> viewModel)
+    /// <inheritdoc />
+    public async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel)
     {
         if (_dialogHost == null)
         {
@@ -118,155 +78,86 @@ public class DialogService : IDialogService
         if (_dialogHost.IsDialogOpen)
         {
             _logger.Warning("이미 열린 다이얼로그가 있어 닫습니다");
-            CloseDialog();
+            CloseDialogInternal();
             await Task.Delay(100); // UI 업데이트 대기
         }
 
         // TaskCompletionSource 생성
-        _currentDialogTcs = new TaskCompletionSource<object?>();
+        _currentDialogTcs = new TaskCompletionSource<IDialogResult?>();
 
-        // ViewModel에 Close 액션 설정
-        viewModel.CloseRequested = () =>
-        {
-            var result = viewModel.Result;
-            CloseDialog();
-            _currentDialogTcs.TrySetResult(result);
-        };
+        // ViewModel에 이벤트 연결
+        viewModel.RequestClose += OnRequestClose;
+
+        // ViewModel의 OnDialogOpened 호출
+        var dialogParameters = new DialogParameters();
+        viewModel.OnDialogOpened(dialogParameters);
 
         // UI 쓰레드에서 다이얼로그 표시
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            if (view is Control control)
+            {
+                control.DataContext = viewModel;
+            }
+
             _dialogHost.DialogContent = view;
             _dialogHost.IsDialogOpen = true;
         });
 
         // 다이얼로그가 닫힐 때까지 대기
-        var taskResult = await _currentDialogTcs.Task;
-        return taskResult;
-    }
-}
-
-/// <summary>
-///     메시지 다이얼로그 ViewModel
-/// </summary>
-internal class MessageDialogViewModel : Core.Mvvm.DialogViewModelBase<bool>
-{
-    public string Title { get; }
-    public string Message { get; }
-    public DialogMessageType Type { get; }
-    public IRelayCommand OnConfirmCommand { get; }
-
-    public MessageDialogViewModel(string title, string message, DialogMessageType type)
-    {
-        Title = title;
-        Message = message;
-        Type = type;
-        Result = true; // 확인 버튼만 있으므로 항상 true
-
-        OnConfirmCommand = new RelayCommand(OnConfirm);
+        var result = await _currentDialogTcs.Task;
+        return result;
     }
 
-    private void OnConfirm()
+    private void OnRequestClose(IDialogResult result)
     {
-        CloseWithResult(true);
-    }
-}
+        if (_dialogHost == null || _currentDialogTcs == null)
+            return;
 
-/// <summary>
-///     확인/취소 다이얼로그 ViewModel
-/// </summary>
-internal class ConfirmDialogViewModel : Core.Mvvm.DialogViewModelBase<bool>
-{
-    public string Title { get; }
-    public string Message { get; }
-    public string ConfirmText { get; }
-    public string CancelText { get; }
-    public bool IsDestructive { get; }
-    public IRelayCommand OnConfirmCommand { get; }
-    public IRelayCommand OnCancelCommand { get; }
+        // ViewModel의 CanCloseDialog 확인
+        var viewModel = (_dialogHost.DialogContent as Control)?.DataContext as IDialogAware;
+        if (viewModel != null && !viewModel.CanCloseDialog())
+        {
+            _logger.Debug("다이얼로그를 닫을 수 없습니다");
+            return;
+        }
 
-    public ConfirmDialogViewModel(
-        string title,
-        string message,
-        string confirmText,
-        string cancelText,
-        bool isDestructive)
-    {
-        Title = title;
-        Message = message;
-        ConfirmText = confirmText;
-        CancelText = cancelText;
-        IsDestructive = isDestructive;
+        // 다이얼로그 닫기
+        Dispatcher.UIThread.Post(() =>
+        {
+            viewModel?.OnDialogClosed();
+            if (viewModel != null)
+            {
+                viewModel.RequestClose -= OnRequestClose;
+            }
 
-        OnConfirmCommand = new RelayCommand(OnConfirm);
-        OnCancelCommand = new RelayCommand(OnCancel);
+            _dialogHost.IsDialogOpen = false;
+            _dialogHost.DialogContent = null;
+            _currentDialogTcs.TrySetResult(result);
+            _currentDialogTcs = null;
+        });
+
+        _logger.Debug("다이얼로그 닫힘");
     }
 
-    private void OnConfirm()
+    private void CloseDialogInternal()
     {
-        CloseWithResult(true);
-    }
+        if (_dialogHost == null)
+            return;
 
-    private void OnCancel()
-    {
-        CloseWithResult(false);
-    }
-}
+        var viewModel = (_dialogHost.DialogContent as Control)?.DataContext as IDialogAware;
+        if (viewModel != null)
+        {
+            viewModel.OnDialogClosed();
+            viewModel.RequestClose -= OnRequestClose;
+        }
 
-/// <summary>
-///     선택 다이얼로그 ViewModel
-/// </summary>
-internal class SelectionDialogViewModel<T> : Core.Mvvm.DialogViewModelBase<T?> where T : class
-{
-    public string Title { get; }
-    public string Message { get; }
-    public IEnumerable<SelectionItem<T>> Items { get; }
-    public IRelayCommand OnConfirmCommand { get; }
-    public IRelayCommand OnCancelCommand { get; }
-
-    private SelectionItem<T>? _selectedItem;
-    public SelectionItem<T>? SelectedItem
-    {
-        get => _selectedItem;
-        set => SetProperty(ref _selectedItem, value);
-    }
-
-    public SelectionDialogViewModel(
-        string title,
-        string message,
-        IEnumerable<T> options,
-        Func<T, string> displaySelector)
-    {
-        Title = title;
-        Message = message;
-        Items = options.Select(o => new SelectionItem<T>(o, displaySelector(o))).ToList();
-
-        OnConfirmCommand = new RelayCommand(OnConfirm);
-        OnCancelCommand = new RelayCommand(OnCancel);
-    }
-
-    private void OnConfirm()
-    {
-        CloseWithResult(SelectedItem?.Value);
-    }
-
-    private void OnCancel()
-    {
-        CloseWithResult(null);
-    }
-}
-
-/// <summary>
-///     선택 항목 래퍼
-/// </summary>
-internal class SelectionItem<T>
-{
-    public T Value { get; }
-    public string DisplayText { get; }
-
-    public SelectionItem(T value, string displayText)
-    {
-        Value = value;
-        DisplayText = displayText;
+        Dispatcher.UIThread.Post(() =>
+        {
+            _dialogHost.IsDialogOpen = false;
+            _dialogHost.DialogContent = null;
+            _currentDialogTcs?.TrySetResult(null);
+            _currentDialogTcs = null;
+        });
     }
 }
