@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Jinobald.Sample.Avalonia.Views.SplashScreenWindow"
+        Width="500" Height="300"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        SystemDecorations="None"
+        Background="#2C2C2C">
+
+    <Border Padding="40" Background="#2C2C2C">
+        <StackPanel VerticalAlignment="Center" Spacing="20">
+            <!-- 앱 이름 -->
+            <TextBlock Text="Jinobald Sample"
+                       FontSize="32"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+
+            <!-- 부제목 -->
+            <TextBlock Text="MVVM Framework for Avalonia"
+                       FontSize="16"
+                       Foreground="#CCCCCC"
+                       HorizontalAlignment="Center"/>
+
+            <!-- 진행 메시지 -->
+            <TextBlock Name="MessageTextBlock"
+                       Text="초기화 중..."
+                       FontSize="14"
+                       Foreground="#AAAAAA"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,0"/>
+
+            <!-- 진행률 바 -->
+            <ProgressBar Name="ProgressBar"
+                         Height="4"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"
+                         Foreground="#007ACC"
+                         Background="#444444"
+                         Margin="0,10,0,0"/>
+        </StackPanel>
+    </Border>
+</Window>

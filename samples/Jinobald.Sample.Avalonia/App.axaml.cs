@@ -1,21 +1,15 @@
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
-using Jinobald.Core.Application;
 using Jinobald.Sample.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jinobald.Sample.Avalonia;
 
-public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>
+public partial class App : AvaloniaApplicationBase<MainWindow, Views.SplashScreenWindow>
 {
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-    }
-
-    protected override ISplashScreen CreateSplashScreen()
-    {
-        return new SplashScreenWindow();
     }
 
     protected override void ConfigureServices(IServiceCollection services)
