@@ -21,3 +21,12 @@ build_property.EnableComHosting =
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
+
+[/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/Services/Dialog/Views/ConfirmDialogView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/Services/Dialog/Views/MessageDialogView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/Services/Dialog/Views/SelectionDialogView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
