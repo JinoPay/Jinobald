@@ -36,15 +36,15 @@
 
 ### ⏳ 대기 중인 작업
 
-#### 4단계 (진행 중): Avalonia 서비스 구현
-- [ ] ThemeService 구현 (SettingsService 통합)
+#### 5단계: Avalonia 서비스 구현 (진행 중)
+- [x] ThemeService 구현 (SettingsService 통합)
 - [ ] DialogService 구현 (in-window overlay)
 - [ ] ApplicationBase 구현체 작성
 
-#### 5단계: WPF 구현
+#### 6단계: WPF 구현
 - [ ] 모든 구현체 작성 (Avalonia 패턴 따름)
 
-#### 6단계: 검증
+#### 7단계: 검증
 - [ ] 샘플 애플리케이션 업데이트
 - [ ] 통합 테스트
 
@@ -85,4 +85,11 @@
   - ViewModelLocator: ContainerLocator 통합
   - ServiceCollectionExtensions: 모든 기본 서비스 자동 등록
   - 빌드 검증 완료
-- **다음 작업**: 5단계 - Avalonia DialogService, ThemeService 구현
+- **5단계 진행 중**: Avalonia ThemeService 구현
+  - `ThemeService`: SettingsService 통합, 테마 자동 저장/로드
+  - Light/Dark/System 기본 테마 지원
+  - 커스텀 테마 등록 기능 (RegisterTheme)
+  - GetThemeColor/GetThemeResource: Avalonia 리소스 시스템 통합
+  - ServiceCollectionExtensions에 ThemeService 등록
+  - 빌드 검증 완료 (경고 0개, 오류 0개)
+- **다음 작업**: 5단계 - Avalonia DialogService 구현

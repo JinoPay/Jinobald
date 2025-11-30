@@ -1,8 +1,10 @@
 using Jinobald.Avalonia.Services.Events;
 using Jinobald.Avalonia.Services.Navigation;
+using Jinobald.Avalonia.Services.Theme;
 using Jinobald.Core.Services.Events;
 using Jinobald.Core.Services.Navigation;
 using Jinobald.Core.Services.Settings;
+using Jinobald.Core.Services.Theme;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jinobald.Avalonia.Hosting;
@@ -27,11 +29,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IEventAggregator, EventAggregator>();
         services.AddSingleton<ISettingsService>(sp => new JsonSettingsService(settingsFilePath));
+        services.AddSingleton<IThemeService>(sp =>
+            new ThemeService(sp.GetRequiredService<ISettingsService>()));
 
-        // TODO: DialogService, ThemeService 추가 예정
+        // TODO: DialogService 추가 예정
         // services.AddSingleton<IDialogService, DialogService>();
-        // services.AddSingleton<IThemeService>(sp =>
-        //     new ThemeService(sp.GetRequiredService<ISettingsService>()));
 
         return services;
     }
