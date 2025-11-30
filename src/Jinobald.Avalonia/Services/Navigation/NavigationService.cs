@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Jinobald.Avalonia.Mvvm;
+using Jinobald.Core.Ioc;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Navigation;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jinobald.Avalonia.Services.Navigation;
 
@@ -20,21 +20,16 @@ internal sealed class NavigationEntry
 /// <summary>
 ///     DI 기반 네비게이션 서비스 구현
 ///     비동기 네비게이션, 히스토리, Guard, 생명주기 관리 지원
+///     ContainerLocator를 통해 뷰와 뷰모델을 해결합니다.
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly Stack<NavigationEntry> _backStack = new();
     private readonly Stack<NavigationEntry> _forwardStack = new();
     private readonly SemaphoreSlim _navigationLock = new(1, 1);
     private NavigationEntry? _currentEntry;
 
     private object? _currentView;
-
-    public NavigationService(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     #region 유틸리티
 
@@ -171,8 +166,8 @@ public sealed class NavigationService : INavigationService
                 return false;
             }
 
-            // 새 ViewModel 생성
-            newViewModel = _serviceProvider.GetRequiredService(viewModelType);
+            // 새 ViewModel 생성 (ContainerLocator 사용)
+            newViewModel = ContainerLocator.Current.Resolve(viewModelType);
 
             // 네비게이션 컨텍스트 생성
             context = new NavigationContext
@@ -211,14 +206,18 @@ public sealed class NavigationService : INavigationService
             if (CurrentViewModel is INavigationAware currentNavAware)
                 await currentNavAware.OnNavigatedFromAsync(context);
 
-            // 5. 히스토리에 현재 엔트리 추가 (Forward 네비게이션인 경우)
+            // 5. 이전 ViewModel 리소스 정리
+            if (CurrentViewModel is IDestructible destructible)
+                destructible.Destroy();
+
+            // 6. 히스토리에 현재 엔트리 추가 (Forward 네비게이션인 경우)
             if (direction == NavigationDirection.Forward && _currentEntry != null)
             {
                 _backStack.Push(_currentEntry);
                 _forwardStack.Clear(); // 새로운 네비게이션 시 Forward 스택 클리어
             }
 
-            // 6. View 생성 및 ViewModel 바인딩 (UI 스레드에서)
+            // 7. View 생성 및 ViewModel 바인딩 (UI 스레드에서)
             Control view = null!;
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -226,7 +225,7 @@ public sealed class NavigationService : INavigationService
                 view.DataContext = newViewModel;
             });
 
-            // 7. 현재 상태 업데이트 및 View 표시 (InitializeAsync 전에 먼저 표시)
+            // 8. 현재 상태 업데이트 및 View 표시 (InitializeAsync 전에 먼저 표시)
             _currentEntry = new NavigationEntry
             {
                 ViewModelType = viewModelType,
@@ -247,16 +246,16 @@ public sealed class NavigationService : INavigationService
             _navigationLock.Release();
         }
 
-        // 8. 새 ViewModel 초기화 (lock 외부에서 실행 - 데드락 방지)
+        // 9. 새 ViewModel 초기화 (lock 외부에서 실행 - 데드락 방지)
         try
         {
             if (newViewModel is IInitializableAsync initializable)
                 await initializable.InitializeAsync(cancellationToken);
 
-            // 9. 새 ViewModel로 들어감 처리
+            // 10. 새 ViewModel로 들어감 처리
             if (newViewModel is INavigationAware newNavAware) await newNavAware.OnNavigatedToAsync(context);
 
-            // 10. 새 ViewModel 활성화
+            // 11. 새 ViewModel 활성화
             if (newViewModel is IActivatable newActivatable) await newActivatable.ActivateAsync(cancellationToken);
         }
         catch

@@ -28,6 +28,7 @@ public abstract class ApplicationBase
     protected ApplicationBase()
     {
         Logger = Log.ForContext(GetType());
+        ConfigureExceptionHandling();
     }
 
     /// <summary>
@@ -130,11 +131,77 @@ public abstract class ApplicationBase
     }
 
     /// <summary>
+    ///     전역 예외 처리 설정
+    /// </summary>
+    protected virtual void ConfigureExceptionHandling()
+    {
+        // AppDomain 예외 처리
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+        // Task 예외 처리
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    /// <summary>
+    ///     처리되지 않은 예외 발생 시 호출
+    /// </summary>
+    protected virtual void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            Logger.Fatal(ex, "처리되지 않은 예외 발생");
+
+            // 파생 클래스에서 추가 처리 가능 (예: 사용자에게 알림)
+            HandleUnhandledException(ex, e.IsTerminating);
+        }
+    }
+
+    /// <summary>
+    ///     관찰되지 않은 Task 예외 발생 시 호출
+    /// </summary>
+    protected virtual void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        Logger.Error(e.Exception, "관찰되지 않은 Task 예외 발생");
+
+        // 예외를 관찰된 것으로 표시 (앱 종료 방지)
+        e.SetObserved();
+
+        // 파생 클래스에서 추가 처리 가능
+        HandleUnobservedTaskException(e.Exception);
+    }
+
+    /// <summary>
+    ///     파생 클래스에서 처리되지 않은 예외 처리를 커스터마이즈합니다.
+    /// </summary>
+    /// <param name="exception">발생한 예외</param>
+    /// <param name="isTerminating">앱이 종료 중인지 여부</param>
+    protected virtual void HandleUnhandledException(Exception exception, bool isTerminating)
+    {
+        // 기본 구현: 로깅만 수행
+        // 파생 클래스에서 사용자에게 에러 다이얼로그 표시 등 추가 가능
+    }
+
+    /// <summary>
+    ///     파생 클래스에서 관찰되지 않은 Task 예외 처리를 커스터마이즈합니다.
+    /// </summary>
+    /// <param name="exception">발생한 예외</param>
+    protected virtual void HandleUnobservedTaskException(Exception exception)
+    {
+        // 기본 구현: 로깅만 수행
+        // 파생 클래스에서 추가 처리 가능
+    }
+
+    /// <summary>
     ///     애플리케이션 종료 시 호출
     /// </summary>
     public virtual void OnExit()
     {
         Logger.Information("애플리케이션 종료");
+
+        // 이벤트 핸들러 제거
+        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
+
         Log.CloseAndFlush();
     }
 }

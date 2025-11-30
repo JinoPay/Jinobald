@@ -1,11 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
+using Jinobald.Core.Ioc;
 
 namespace Jinobald.Avalonia.Mvvm;
 
 /// <summary>
 ///     View와 ViewModel을 컨벤션 기반으로 자동 연결하는 ViewModelLocator
 ///     Views.SplashView → ViewModels.SplashViewModel 패턴으로 자동 매칭
+///     ContainerLocator를 통해 ViewModel을 해결합니다.
 /// </summary>
 public static class ViewModelLocator
 {
@@ -17,8 +19,6 @@ public static class ViewModelLocator
             "AutoWireViewModel",
             typeof(ViewModelLocator),
             false);
-
-    private static IServiceProvider? _serviceProvider;
 
     static ViewModelLocator()
     {
@@ -73,26 +73,18 @@ public static class ViewModelLocator
     }
 
     /// <summary>
-    ///     DI 컨테이너 설정 (앱 시작시 호출)
-    /// </summary>
-    public static void SetServiceProvider(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
-    /// <summary>
-    ///     View 타입에서 ViewModel을 찾아 DI 컨테이너에서 resolve
+    ///     View 타입에서 ViewModel을 찾아 ContainerLocator를 통해 resolve
     /// </summary>
     private static object? ResolveViewModel(Type viewType)
     {
-        if (_serviceProvider == null)
+        if (!ContainerLocator.IsSet)
             return null;
 
         var viewModelType = ResolveViewModelType(viewType);
         if (viewModelType == null)
             return null;
 
-        return _serviceProvider.GetService(viewModelType);
+        return ContainerLocator.Current.Resolve(viewModelType);
     }
 
     private static void OnAutoWireViewModelChanged(Control control, AvaloniaPropertyChangedEventArgs e)
