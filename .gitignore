@@ -60,3 +60,7 @@ Desktop.ini
 *.user
 *.userosscache
 *.sln.docstates
+
+# Claude Code
+CLAUDE.md
+.progress
