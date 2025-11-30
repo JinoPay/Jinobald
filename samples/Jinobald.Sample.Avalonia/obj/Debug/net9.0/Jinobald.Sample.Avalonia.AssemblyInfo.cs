@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Jinobald.Sample.Avalonia")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2f21d361472f68f866efdecdc1dbd6aec354d037")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f194aff9a53a81f3f62a16dcb451dbd14cff4add")]
 [assembly: System.Reflection.AssemblyProductAttribute("Jinobald.Sample.Avalonia")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Jinobald.Sample.Avalonia")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
