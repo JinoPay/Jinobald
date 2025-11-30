@@ -36,25 +36,15 @@
 
 ### ⏳ 대기 중인 작업
 
-#### 2단계: Jinobald.Core 기반 구조
-- [ ] DI 래퍼 구현 (IContainerExtension, ContainerLocator)
-- [ ] ApplicationBase 추상 클래스 구현
-- [ ] ViewModelBase 클래스 구현
-- [ ] IThemeService 강화 (테마 스타일 관리)
-
-#### 3단계: Jinobald.Avalonia 구현
-- [ ] ApplicationBase 구현체 작성
+#### 4단계 (진행 중): Avalonia 서비스 구현
+- [ ] ThemeService 구현 (SettingsService 통합)
 - [ ] DialogService 구현 (in-window overlay)
-- [ ] ThemeService 구현
-- [ ] NavigationService DI 통합 개선
-
-#### 4단계: Jinobald.Wpf 구현
 - [ ] ApplicationBase 구현체 작성
-- [ ] NavigationService 구현
-- [ ] DialogService 구현 (in-window overlay)
-- [ ] ThemeService 구현
 
-#### 5단계: 검증
+#### 5단계: WPF 구현
+- [ ] 모든 구현체 작성 (Avalonia 패턴 따름)
+
+#### 6단계: 검증
 - [ ] 샘플 애플리케이션 업데이트
 - [ ] 통합 테스트
 
@@ -80,12 +70,19 @@
   - 제네릭 제약 조건 적용 (class, notnull)
   - 빌드 검증 완료 (경고 0개, 오류 0개)
 - **3단계 완료**: Core 기반 인프라
-  - `ISettingsService`: 타입 안전 설정 관리 인터페이스
-  - `JsonSettingsService`: JSON 기반 설정 구현체 (자동 저장, 변경 알림)
-  - `ISplashScreen`: 필수 스플래시 화면 인터페이스
-  - `ApplicationBase`: 플랫폼 독립적 앱 기본 클래스 (스플래시 통합, DI 통합)
-  - `ViewModelBase`: CommunityToolkit.Mvvm 기반 ViewModel 베이스
-  - `IThemeService`: 커스텀 테마/색상 관리 기능 추가
-  - Serilog.Sinks.Console, Serilog.Sinks.File 추가
+  - `ISettingsService`, `JsonSettingsService` (debouncing)
+  - `ISplashScreen`, `ApplicationBase` (전역 예외 처리)
+  - `ViewModelBase` (IInitializableAsync, IActivatable 자동 구현)
+  - `DialogViewModelBase<TResult>` 추가
+  - `IThemeService` 강화
+  - Serilog Sinks 추가
+- **4단계 완료**: Core & Avalonia 개선
+  - `ViewModelBase`: IInitializableAsync, IActivatable 자동 구현
+  - `DialogViewModelBase<TResult>`: 다이얼로그 ViewModel 기본 클래스
+  - `JsonSettingsService`: Debouncing 적용 (500ms)
+  - `ApplicationBase`: 전역 예외 처리 추가
+  - NavigationService: ContainerLocator 통합, 리소스 정리 자동화
+  - ViewModelLocator: ContainerLocator 통합
+  - ServiceCollectionExtensions: 모든 기본 서비스 자동 등록
   - 빌드 검증 완료
-- **다음 작업**: 4단계 - Avalonia 구현체 작성
+- **다음 작업**: 5단계 - Avalonia DialogService, ThemeService 구현
