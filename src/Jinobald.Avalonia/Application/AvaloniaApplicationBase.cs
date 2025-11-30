@@ -161,6 +161,7 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             desktop.MainWindow = CreateMainWindow();
+            desktop.MainWindow?.Show();
             Logger.Information("메인 윈도우 표시됨: {WindowType}", desktop.MainWindow?.GetType().Name);
         });
 
