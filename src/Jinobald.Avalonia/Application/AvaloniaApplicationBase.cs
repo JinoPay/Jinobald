@@ -55,6 +55,7 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
     /// </summary>
     private async Task InitializeAsync()
     {
+        Console.WriteLine("[Jinobald] 애플리케이션 초기화 시작");
         Logger.Information("애플리케이션 초기화 시작");
 
         try
@@ -63,10 +64,12 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
             ConfigureLogging();
 
             // 2. 스플래시 화면 생성 및 표시
+            Console.WriteLine("[Jinobald] 스플래시 화면 생성");
             SplashScreen = CreateSplashScreen();
             if (SplashScreen == null)
                 throw new InvalidOperationException("스플래시 화면을 생성할 수 없습니다. CreateSplashScreen()을 구현하세요.");
 
+            Console.WriteLine("[Jinobald] 스플래시 화면 표시");
             SplashScreen.Show();
             SplashScreen.UpdateProgress("서비스 초기화 중...", 0.1);
 
@@ -98,13 +101,15 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
             SplashScreen.UpdateProgress("메인 화면 로드 중...", 0.9);
 
             // 7. 스플래시 화면 닫기
-            await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
+            await Task.Delay(2000); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
             Logger.Information("애플리케이션 초기화 완료");
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"[Jinobald] 오류 발생: {ex.Message}");
+            Console.WriteLine($"[Jinobald] 스택 트레이스: {ex.StackTrace}");
             Logger.Error(ex, "애플리케이션 초기화 중 오류 발생");
             SplashScreen?.Close();
             throw;
