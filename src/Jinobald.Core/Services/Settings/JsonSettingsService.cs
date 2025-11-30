@@ -12,6 +12,8 @@ public class JsonSettingsService : ISettingsService
     private readonly Dictionary<string, object?> _settings = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly ILogger _logger;
+    private System.Timers.Timer? _saveTimer;
+    private bool _isDirty;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -100,10 +102,11 @@ public class JsonSettingsService : ISettingsService
             if (!Equals(oldValue, value))
             {
                 SettingChanged?.Invoke(key, value);
+                _isDirty = true;
             }
 
-            // 자동 저장
-            _ = SaveAsync();
+            // Debounced 자동 저장 (500ms 후)
+            ScheduleSave();
         }
         finally
         {
@@ -145,7 +148,8 @@ public class JsonSettingsService : ISettingsService
             if (removed)
             {
                 SettingChanged?.Invoke(key, null);
-                _ = SaveAsync();
+                _isDirty = true;
+                ScheduleSave();
             }
 
             return removed;
@@ -165,7 +169,8 @@ public class JsonSettingsService : ISettingsService
         try
         {
             _settings.Clear();
-            _ = SaveAsync();
+            _isDirty = true;
+            ScheduleSave();
         }
         finally
         {
@@ -191,12 +196,16 @@ public class JsonSettingsService : ISettingsService
 
     /// <summary>
     ///     설정을 디스크에 저장합니다.
+    ///     (내부적으로 debouncing이 적용되어 있으므로 직접 호출할 필요는 없습니다)
     /// </summary>
     public async Task SaveAsync()
     {
         await _lock.WaitAsync();
         try
         {
+            if (!_isDirty)
+                return;
+
             var directory = Path.GetDirectoryName(_settingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
@@ -206,6 +215,7 @@ public class JsonSettingsService : ISettingsService
             var json = JsonSerializer.Serialize(_settings, _jsonOptions);
             await File.WriteAllTextAsync(_settingsFilePath, json);
 
+            _isDirty = false;
             _logger.Debug("설정 파일 저장됨: {FilePath}", _settingsFilePath);
         }
         catch (Exception ex)
@@ -217,6 +227,25 @@ public class JsonSettingsService : ISettingsService
         {
             _lock.Release();
         }
+    }
+
+    /// <summary>
+    ///     지연된 저장을 예약합니다 (Debouncing)
+    /// </summary>
+    private void ScheduleSave()
+    {
+        // 기존 타이머 중지
+        _saveTimer?.Stop();
+        _saveTimer?.Dispose();
+
+        // 500ms 후 저장
+        _saveTimer = new System.Timers.Timer(500);
+        _saveTimer.AutoReset = false;
+        _saveTimer.Elapsed += async (s, e) =>
+        {
+            await SaveAsync();
+        };
+        _saveTimer.Start();
     }
 
     /// <summary>
