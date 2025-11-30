@@ -44,8 +44,9 @@ dotnet test --verbosity normal
 
 1. **Jinobald.Core** - Platform-agnostic interfaces and contracts
    - `Mvvm/`: Lifecycle interfaces (`INavigationAware`, `IActivatable`, `IDestructible`, `IInitializableAsync`)
-   - `Services/`: Service interfaces (`INavigationService`, `IEventAggregator`, `IDialogService`, `IThemeService`)
+   - `Services/`: Service interfaces (`INavigationService`, `IEventAggregator`, `IDialogService`, `IThemeService`, `ISettingsService`)
    - `ApplicationBase`: Abstract base class wrapping platform-specific Application classes
+   - `ISplashScreen`: Interface for mandatory splash screen implementation
    - Base classes and interfaces for ViewModels, Dialogs, etc.
 
 2. **Jinobald.Avalonia** - Avalonia-specific implementations
@@ -64,6 +65,20 @@ dotnet test --verbosity normal
 Both WPF and Avalonia `Application` classes are wrapped with `ApplicationBase` to provide a unified development experience across platforms. This abstraction ensures that application initialization, service registration, and lifecycle management work identically regardless of the UI framework.
 
 **Key Principle:** Developers should be able to write application code once and target both WPF and Avalonia without platform-specific changes.
+
+### Mandatory Splash Screen
+
+**All applications MUST display a splash screen before the main window.**
+
+- Applications must implement `ISplashScreen` interface
+- `ApplicationBase` enforces splash screen display during startup
+- Splash screen lifecycle:
+  1. Application starts
+  2. Splash screen displayed
+  3. Services initialized in background
+  4. Main window created and shown
+  5. Splash screen closed
+- This pattern ensures consistent UX and provides time for initialization tasks
 
 ### Service Registration
 
@@ -149,6 +164,31 @@ Both WPF and Avalonia implementations should show dialogs within the main window
 - Retrieve colors/styles through the theme service API
 
 Hardcoding colors can lead to theming conflicts and maintenance issues. The theme service ensures consistent styling across the application and prevents color management bugs during development.
+
+### Settings Service
+
+`ISettingsService` provides a unified interface for application settings management.
+
+**Features:**
+- Type-safe settings access with generic methods
+- Automatic persistence (JSON-based storage)
+- Default value support
+- Settings change notifications
+- Section-based organization (optional)
+
+**Usage Pattern:**
+```csharp
+// Save setting
+_settingsService.Set("Theme", "Dark");
+_settingsService.Set("WindowWidth", 1920);
+
+// Load setting with default
+var theme = _settingsService.Get("Theme", "Light");
+var width = _settingsService.Get("WindowWidth", 1280);
+
+// Listen for changes
+_settingsService.SettingChanged += (key, value) => { /* handle change */ };
+```
 
 ## Core Dependencies
 
