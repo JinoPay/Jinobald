@@ -38,14 +38,18 @@
   - ThemeService 구현 (SettingsService 통합)
   - DialogService 구현 (in-window overlay)
   - AvaloniaApplicationHost 및 SplashScreenWindow 구현
+- [x] 6단계: WPF 구현
+  - NavigationService 구현 (Avalonia 패턴 따름)
+  - ViewModelLocator 구현 (DependencyProperty 기반)
+  - ThemeService 구현 (ResourceDictionary 기반)
+  - DialogService 구현 (in-window overlay)
+  - WpfApplicationHost 및 SplashScreenWindow 구현
+  - ServiceCollectionExtensions: 모든 서비스 자동 등록
 
 ### 🔄 진행 중인 작업
 없음
 
 ### ⏳ 대기 중인 작업
-
-#### 6단계: WPF 구현
-- [ ] 모든 구현체 작성 (Avalonia 패턴 따름)
 
 #### 7단계: 검증
 - [ ] 샘플 애플리케이션 업데이트
@@ -115,4 +119,14 @@
   - ThemeService 네임스페이스 충돌 해결 (global::Avalonia.Application)
   - .gitignore 개선 (macOS, Windows 시스템 파일 추가)
   - 빌드 검증 완료 (경고 0개, 오류 0개)
-- **다음 작업**: 6단계 - WPF 구현
+- **6단계 완료**: WPF 구현
+  - `NavigationService`: Avalonia 패턴을 따른 WPF 구현 (Application.Current.Dispatcher 사용)
+  - `ViewModelLocator`: DependencyProperty 기반 자동 View-ViewModel 와이어링
+  - `ThemeService`: ResourceDictionary 기반 테마 관리, SettingsService 통합
+  - `DialogService`: in-window overlay 방식 다이얼로그 서비스
+  - `WpfApplicationHost<TMainWindow>`: ApplicationBase를 상속받은 WPF 전용 호스트
+  - `SplashScreenWindow`: XAML 기반 스플래시 화면 (ISplashScreen 구현)
+  - `ServiceCollectionExtensions`: 모든 WPF 서비스 자동 등록
+  - Avalonia와 동일한 API 제공으로 플랫폼 간 일관성 확보
+  - Core 및 Avalonia 빌드 검증 완료 (경고 0개, 오류 0개)
+- **다음 작업**: 7단계 - 검증 (샘플 애플리케이션 업데이트 및 통합 테스트)
