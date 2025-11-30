@@ -6,6 +6,7 @@ build_property.AvaloniaNameGeneratorFilterByPath = *
 build_property.AvaloniaNameGeneratorFilterByNamespace = *
 build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
 build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
 build_property.TargetFramework = net9.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = 
@@ -25,4 +26,19 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/DialogDemoView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/HomeView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/NavigationDemoView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/parkjinho/Projects/Jinobald/samples/Jinobald.Sample.Avalonia/Views/ThemeDemoView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

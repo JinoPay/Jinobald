@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Jinobald.Sample.Avalonia.Views.DialogDemoView">
+
+    <StackPanel Spacing="16">
+        <TextBlock Text="💬 Dialog Demo"
+                   FontSize="24"
+                   FontWeight="Bold" />
+
+        <TextBlock Text="In-window overlay dialogs with async/await support."
+                   TextWrapping="Wrap" />
+
+        <TextBlock Text="✅ Dialog Types:"
+                   FontWeight="SemiBold"
+                   Margin="0,16,0,0" />
+
+        <StackPanel Spacing="4" Margin="16,0,0,0">
+            <TextBlock Text="• MessageDialog (Info, Success, Warning, Error)" />
+            <TextBlock Text="• ConfirmDialog (Yes/No with destructive option)" />
+            <TextBlock Text="• SelectionDialog (Generic list selection)" />
+            <TextBlock Text="• CustomDialog (Your own ViewModel + View)" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

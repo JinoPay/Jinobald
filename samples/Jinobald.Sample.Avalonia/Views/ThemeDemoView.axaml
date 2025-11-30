@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Jinobald.Sample.Avalonia.Views.ThemeDemoView">
+
+    <StackPanel Spacing="16">
+        <TextBlock Text="🎨 Theme Demo"
+                   FontSize="24"
+                   FontWeight="Bold" />
+
+        <TextBlock Text="Dynamic theme switching with auto-save to settings."
+                   TextWrapping="Wrap" />
+
+        <TextBlock Text="✅ Features:"
+                   FontWeight="SemiBold"
+                   Margin="0,16,0,0" />
+
+        <StackPanel Spacing="4" Margin="16,0,0,0">
+            <TextBlock Text="• Light/Dark/System themes" />
+            <TextBlock Text="• Custom theme registration" />
+            <TextBlock Text="• Settings integration (auto-save)" />
+            <TextBlock Text="• GetThemeColor / GetThemeResource" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

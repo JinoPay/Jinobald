@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Jinobald.Sample.Avalonia.Views.NavigationDemoView">
+
+    <StackPanel Spacing="16">
+        <TextBlock Text="🧭 Navigation Demo"
+                   FontSize="24"
+                   FontWeight="Bold" />
+
+        <TextBlock Text="This demonstrates the NavigationService with history and lifecycle management."
+                   TextWrapping="Wrap" />
+
+        <TextBlock Text="✅ Features:"
+                   FontWeight="SemiBold"
+                   Margin="0,16,0,0" />
+
+        <StackPanel Spacing="4" Margin="16,0,0,0">
+            <TextBlock Text="• Async navigation with CancellationToken" />
+            <TextBlock Text="• Navigation guards (INavigationAware)" />
+            <TextBlock Text="• History management (Back/Forward)" />
+            <TextBlock Text="• Lifecycle hooks (IInitializableAsync, IActivatable)" />
+            <TextBlock Text="• Convention-based View resolution" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

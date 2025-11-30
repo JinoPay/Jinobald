@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+        x:Class="Jinobald.Sample.Avalonia.Views.MainWindow"
+        Title="Jinobald Sample - MVVM Framework Demo"
+        Width="1000"
+        Height="600">
+
+    <Grid>
+        <!-- 네비게이션 영역 (왼쪽) -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- 사이드바 -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Margin="16">
+                <TextBlock Text="Jinobald Demo"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Margin="0,0,0,24" />
+
+                <Button Content="🏠 Home"
+                        Command="{Binding NavigateHomeCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Margin="0,0,0,8" />
+
+                <Button Content="🧭 Navigation"
+                        Command="{Binding NavigateToNavigationDemoCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Margin="0,0,0,8" />
+
+                <Button Content="💬 Dialogs"
+                        Command="{Binding NavigateToDialogDemoCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Margin="0,0,0,8" />
+
+                <Button Content="🎨 Themes"
+                        Command="{Binding NavigateToThemeDemoCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Margin="0,0,0,8" />
+            </StackPanel>
+        </Border>
+
+        <!-- 콘텐츠 영역 (오른쪽) -->
+        <ContentControl Grid.Column="1"
+                        Content="{Binding CurrentView}"
+                        Margin="16" />
+    </Grid>
+</Window>
