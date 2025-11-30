@@ -19,7 +19,6 @@
       },
       "Avalonia/11.2.2": {
         "dependencies": {
-          "Avalonia.BuildServices": "0.0.29",
           "Avalonia.Remote.Protocol": "11.2.2",
           "MicroCom.Runtime": "0.11.0"
         },
@@ -70,7 +69,6 @@
           }
         }
       },
-      "Avalonia.BuildServices/0.0.29": {},
       "Avalonia.Remote.Protocol/11.2.2": {
         "runtime": {
           "lib/net8.0/Avalonia.Remote.Protocol.dll": {
@@ -212,7 +210,7 @@
         },
         "runtime": {
           "Jinobald.Core.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -231,13 +229,6 @@
       "sha512": "sha512-gycD/+pjaNh6288vEGDOcgks3Gz/dhZaZu6VSao6wMBXAQpBMEFlU4gW1dXXH2N0zdOlv3Jo1PgmH2megCe2yw==",
       "path": "avalonia/11.2.2",
       "hashPath": "avalonia.11.2.2.nupkg.sha512"
-    },
-    "Avalonia.BuildServices/0.0.29": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-U4eJLQdoDNHXtEba7MZUCwrBErBTxFp6sUewXBOdAhU0Kwzwaa/EKFcYm8kpcysjzKtfB4S0S9n0uxKZFz/ikw==",
-      "path": "avalonia.buildservices/0.0.29",
-      "hashPath": "avalonia.buildservices.0.0.29.nupkg.sha512"
     },
     "Avalonia.Remote.Protocol/11.2.2": {
       "type": "package",
