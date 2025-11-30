@@ -15,6 +15,3 @@
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Avalonia/Jinobald.Avalonia.dll
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Avalonia/Jinobald.Avalonia.pdb
 /Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/refint/Avalonia/Jinobald.Avalonia.dll
-/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.dll
-/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/refint/Jinobald.Avalonia.dll
-/Users/parkjinho/Projects/Jinobald/src/Jinobald.Avalonia/obj/Debug/net9.0/Jinobald.Avalonia.pdb

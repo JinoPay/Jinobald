@@ -173,7 +173,7 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
     ///     메인 윈도우를 생성합니다.
     ///     DI 컨테이너에서 resolve합니다.
     /// </summary>
-    protected virtual Controls.Window CreateMainWindow()
+    protected virtual Window CreateMainWindow()
     {
         if (Container == null)
             throw new InvalidOperationException("Container가 초기화되지 않았습니다.");
@@ -185,7 +185,7 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
     ///     메인 윈도우가 표시된 후 호출되는 메서드
     ///     파생 클래스에서 필요시 오버라이드합니다.
     /// </summary>
-    protected virtual Task OnMainWindowShownAsync(Controls.Window mainWindow)
+    protected virtual Task OnMainWindowShownAsync(Window mainWindow)
     {
         return Task.CompletedTask;
     }
