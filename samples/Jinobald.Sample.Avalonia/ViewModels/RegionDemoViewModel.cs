@@ -2,7 +2,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Regions;
-using Jinobald.Sample.Avalonia.ViewModels.Regions;
+using Jinobald.Sample.Avalonia.Views.Regions;
 
 namespace Jinobald.Sample.Avalonia.ViewModels;
 
@@ -27,21 +27,21 @@ public partial class RegionDemoViewModel : ViewModelBase
     [RelayCommand]
     private void AddRedView()
     {
-        _regionManager.AddToRegion<RedItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<RedItemView>("ContentRegion");
         LastAction = "Red View가 ContentRegion에 추가되었습니다.";
     }
 
     [RelayCommand]
     private void AddBlueView()
     {
-        _regionManager.AddToRegion<BlueItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<BlueItemView>("ContentRegion");
         LastAction = "Blue View가 ContentRegion에 추가되었습니다.";
     }
 
     [RelayCommand]
     private void AddGreenView()
     {
-        _regionManager.AddToRegion<GreenItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<GreenItemView>("ContentRegion");
         LastAction = "Green View가 ContentRegion에 추가되었습니다.";
     }
 

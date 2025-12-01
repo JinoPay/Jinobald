@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:regions="clr-namespace:Jinobald.Avalonia.Services.Regions;assembly=Jinobald.Avalonia"
+             xmlns:jino="https://github.com/JinoPay/Jinobald"
              x:Class="Jinobald.Sample.Avalonia.Views.RegionDemoView">
 
     <ScrollViewer>
@@ -86,7 +86,7 @@
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
 
                     <!-- ItemsControl Region -->
-                    <ItemsControl regions:RegionManagerExtensions.RegionName="ContentRegion"
+                    <ItemsControl jino:Region.Name="ContentRegion"
                                   MinHeight="200">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -135,11 +135,13 @@
                                FontFamily="Consolas, Menlo, Monaco, monospace"
                                FontSize="11"
                                xml:space="preserve">// XAML에서 Region 정의
-&lt;ItemsControl regions:RegionManager.RegionName="ContentRegion" /&gt;
+&lt;ItemsControl jino:Region.Name="ContentRegion" /&gt;
 
-// 코드에서 뷰 추가
-await _regionManager
-    .AddToRegionAsync&lt;MyViewModel&gt;("ContentRegion");
+// 코드에서 View 추가 (View-first 패턴)
+_regionManager.AddToRegion&lt;MyView&gt;("ContentRegion");
+
+// 네비게이션 (Back/Forward 지원)
+await _regionManager.NavigateAsync&lt;MyView&gt;("ContentRegion");
 
 // Region 가져오기
 var region = _regionManager.GetRegion("ContentRegion");</TextBlock>

@@ -1,4 +1,5 @@
 using Jinobald.Core.Services.Regions;
+using CoreRegion = Jinobald.Core.Services.Regions.Region;
 
 namespace Jinobald.Avalonia.Services.Regions;
 
@@ -30,9 +31,9 @@ public abstract class RegionAdapterBase<T> where T : class
     /// <summary>
     ///     리전 인스턴스를 생성합니다.
     /// </summary>
-    protected virtual Region CreateRegion(string regionName)
+    protected virtual CoreRegion CreateRegion(string regionName)
     {
-        return new Region(regionName);
+        return new CoreRegion(regionName);
     }
 
     /// <summary>
