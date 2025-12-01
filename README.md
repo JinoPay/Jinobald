@@ -203,6 +203,39 @@ public class ShellViewModel : ViewModelBase
 }
 ```
 
+### 🔗 ViewModel Locator
+
+View와 ViewModel을 컨벤션 기반으로 자동 연결하는 ViewModelLocator를 제공합니다.
+
+#### XAML에서 자동 바인딩
+
+**Avalonia & WPF:**
+```xml
+<Window xmlns:jino="https://github.com/JinoPay/Jinobald"
+        jino:ViewModelLocator.AutoWireViewModel="True">
+    <!-- View가 로드될 때 자동으로 ViewModel이 DataContext에 연결됩니다 -->
+</Window>
+```
+
+#### 컨벤션 규칙
+
+ViewModelLocator는 다음 패턴으로 자동 매칭합니다:
+- `Views.HomeView` → `ViewModels.HomeViewModel`
+- `Views.Settings.ProfileView` → `ViewModels.Settings.ProfileViewModel`
+- `ShellWindow` → `ShellViewModel`
+
+```csharp
+// ViewModelLocator는 ContainerLocator를 통해 ViewModel을 resolve합니다
+// 따라서 ViewModel을 DI 컨테이너에 등록해야 합니다
+
+protected override void ConfigureServices(IServiceCollection services)
+{
+    // ViewModel 등록
+    services.AddTransient<HomeViewModel>();
+    services.AddTransient<SettingsViewModel>();
+}
+```
+
 ### 💬 Dialog Service
 
 모던한 오버레이 기반 다이얼로그 시스템으로 깔끔한 UX를 제공합니다.
