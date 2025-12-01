@@ -7,7 +7,7 @@
                    FontSize="24"
                    FontWeight="Bold" />
 
-        <TextBlock Text="This demonstrates the NavigationService with history and lifecycle management."
+        <TextBlock Text="This demonstrates Region-based navigation with history and lifecycle management."
                    TextWrapping="Wrap" />
 
         <TextBlock Text="✅ Features:"
