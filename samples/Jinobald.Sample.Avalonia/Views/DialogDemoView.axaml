@@ -2,23 +2,120 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Jinobald.Sample.Avalonia.Views.DialogDemoView">
 
-    <StackPanel Spacing="16">
-        <TextBlock Text="💬 Dialog Demo"
-                   FontSize="24"
-                   FontWeight="Bold" />
+    <ScrollViewer>
+        <StackPanel Spacing="16" Margin="16">
+            <TextBlock Text="💬 Dialog Demo"
+                       FontSize="24"
+                       FontWeight="Bold" />
 
-        <TextBlock Text="In-window overlay dialogs with async/await support."
-                   TextWrapping="Wrap" />
+            <TextBlock Text="In-window overlay dialogs with async/await support."
+                       TextWrapping="Wrap" />
 
-        <TextBlock Text="✅ Dialog Types:"
-                   FontWeight="SemiBold"
-                   Margin="0,16,0,0" />
+            <!-- 메시지 다이얼로그 섹션 -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16"
+                    Margin="0,8,0,0">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="📋 Message Dialogs"
+                               FontSize="18"
+                               FontWeight="SemiBold" />
 
-        <StackPanel Spacing="4" Margin="16,0,0,0">
-            <TextBlock Text="• MessageDialog (Info, Success, Warning, Error)" />
-            <TextBlock Text="• ConfirmDialog (Yes/No with destructive option)" />
-            <TextBlock Text="• SelectionDialog (Generic list selection)" />
-            <TextBlock Text="• CustomDialog (Your own ViewModel + View)" />
+                    <TextBlock Text="간단한 메시지를 표시하는 다이얼로그입니다."
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+                    <!-- 버튼들 -->
+                    <WrapPanel>
+                        <Button Content="ℹ️ Info"
+                                Command="{Binding ShowInfoDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+
+                        <Button Content="✅ Success"
+                                Command="{Binding ShowSuccessDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+
+                        <Button Content="⚠️ Warning"
+                                Command="{Binding ShowWarningDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+
+                        <Button Content="❌ Error"
+                                Command="{Binding ShowErrorDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+                    </WrapPanel>
+
+                    <!-- 결과 표시 -->
+                    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12"
+                            Margin="0,8,0,0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="결과:"
+                                       FontWeight="SemiBold"
+                                       FontSize="12" />
+                            <TextBlock Text="{Binding LastDialogResult}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- 기능 설명 섹션 -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16"
+                    Margin="0,8,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="✅ Features"
+                               FontSize="16"
+                               FontWeight="SemiBold" />
+
+                    <StackPanel Spacing="4" Margin="12,0,0,0">
+                        <TextBlock Text="• Async/await 기반 다이얼로그 서비스" />
+                        <TextBlock Text="• In-window overlay 방식 (모달 다이얼로그)" />
+                        <TextBlock Text="• IDialogAware 인터페이스 구현" />
+                        <TextBlock Text="• 파라미터 전달 및 결과 반환" />
+                        <TextBlock Text="• View-ViewModel 자동 매핑" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 사용 예제 -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16"
+                    Margin="0,8,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="📝 Usage Example"
+                               FontSize="16"
+                               FontWeight="SemiBold" />
+
+                    <TextBlock TextWrapping="Wrap"
+                               FontFamily="Consolas, Menlo, Monaco, monospace"
+                               FontSize="11"
+                               xml:space="preserve">var parameters = new DialogParameters
+{
+    { "Title", "알림" },
+    { "Message", "메시지 내용" },
+    { "MessageType", "Info" }
+};
+
+var result = await _dialogService
+    .ShowDialogAsync&lt;MessageDialogViewModel&gt;(parameters);</TextBlock>
+                </StackPanel>
+            </Border>
         </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 </UserControl>

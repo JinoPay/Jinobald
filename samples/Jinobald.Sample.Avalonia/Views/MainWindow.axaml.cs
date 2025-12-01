@@ -69,4 +69,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         await _navigationService.NavigateToAsync<ViewModels.ThemeDemoViewModel>();
     }
+
+    [RelayCommand]
+    private async Task NavigateToRegionDemo()
+    {
+        await _navigationService.NavigateToAsync<ViewModels.RegionDemoViewModel>();
+    }
 }

@@ -1,6 +1,8 @@
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
 using Jinobald.Sample.Avalonia.ViewModels;
+using Jinobald.Sample.Avalonia.ViewModels.Dialogs;
+using Jinobald.Sample.Avalonia.ViewModels.Regions;
 using Jinobald.Sample.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,5 +22,14 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         services.AddTransient<NavigationDemoViewModel>();
         services.AddTransient<DialogDemoViewModel>();
         services.AddTransient<ThemeDemoViewModel>();
+        services.AddTransient<RegionDemoViewModel>();
+
+        // Dialog ViewModels 등록
+        services.AddTransient<MessageDialogViewModel>();
+
+        // Region Item ViewModels 등록
+        services.AddTransient<RedItemViewModel>();
+        services.AddTransient<BlueItemViewModel>();
+        services.AddTransient<GreenItemViewModel>();
     }
 }

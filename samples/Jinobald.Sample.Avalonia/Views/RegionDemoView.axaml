@@ -1,17 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Jinobald.Sample.Avalonia.Views.ThemeDemoView">
+             xmlns:regions="clr-namespace:Jinobald.Avalonia.Services.Regions;assembly=Jinobald.Avalonia"
+             x:Class="Jinobald.Sample.Avalonia.Views.RegionDemoView">
 
     <ScrollViewer>
         <StackPanel Spacing="16" Margin="16">
-            <TextBlock Text="🎨 Theme Demo"
+            <TextBlock Text="📦 Region Demo"
                        FontSize="24"
                        FontWeight="Bold" />
 
-            <TextBlock Text="Dynamic theme switching with auto-save to settings."
+            <TextBlock Text="Region 시스템을 사용하여 동적으로 뷰를 추가/제거할 수 있습니다."
                        TextWrapping="Wrap" />
 
-            <!-- 테마 선택 섹션 -->
+            <!-- 컨트롤 섹션 -->
             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
                     BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                     BorderThickness="1"
@@ -19,33 +20,38 @@
                     Padding="16"
                     Margin="0,8,0,0">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🌓 Theme Selection"
+                    <TextBlock Text="🎮 Region Controls"
                                FontSize="18"
                                FontWeight="SemiBold" />
 
-                    <TextBlock Text="애플리케이션의 테마를 변경할 수 있습니다."
+                    <TextBlock Text="버튼을 클릭하여 ContentRegion에 뷰를 추가하거나 제거할 수 있습니다."
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
 
-                    <!-- 테마 버튼들 -->
+                    <!-- 버튼들 -->
                     <WrapPanel>
-                        <Button Content="☀️ Light Theme"
-                                Command="{Binding SetLightThemeCommand}"
+                        <Button Content="🔴 Add Red View"
+                                Command="{Binding AddRedViewCommand}"
                                 Margin="0,0,8,8"
                                 MinWidth="140" />
 
-                        <Button Content="🌙 Dark Theme"
-                                Command="{Binding SetDarkThemeCommand}"
+                        <Button Content="🔵 Add Blue View"
+                                Command="{Binding AddBlueViewCommand}"
                                 Margin="0,0,8,8"
                                 MinWidth="140" />
 
-                        <Button Content="💻 System Theme"
-                                Command="{Binding SetSystemThemeCommand}"
+                        <Button Content="🟢 Add Green View"
+                                Command="{Binding AddGreenViewCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="140" />
+
+                        <Button Content="🗑️ Clear All"
+                                Command="{Binding ClearRegionCommand}"
                                 Margin="0,0,8,8"
                                 MinWidth="140" />
                     </WrapPanel>
 
-                    <!-- 현재 테마 표시 -->
+                    <!-- 결과 표시 -->
                     <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                             BorderThickness="1"
@@ -53,18 +59,17 @@
                             Padding="12"
                             Margin="0,8,0,0">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="현재 테마:"
+                            <TextBlock Text="마지막 액션:"
                                        FontWeight="SemiBold"
                                        FontSize="12" />
-                            <TextBlock Text="{Binding CurrentThemeName}"
-                                       FontSize="16"
-                                       FontWeight="Bold" />
+                            <TextBlock Text="{Binding LastAction}"
+                                       TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <!-- 테마 프리뷰 섹션 -->
+            <!-- Region 영역 -->
             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
                     BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                     BorderThickness="1"
@@ -72,30 +77,23 @@
                     Padding="16"
                     Margin="0,8,0,0">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🎨 Theme Preview"
+                    <TextBlock Text="📋 Content Region (ItemsControl)"
                                FontSize="18"
                                FontWeight="SemiBold" />
 
-                    <TextBlock Text="다양한 UI 요소들이 현재 테마에 따라 어떻게 보이는지 확인할 수 있습니다."
+                    <TextBlock Text="ItemsControl로 구현된 Region입니다. 여러 뷰를 동시에 표시할 수 있습니다."
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
 
-                    <!-- 샘플 UI 요소들 -->
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="텍스트 요소"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-
-                        <Button Content="Primary Button" />
-
-                        <TextBox Text="TextBox 예제"
-                                 Watermark="입력하세요..." />
-
-                        <CheckBox Content="CheckBox 예제"
-                                  IsChecked="True" />
-
-                        <RadioButton Content="RadioButton 예제"
-                                     IsChecked="True" />
-                    </StackPanel>
+                    <!-- ItemsControl Region -->
+                    <ItemsControl regions:RegionManager.RegionName="ContentRegion"
+                                  MinHeight="200">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
 
@@ -112,11 +110,11 @@
                                FontWeight="SemiBold" />
 
                     <StackPanel Spacing="4" Margin="12,0,0,0">
-                        <TextBlock Text="• Light/Dark/System 테마 지원" />
-                        <TextBlock Text="• 설정 자동 저장 (SettingsService 통합)" />
-                        <TextBlock Text="• 커스텀 테마 등록 가능" />
-                        <TextBlock Text="• GetThemeColor / GetThemeResource API" />
-                        <TextBlock Text="• ThemeChanged 이벤트 지원" />
+                        <TextBlock Text="• XAML에서 RegionName 어태치드 프로퍼티로 Region 정의" />
+                        <TextBlock Text="• ItemsControl, ContentControl 자동 어댑터 지원" />
+                        <TextBlock Text="• RegionManager를 통한 동적 뷰 추가/제거" />
+                        <TextBlock Text="• ViewModel 기반 뷰 생성 (View-ViewModel 자동 매핑)" />
+                        <TextBlock Text="• Region별 뷰 활성화/비활성화 지원" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -136,14 +134,15 @@
                     <TextBlock TextWrapping="Wrap"
                                FontFamily="Consolas, Menlo, Monaco, monospace"
                                FontSize="11"
-                               xml:space="preserve">// 테마 변경
-_themeService.SetTheme("Dark");
+                               xml:space="preserve">// XAML에서 Region 정의
+&lt;ItemsControl regions:RegionManager.RegionName="ContentRegion" /&gt;
 
-// 현재 테마 확인
-var current = _themeService.CurrentTheme;
+// 코드에서 뷰 추가
+await _regionManager
+    .AddToRegionAsync&lt;MyViewModel&gt;("ContentRegion");
 
-// 테마 변경 이벤트 구독
-_themeService.ThemeChanged += OnThemeChanged;</TextBlock>
+// Region 가져오기
+var region = _regionManager.GetRegion("ContentRegion");</TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>
