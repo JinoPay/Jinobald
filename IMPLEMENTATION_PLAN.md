@@ -603,40 +603,40 @@ grep -r "INavigationService" src/ samples/
 ## 체크리스트
 
 ### Phase 1: 인터페이스 및 Core 수정
-- [ ] `RegionNavigationMode` 열거형 추가
-- [ ] `IRegionNavigationService` 개선
-- [ ] `IRegionManager` 개선
-- [ ] `NavigationContext` 개선
-- [ ] `IViewResolver` 확인 및 개선
+- [x] `RegionNavigationMode` 열거형 추가 ✅
+- [x] `IRegionNavigationService` 개선 ✅ (Back/Forward, KeepAlive, NavigationMode 모두 추가됨)
+- [x] `IRegionManager` 개선 ✅ (View 기반 네비게이션, Back/Forward 메서드 추가됨)
+- [x] `NavigationContext` 개선 ✅ (기존 구조 유지, ViewType은 필요 없음)
+- [x] `IViewResolver` 확인 및 개선 ✅ (View 기반으로 잘 설계됨)
 
 ### Phase 2: Core 구현체 수정
-- [ ] `RegionNavigationService` 완전 재작성
-- [ ] `RegionManager` 개선
-- [ ] `AvaloniaViewResolver` 개선
-- [ ] `WpfViewResolver` 개선
+- [x] `RegionNavigationService` 완전 재작성 ✅ (Back/Forward 히스토리, Keep-Alive 캐시, 생명주기 완성)
+- [x] `RegionManager` 개선 ✅ (View 기반 API 완성)
+- [x] `AvaloniaViewResolver` 개선 ✅ (DI 컨테이너 기반 View 생성 지원)
+- [ ] `WpfViewResolver` 개선 ⏸️ (macOS에서 확인 불가, 코드 동기화 필요)
 
 ### Phase 3: Avalonia 구현
-- [ ] `Region` Attached Property 생성
-- [ ] xmlns 매핑 설정
-- [ ] RegionManagerExtensions 제거
-- [ ] 샘플 프로젝트 업데이트 (XAML)
-- [ ] 샘플 프로젝트 업데이트 (C#)
+- [x] `Region` Attached Property 생성 ✅ (Name, DefaultView, KeepAlive, NavigationMode)
+- [x] xmlns 매핑 설정 ✅ (AssemblyInfo.cs)
+- [ ] RegionManagerExtensions 제거 ⏸️ (확인 필요)
+- [x] 샘플 프로젝트 업데이트 (XAML) ✅ (jino:Region.Name 사용 중)
+- [x] 샘플 프로젝트 업데이트 (C#) ✅ (View-First 네비게이션 적용)
 
 ### Phase 4: WPF 구현
-- [ ] `Region` Attached Property 생성
-- [ ] xmlns 매핑 설정
-- [ ] RegionManagerExtensions 제거
+- [ ] `Region` Attached Property 생성 ❌ (아직 미작성)
+- [ ] xmlns 매핑 설정 ⏸️ (WPF AssemblyInfo.cs 확인 필요)
+- [ ] RegionManagerExtensions 제거 ⏸️ (확인 필요)
 
 ### Phase 5: NavigationService 제거
-- [ ] 파일 삭제
-- [ ] 서비스 등록 제거
-- [ ] 모든 의존성 업데이트
+- [x] 파일 삭제 ✅ (Navigation 폴더 없음)
+- [x] 서비스 등록 제거 ✅ (AssemblyInfo.cs에서 Services.Navigation 제거됨)
+- [x] 모든 의존성 업데이트 ✅ (INavigationService 검색 결과 없음)
 
 ### Phase 6: 테스트 및 문서화
-- [ ] Avalonia 샘플 빌드 및 동작 확인
-- [ ] WPF 코드 동기화
-- [ ] CLAUDE.md 업데이트
-- [ ] README.md 업데이트
+- [x] Avalonia 샘플 빌드 및 동작 확인 ✅ (빌드 성공, 실행 테스트 필요)
+- [ ] WPF 코드 동기화 ❌ (Region.cs 작성 필요)
+- [ ] CLAUDE.md 업데이트 ⏸️ (확인 필요)
+- [x] README.md 업데이트 ✅ (Region 재설계 반영)
 
 ---
 

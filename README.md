@@ -6,7 +6,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 
 ## ✨ 핵심 기능
 
-- **🎯 Region-Based Navigation** - Prism 스타일의 리전 기반 UI 구성 및 네비게이션
+- **🎯 View-First Region Navigation** - Prism 스타일의 리전 기반 View-First 네비게이션 (Back/Forward, KeepAlive 지원)
 - **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템
 - **🔄 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신
 - **🎨 Theme Management** - 동적 테마 전환 및 스타일 관리
@@ -23,10 +23,9 @@ Jinobald/
 │   ├── Jinobald.Core/          # 플랫폼 독립적 추상화 계층
 │   │   ├── Mvvm/                # ViewModelBase, INavigationAware, IActivatable
 │   │   ├── Services/            # 핵심 서비스 인터페이스
-│   │   │   ├── Navigation/      # INavigationService
 │   │   │   ├── Events/          # IEventAggregator, PubSubEvent
 │   │   │   ├── Dialog/          # IDialogService, IDialogAware
-│   │   │   ├── Regions/         # IRegionManager, IRegion
+│   │   │   ├── Regions/         # IRegionManager, IRegion, IRegionNavigationService
 │   │   │   ├── Theme/           # IThemeService
 │   │   │   └── Settings/        # ISettingsService
 │   │   └── Ioc/                 # DI 컨테이너 추상화
@@ -111,7 +110,8 @@ public partial class MainViewModel : ViewModelBase, INavigationAware
     [RelayCommand]
     private async Task NavigateToDetails()
     {
-        await _regionManager.NavigateAsync<DetailViewModel>("ContentRegion");
+        // View-First 네비게이션: View 타입을 직접 지정
+        await _regionManager.NavigateAsync<DetailView>("ContentRegion");
     }
 
     // 네비게이션 라이프사이클
@@ -133,7 +133,7 @@ public partial class MainViewModel : ViewModelBase, INavigationAware
 
 ### 🎯 Region Manager
 
-Prism의 Region 시스템과 동일한 방식으로 UI를 구성하고 네비게이션을 관리합니다.
+Prism 스타일의 Region 시스템으로 **View-First 네비게이션**을 제공합니다. Region은 UI의 특정 영역을 나타내며, 각 Region은 독립적인 네비게이션 컨텍스트를 가집니다.
 
 #### XAML에서 Region 정의
 
@@ -141,16 +141,36 @@ Prism의 Region 시스템과 동일한 방식으로 UI를 구성하고 네비게
 ```xml
 <Window xmlns:jino="https://github.com/JinoPay/Jinobald">
     <Grid>
-        <!-- ContentControl 리전 -->
-        <ContentControl jino:RegionManager.RegionName="MainRegion" />
+        <!-- 기본 리전 -->
+        <ContentControl jino:Region.Name="MainRegion" />
+
+        <!-- 기본 뷰 설정 -->
+        <ContentControl jino:Region.Name="SidebarRegion"
+                        jino:Region.DefaultView="views:NavigationView" />
+
+        <!-- Keep-Alive 활성화 (뷰 재사용) -->
+        <ContentControl jino:Region.Name="ContentRegion"
+                        jino:Region.DefaultView="views:HomeView"
+                        jino:Region.KeepAlive="True" />
+
+        <!-- 네비게이션 모드 설정 -->
+        <ContentControl jino:Region.Name="TabRegion"
+                        jino:Region.NavigationMode="Stack" /> <!-- Stack, Replace, Accumulate -->
 
         <!-- ItemsControl 리전 (다중 뷰) -->
-        <ItemsControl jino:RegionManager.RegionName="TabRegion" />
+        <ItemsControl jino:Region.Name="MultiViewRegion"
+                      jino:Region.NavigationMode="Accumulate" />
     </Grid>
 </Window>
 ```
 
-#### 코드에서 Region 사용
+**Region Attached Properties:**
+- `jino:Region.Name` - 리전 이름 (필수)
+- `jino:Region.DefaultView` - 리전 생성 시 자동으로 표시할 View 타입
+- `jino:Region.KeepAlive` - 네비게이션 시 뷰 캐시 여부 (기본값: false)
+- `jino:Region.NavigationMode` - 네비게이션 모드 (Stack/Replace/Accumulate)
+
+#### View-First 네비게이션
 
 ```csharp
 public partial class ShellViewModel : ViewModelBase
@@ -165,25 +185,47 @@ public partial class ShellViewModel : ViewModelBase
     [RelayCommand]
     private async Task ShowHome()
     {
-        // 리전으로 네비게이션
-        await _regionManager.NavigateAsync<HomeViewModel>("MainRegion");
-    }
-
-    [RelayCommand]
-    private void AddTab()
-    {
-        // 리전에 뷰 추가 (다중 뷰 시나리오)
-        _regionManager.AddToRegion<TabViewModel>("TabRegion");
+        // View 타입으로 네비게이션
+        await _regionManager.NavigateAsync<HomeView>("MainRegion");
     }
 
     [RelayCommand]
     private async Task NavigateWithParameter()
     {
+        // 파라미터 전달
         var parameter = new { UserId = 123, Mode = "Edit" };
-        await _regionManager.NavigateAsync<DetailViewModel>("MainRegion", parameter);
+        await _regionManager.NavigateAsync<DetailView>("MainRegion", parameter);
+    }
+
+    [RelayCommand]
+    private async Task GoBack()
+    {
+        // 이전 뷰로 이동
+        if (_regionManager.CanGoBack("MainRegion"))
+            await _regionManager.GoBackAsync("MainRegion");
+    }
+
+    [RelayCommand]
+    private async Task GoForward()
+    {
+        // 다음 뷰로 이동
+        if (_regionManager.CanGoForward("MainRegion"))
+            await _regionManager.GoForwardAsync("MainRegion");
+    }
+
+    [RelayCommand]
+    private void AddTab()
+    {
+        // 리전에 뷰 추가 (Accumulate 모드)
+        _regionManager.AddToRegion<TabView>("TabRegion");
     }
 }
 ```
+
+**ViewModel은 ViewModelLocator를 통해 자동으로 생성되고 연결됩니다:**
+- `HomeView` → `HomeViewModel` (자동 생성 및 DataContext 바인딩)
+- `DetailView` → `DetailViewModel`
+- `TabView` → `TabViewModel`
 
 #### Region 이벤트 구독
 
@@ -446,43 +488,6 @@ public partial class AppSettingsViewModel : ViewModelBase
 }
 ```
 
-### 🔄 Navigation Service
-
-기본 네비게이션 서비스로 전통적인 페이지 기반 네비게이션을 지원합니다.
-
-```csharp
-public partial class MainViewModel : ViewModelBase
-{
-    private readonly INavigationService _navigationService;
-
-    [RelayCommand]
-    private async Task NavigateToDetail()
-    {
-        await _navigationService.NavigateToAsync<DetailViewModel>();
-    }
-
-    [RelayCommand]
-    private async Task NavigateWithParameter()
-    {
-        var param = new { ProductId = 123, Mode = "Edit" };
-        await _navigationService.NavigateToAsync<ProductDetailViewModel>(param);
-    }
-
-    [RelayCommand]
-    private async Task GoBack()
-    {
-        if (_navigationService.CanGoBack)
-            await _navigationService.GoBackAsync();
-    }
-
-    [RelayCommand]
-    private async Task GoForward()
-    {
-        if (_navigationService.CanGoForward)
-            await _navigationService.GoForwardAsync();
-    }
-}
-```
 
 ## 🔌 의존성 주입
 
@@ -492,7 +497,8 @@ ContainerLocator를 통해 어디서든 서비스를 해결할 수 있습니다.
 using Jinobald.Core.Ioc;
 
 // 서비스 해결
-var navigationService = ContainerLocator.Current.Resolve<INavigationService>();
+var regionManager = ContainerLocator.Current.Resolve<IRegionManager>();
+var dialogService = ContainerLocator.Current.Resolve<IDialogService>();
 
 // 파라미터와 함께 ViewModel 생성
 var parameter = new { Id = 123 };

@@ -193,9 +193,19 @@ public static class Region
                 parent = parent.Parent as Control;
             }
 
-            // RegionManager가 없으면 리턴
+            // 부모에서도 찾지 못하면 ContainerLocator에서 가져오기
             if (regionManager == null)
-                return;
+            {
+                try
+                {
+                    regionManager = Core.Ioc.ContainerLocator.Current.Resolve<IRegionManager>();
+                }
+                catch
+                {
+                    // ContainerLocator에서도 못 찾으면 리턴
+                    return;
+                }
+            }
         }
 
         // 적절한 어댑터 찾기
@@ -245,7 +255,28 @@ public static class Region
     {
         var regionManager = GetManager(element);
         if (regionManager == null)
-            return;
+        {
+            // 부모에서 RegionManager 찾기
+            var parent = element.Parent as Control;
+            while (parent != null && regionManager == null)
+            {
+                regionManager = GetManager(parent);
+                parent = parent.Parent as Control;
+            }
+
+            // 부모에서도 찾지 못하면 ContainerLocator에서 가져오기
+            if (regionManager == null)
+            {
+                try
+                {
+                    regionManager = Core.Ioc.ContainerLocator.Current.Resolve<IRegionManager>();
+                }
+                catch
+                {
+                    return;
+                }
+            }
+        }
 
         // 비동기 네비게이션 시작 (fire-and-forget)
         _ = regionManager.NavigateAsync(regionName, defaultViewType);

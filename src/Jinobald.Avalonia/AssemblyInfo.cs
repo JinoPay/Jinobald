@@ -13,7 +13,6 @@ using Avalonia.Metadata;
 // Services
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Regions")]
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Dialog")]
-[assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Navigation")]
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Theme")]
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Events")]
 
