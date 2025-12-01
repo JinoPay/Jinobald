@@ -174,8 +174,8 @@ public sealed class NavigationService : INavigationService
             {
                 Parameter = parameter,
                 Direction = direction,
-                SourceType = CurrentViewModel?.GetType(),
-                TargetType = viewModelType
+                SourceViewModelType = CurrentViewModel?.GetType(),
+                TargetViewModelType = viewModelType
             };
 
             // 1. 현재 ViewModel에서 나갈 수 있는지 확인 (Guard)

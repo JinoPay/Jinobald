@@ -4,6 +4,7 @@ namespace Jinobald.Core.Services.Regions;
 
 /// <summary>
 ///     리전 매니저 구현체
+///     Prism의 RegionManager를 참고하여 View 기반으로 재설계됨
 ///     애플리케이션 내 모든 리전을 관리하고 리전 기반 네비게이션을 제공합니다.
 /// </summary>
 public class RegionManager : IRegionManager
@@ -16,6 +17,8 @@ public class RegionManager : IRegionManager
     {
         _viewResolver = viewResolver ?? throw new ArgumentNullException(nameof(viewResolver));
     }
+
+    #region 리전 관리
 
     public IEnumerable<IRegion> Regions => _regions.Values;
 
@@ -86,6 +89,19 @@ public class RegionManager : IRegionManager
         return true;
     }
 
+    public IRegionNavigationService? GetNavigationService(string regionName)
+    {
+        if (string.IsNullOrWhiteSpace(regionName))
+            return null;
+
+        _navigationServices.TryGetValue(regionName, out var service);
+        return service;
+    }
+
+    #endregion
+
+    #region View 추가/제거
+
     public object AddToRegion(string regionName, object view)
     {
         if (view == null)
@@ -95,17 +111,22 @@ public class RegionManager : IRegionManager
         return region.Add(view);
     }
 
-    public object AddToRegion<TViewModel>(string regionName) where TViewModel : class
+    public object AddToRegion(string regionName, Type viewType)
     {
+        if (viewType == null)
+            throw new ArgumentNullException(nameof(viewType));
+
         var region = CreateOrGetRegion(regionName);
 
-        // ViewModel 생성
-        var viewModel = ContainerLocator.Current.Resolve<TViewModel>();
-
-        // View 생성
-        var view = _viewResolver.ResolveView(typeof(TViewModel), viewModel);
+        // View 생성 (ViewModel 자동 연결)
+        var view = _viewResolver.ResolveView(viewType);
 
         return region.Add(view);
+    }
+
+    public object AddToRegion<TView>(string regionName) where TView : class
+    {
+        return AddToRegion(regionName, typeof(TView));
     }
 
     public void RemoveFromRegion(string regionName, object view)
@@ -114,22 +135,62 @@ public class RegionManager : IRegionManager
         region?.Remove(view);
     }
 
-    public Task<bool> NavigateAsync<TViewModel>(string regionName, CancellationToken cancellationToken = default)
-        where TViewModel : class
+    #endregion
+
+    #region View 기반 네비게이션
+
+    public Task<bool> NavigateAsync<TView>(string regionName, object? parameter = null,
+        CancellationToken cancellationToken = default) where TView : class
     {
-        return NavigateAsync<TViewModel>(regionName, null, cancellationToken);
+        return NavigateAsync(regionName, typeof(TView), parameter, cancellationToken);
     }
 
-    public async Task<bool> NavigateAsync<TViewModel>(string regionName, object? parameter,
+    public async Task<bool> NavigateAsync(string regionName, Type viewType, object? parameter = null,
         CancellationToken cancellationToken = default)
-        where TViewModel : class
     {
         if (string.IsNullOrWhiteSpace(regionName))
+            return false;
+
+        if (viewType == null)
             return false;
 
         if (!_navigationServices.TryGetValue(regionName, out var navigationService))
             return false;
 
-        return await navigationService.NavigateAsync<TViewModel>(parameter, cancellationToken);
+        return await navigationService.NavigateAsync(viewType, parameter, cancellationToken);
     }
+
+    #endregion
+
+    #region Back/Forward 네비게이션
+
+    public bool CanGoBack(string regionName)
+    {
+        return GetNavigationService(regionName)?.CanGoBack ?? false;
+    }
+
+    public bool CanGoForward(string regionName)
+    {
+        return GetNavigationService(regionName)?.CanGoForward ?? false;
+    }
+
+    public async Task<bool> GoBackAsync(string regionName, CancellationToken cancellationToken = default)
+    {
+        var navigationService = GetNavigationService(regionName);
+        if (navigationService == null)
+            return false;
+
+        return await navigationService.GoBackAsync(cancellationToken);
+    }
+
+    public async Task<bool> GoForwardAsync(string regionName, CancellationToken cancellationToken = default)
+    {
+        var navigationService = GetNavigationService(regionName);
+        if (navigationService == null)
+            return false;
+
+        return await navigationService.GoForwardAsync(cancellationToken);
+    }
+
+    #endregion
 }
