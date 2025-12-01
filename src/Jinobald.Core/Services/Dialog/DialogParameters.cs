@@ -1,9 +1,12 @@
+using System.Collections;
+using System.Collections.Generic;
+
 namespace Jinobald.Core.Services.Dialog;
 
 /// <summary>
 ///     다이얼로그 파라미터 구현
 /// </summary>
-public class DialogParameters : IDialogParameters
+public class DialogParameters : IDialogParameters, IEnumerable
 {
     private readonly Dictionary<string, object> _parameters = new();
 
@@ -36,6 +39,14 @@ public class DialogParameters : IDialogParameters
     public bool ContainsKey(string key)
     {
         return _parameters.ContainsKey(key);
+    }
+
+    /// <summary>
+    ///     컬렉션 초기화 구문 지원을 위한 IEnumerable 구현
+    /// </summary>
+    public IEnumerator GetEnumerator()
+    {
+        return _parameters.GetEnumerator();
     }
 }
 

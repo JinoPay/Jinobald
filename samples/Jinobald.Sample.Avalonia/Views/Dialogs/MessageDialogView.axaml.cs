@@ -1,6 +1,7 @@
+using System;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
-using System.Globalization;
 
 namespace Jinobald.Sample.Avalonia.Views.Dialogs;
 

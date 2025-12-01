@@ -20,20 +20,20 @@ public static class RegionManagerExtensions
     ///     XAML에서 리전 이름을 지정합니다.
     /// </summary>
     public static readonly AttachedProperty<string> RegionNameProperty =
-        AvaloniaProperty.RegisterAttached<object, Control, string>(
+        AvaloniaProperty.RegisterAttached<Control, string>(
             "RegionName",
             typeof(RegionManagerExtensions),
-            defaultValue: string.Empty);
+            string.Empty);
 
     /// <summary>
     ///     RegionManager Attached Property
     ///     리전이 속한 RegionManager를 저장합니다.
     /// </summary>
     public static readonly AttachedProperty<IRegionManager?> RegionManagerProperty =
-        AvaloniaProperty.RegisterAttached<object, Control, IRegionManager?>(
+        AvaloniaProperty.RegisterAttached<Control, IRegionManager?>(
             "RegionManager",
             typeof(RegionManagerExtensions),
-            defaultValue: null);
+            null);
 
     static RegionManagerExtensions()
     {

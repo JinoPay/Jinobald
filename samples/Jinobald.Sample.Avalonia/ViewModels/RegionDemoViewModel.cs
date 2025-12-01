@@ -1,3 +1,4 @@
+using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Regions;
@@ -24,23 +25,23 @@ public partial class RegionDemoViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task AddRedView()
+    private void AddRedView()
     {
-        await _regionManager.AddToRegionAsync<RedItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<RedItemViewModel>("ContentRegion");
         LastAction = "Red View가 ContentRegion에 추가되었습니다.";
     }
 
     [RelayCommand]
-    private async Task AddBlueView()
+    private void AddBlueView()
     {
-        await _regionManager.AddToRegionAsync<BlueItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<BlueItemViewModel>("ContentRegion");
         LastAction = "Blue View가 ContentRegion에 추가되었습니다.";
     }
 
     [RelayCommand]
-    private async Task AddGreenView()
+    private void AddGreenView()
     {
-        await _regionManager.AddToRegionAsync<GreenItemViewModel>("ContentRegion");
+        _regionManager.AddToRegion<GreenItemViewModel>("ContentRegion");
         LastAction = "Green View가 ContentRegion에 추가되었습니다.";
     }
 

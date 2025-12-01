@@ -86,7 +86,7 @@
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
 
                     <!-- ItemsControl Region -->
-                    <ItemsControl regions:RegionManager.RegionName="ContentRegion"
+                    <ItemsControl regions:RegionManagerExtensions.RegionName="ContentRegion"
                                   MinHeight="200">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
