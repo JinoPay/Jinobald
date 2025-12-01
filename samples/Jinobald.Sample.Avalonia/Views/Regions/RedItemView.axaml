@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Jinobald.Sample.Avalonia.Views.Regions.RedItemView">
+
+    <Border Background="#FFEBEE"
+            BorderBrush="#F44336"
+            BorderThickness="2"
+            CornerRadius="8"
+            Padding="16"
+            Margin="4"
+            MinWidth="200"
+            MinHeight="120">
+        <StackPanel Spacing="8">
+            <TextBlock Text="🔴"
+                       FontSize="32"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Title}"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="#C62828"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Description}"
+                       TextWrapping="Wrap"
+                       Foreground="#B71C1C"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+    </Border>
+</UserControl>
