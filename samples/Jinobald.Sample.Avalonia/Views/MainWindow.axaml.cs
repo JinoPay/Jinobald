@@ -2,77 +2,65 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jinobald.Core.Services.Navigation;
+using Jinobald.Core.Services.Regions;
 
 namespace Jinobald.Sample.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly INavigationService? _navigationService;
+    private readonly IRegionManager? _regionManager;
 
     public MainWindow()
     {
         InitializeComponent();
     }
 
-    public MainWindow(INavigationService navigationService) : this()
+    public MainWindow(IRegionManager regionManager) : this()
     {
-        _navigationService = navigationService;
-        DataContext = new MainWindowViewModel(navigationService);
-
-        // CurrentView 변경 시 UI 업데이트
-        _navigationService.CurrentViewChanged += view =>
-        {
-            if (DataContext is MainWindowViewModel vm)
-            {
-                vm.CurrentView = view;
-            }
-        };
+        _regionManager = regionManager;
+        DataContext = new MainWindowViewModel(regionManager);
 
         // 초기 페이지로 네비게이션
-        _ = _navigationService.NavigateToAsync<ViewModels.HomeViewModel>();
+        _ = _regionManager.NavigateAsync<ViewModels.HomeViewModel>("MainContentRegion");
     }
 }
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly INavigationService _navigationService;
+    private readonly IRegionManager _regionManager;
 
-    [ObservableProperty]
-    private object? _currentView;
-
-    public MainWindowViewModel(INavigationService navigationService)
+    public MainWindowViewModel(IRegionManager regionManager)
     {
-        _navigationService = navigationService;
+        _regionManager = regionManager;
     }
 
     [RelayCommand]
     private async Task NavigateHome()
     {
-        await _navigationService.NavigateToAsync<ViewModels.HomeViewModel>();
+        await _regionManager.NavigateAsync<ViewModels.HomeViewModel>("MainContentRegion");
     }
 
     [RelayCommand]
     private async Task NavigateToNavigationDemo()
     {
-        await _navigationService.NavigateToAsync<ViewModels.NavigationDemoViewModel>();
+        await _regionManager.NavigateAsync<ViewModels.NavigationDemoViewModel>("MainContentRegion");
     }
 
     [RelayCommand]
     private async Task NavigateToDialogDemo()
     {
-        await _navigationService.NavigateToAsync<ViewModels.DialogDemoViewModel>();
+        await _regionManager.NavigateAsync<ViewModels.DialogDemoViewModel>("MainContentRegion");
     }
 
     [RelayCommand]
     private async Task NavigateToThemeDemo()
     {
-        await _navigationService.NavigateToAsync<ViewModels.ThemeDemoViewModel>();
+        await _regionManager.NavigateAsync<ViewModels.ThemeDemoViewModel>("MainContentRegion");
     }
 
     [RelayCommand]
     private async Task NavigateToRegionDemo()
     {
-        await _navigationService.NavigateToAsync<ViewModels.RegionDemoViewModel>();
+        await _regionManager.NavigateAsync<ViewModels.RegionDemoViewModel>("MainContentRegion");
     }
 }
