@@ -30,6 +30,7 @@ public interface INavigationAware
 
 /// <summary>
 ///     네비게이션 컨텍스트 - 파라미터 및 네비게이션 정보 포함
+///     Prism의 NavigationContext를 참고하여 View 기반으로 설계됨
 /// </summary>
 public class NavigationContext
 {
@@ -39,7 +40,7 @@ public class NavigationContext
     public IDictionary<string, object?> Data { get; } = new Dictionary<string, object?>();
 
     /// <summary>
-    ///     네비게이션 방향 (Forward, Back)
+    ///     네비게이션 방향 (Forward, Back, Replace)
     /// </summary>
     public NavigationDirection Direction { get; init; }
 
@@ -49,14 +50,29 @@ public class NavigationContext
     public object? Parameter { get; init; }
 
     /// <summary>
+    ///     이전 View 타입
+    /// </summary>
+    public Type? SourceViewType { get; init; }
+
+    /// <summary>
+    ///     대상 View 타입
+    /// </summary>
+    public Type? TargetViewType { get; init; }
+
+    /// <summary>
     ///     이전 ViewModel 타입
     /// </summary>
-    public Type? SourceType { get; init; }
+    public Type? SourceViewModelType { get; init; }
 
     /// <summary>
     ///     대상 ViewModel 타입
     /// </summary>
-    public Type? TargetType { get; init; }
+    public Type? TargetViewModelType { get; init; }
+
+    /// <summary>
+    ///     취소 토큰
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     ///     타입 안전한 파라미터 가져오기
@@ -65,6 +81,22 @@ public class NavigationContext
     {
         return Parameter is T value ? value : default;
     }
+
+    #region 레거시 호환성
+
+    /// <summary>
+    ///     [레거시] 이전 ViewModel 타입 (호환성)
+    /// </summary>
+    [Obsolete("Use SourceViewModelType instead")]
+    public Type? SourceType => SourceViewModelType;
+
+    /// <summary>
+    ///     [레거시] 대상 ViewModel 타입 (호환성)
+    /// </summary>
+    [Obsolete("Use TargetViewModelType instead")]
+    public Type? TargetType => TargetViewModelType;
+
+    #endregion
 }
 
 /// <summary>

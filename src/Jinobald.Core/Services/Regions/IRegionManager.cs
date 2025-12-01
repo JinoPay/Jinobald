@@ -2,10 +2,12 @@ namespace Jinobald.Core.Services.Regions;
 
 /// <summary>
 ///     애플리케이션 내 리전들을 관리하는 매니저 인터페이스
-///     여러 리전을 생성하고 관리하며, 리전 기반 네비게이션을 지원합니다.
+///     Prism의 IRegionManager를 참고하여 View 기반 네비게이션으로 설계됨
 /// </summary>
 public interface IRegionManager
 {
+    #region 리전 관리
+
     /// <summary>
     ///     등록된 모든 리전의 컬렉션
     /// </summary>
@@ -46,6 +48,17 @@ public interface IRegionManager
     bool RemoveRegion(string regionName);
 
     /// <summary>
+    ///     리전별 네비게이션 서비스 접근
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <returns>네비게이션 서비스 (리전이 없으면 null)</returns>
+    IRegionNavigationService? GetNavigationService(string regionName);
+
+    #endregion
+
+    #region View 추가/제거
+
+    /// <summary>
     ///     지정된 리전에 뷰를 추가합니다.
     /// </summary>
     /// <param name="regionName">리전 이름</param>
@@ -54,12 +67,20 @@ public interface IRegionManager
     object AddToRegion(string regionName, object view);
 
     /// <summary>
-    ///     지정된 리전에 ViewModel 타입으로 뷰를 추가합니다.
+    ///     지정된 리전에 View 타입으로 뷰를 추가합니다.
     /// </summary>
     /// <param name="regionName">리전 이름</param>
-    /// <typeparam name="TViewModel">ViewModel 타입</typeparam>
+    /// <param name="viewType">View 타입</param>
     /// <returns>추가된 뷰</returns>
-    object AddToRegion<TViewModel>(string regionName) where TViewModel : class;
+    object AddToRegion(string regionName, Type viewType);
+
+    /// <summary>
+    ///     지정된 리전에 View 타입으로 뷰를 추가합니다 (제네릭).
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <typeparam name="TView">View 타입</typeparam>
+    /// <returns>추가된 뷰</returns>
+    object AddToRegion<TView>(string regionName) where TView : class;
 
     /// <summary>
     ///     지정된 리전에서 뷰를 제거합니다.
@@ -68,27 +89,69 @@ public interface IRegionManager
     /// <param name="view">제거할 뷰</param>
     void RemoveFromRegion(string regionName, object view);
 
+    #endregion
+
+    #region View 기반 네비게이션
+
     /// <summary>
     ///     지정된 리전으로 네비게이션합니다.
     /// </summary>
     /// <param name="regionName">리전 이름</param>
-    /// <typeparam name="TViewModel">네비게이션할 ViewModel 타입</typeparam>
+    /// <param name="viewType">네비게이션할 View 타입</param>
+    /// <param name="parameter">네비게이션 파라미터</param>
     /// <param name="cancellationToken">취소 토큰</param>
     /// <returns>네비게이션 성공 여부</returns>
-    Task<bool> NavigateAsync<TViewModel>(string regionName, CancellationToken cancellationToken = default)
-        where TViewModel : class;
+    Task<bool> NavigateAsync(string regionName, Type viewType, object? parameter = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     지정된 리전으로 네비게이션합니다 (파라미터 포함).
+    ///     지정된 리전으로 네비게이션합니다 (제네릭).
     /// </summary>
     /// <param name="regionName">리전 이름</param>
+    /// <typeparam name="TView">네비게이션할 View 타입</typeparam>
     /// <param name="parameter">네비게이션 파라미터</param>
-    /// <typeparam name="TViewModel">네비게이션할 ViewModel 타입</typeparam>
     /// <param name="cancellationToken">취소 토큰</param>
     /// <returns>네비게이션 성공 여부</returns>
-    Task<bool> NavigateAsync<TViewModel>(string regionName, object? parameter,
-        CancellationToken cancellationToken = default)
-        where TViewModel : class;
+    Task<bool> NavigateAsync<TView>(string regionName, object? parameter = null,
+        CancellationToken cancellationToken = default) where TView : class;
+
+    #endregion
+
+    #region Back/Forward 네비게이션
+
+    /// <summary>
+    ///     지정된 리전에서 뒤로 갈 수 있는지 확인
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <returns>뒤로 갈 수 있는지 여부</returns>
+    bool CanGoBack(string regionName);
+
+    /// <summary>
+    ///     지정된 리전에서 앞으로 갈 수 있는지 확인
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <returns>앞으로 갈 수 있는지 여부</returns>
+    bool CanGoForward(string regionName);
+
+    /// <summary>
+    ///     지정된 리전에서 이전 뷰로 이동
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <param name="cancellationToken">취소 토큰</param>
+    /// <returns>네비게이션 성공 여부</returns>
+    Task<bool> GoBackAsync(string regionName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     지정된 리전에서 다음 뷰로 이동
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <param name="cancellationToken">취소 토큰</param>
+    /// <returns>네비게이션 성공 여부</returns>
+    Task<bool> GoForwardAsync(string regionName, CancellationToken cancellationToken = default);
+
+    #endregion
+
+    #region 이벤트
 
     /// <summary>
     ///     리전이 추가되었을 때 발생하는 이벤트
@@ -99,4 +162,6 @@ public interface IRegionManager
     ///     리전이 제거되었을 때 발생하는 이벤트
     /// </summary>
     event EventHandler<string>? RegionRemoved;
+
+    #endregion
 }
