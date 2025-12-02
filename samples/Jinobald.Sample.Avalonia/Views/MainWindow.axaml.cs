@@ -1,11 +1,11 @@
 using Avalonia.Controls;
-using Jinobald.Avalonia.Services.Dialog;
+using Jinobald.Core.Services.Dialog;
 
 namespace Jinobald.Sample.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(DialogService dialogService)
+    public MainWindow(IDialogService dialogService)
     {
         InitializeComponent();
 

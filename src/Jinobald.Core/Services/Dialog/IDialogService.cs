@@ -11,6 +11,13 @@ namespace Jinobald.Core.Services.Dialog;
 public interface IDialogService
 {
     /// <summary>
+    ///     다이얼로그 호스트를 등록합니다.
+    ///     MainWindow 또는 Shell에서 호출해야 합니다.
+    /// </summary>
+    /// <param name="host">다이얼로그 호스트</param>
+    void RegisterHost(IDialogHost host);
+
+    /// <summary>
     ///     다이얼로그를 표시합니다. (View-First)
     ///     ViewModel은 ViewModelLocator를 통해 자동으로 resolve됩니다.
     ///     중첩 다이얼로그를 지원합니다.

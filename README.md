@@ -317,9 +317,11 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 ```csharp
 public partial class MainWindow : Window
 {
-    public MainWindow(DialogService dialogService)
+    public MainWindow(IDialogService dialogService)
     {
         InitializeComponent();
+
+        // DialogHost를 DialogService에 등록
         dialogService.RegisterHost(DialogHost);
     }
 }
