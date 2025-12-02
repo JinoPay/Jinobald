@@ -1,0 +1,47 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Jinobald.Avalonia.Controls">
+    <Design.PreviewWith>
+        <controls:DialogHost>
+            <TextBlock Text="Main Content" />
+        </controls:DialogHost>
+    </Design.PreviewWith>
+
+    <Style Selector="controls|DialogHost">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <!-- 메인 콘텐츠 -->
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                    <!-- 다이얼로그 오버레이 스택 -->
+                    <ItemsControl Name="PART_DialogStack"
+                                  ItemsSource="{TemplateBinding DialogStack}"
+                                  IsVisible="{TemplateBinding HasDialogs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Grid />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <!-- 반투명 배경 -->
+                                    <Border Background="#80000000"
+                                            Opacity="0.5" />
+
+                                    <!-- 다이얼로그 콘텐츠 -->
+                                    <ContentControl Content="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

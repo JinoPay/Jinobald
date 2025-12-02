@@ -57,13 +57,28 @@ public class DialogResult : IDialogResult
 {
     public DialogResult()
     {
+        Result = ButtonResult.None;
         Parameters = new DialogParameters();
+    }
+
+    public DialogResult(ButtonResult result)
+    {
+        Result = result;
+        Parameters = new DialogParameters();
+    }
+
+    public DialogResult(ButtonResult result, IDialogParameters parameters)
+    {
+        Result = result;
+        Parameters = parameters;
     }
 
     public DialogResult(IDialogParameters parameters)
     {
+        Result = ButtonResult.None;
         Parameters = parameters;
     }
 
+    public ButtonResult Result { get; }
     public IDialogParameters Parameters { get; }
 }

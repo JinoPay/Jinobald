@@ -10,12 +10,14 @@ namespace Jinobald.Wpf.Services.Dialog;
 /// <summary>
 ///     WPF 다이얼로그 서비스 구현
 ///     in-window overlay 방식으로 다이얼로그를 표시합니다.
+///     중첩 다이얼로그를 지원합니다.
+///     View-First 방식으로 동작합니다.
 /// </summary>
 public class DialogService : IDialogService
 {
     private readonly ILogger _logger;
     private IDialogHost? _dialogHost;
-    private TaskCompletionSource<IDialogResult?>? _currentDialogTcs;
+    private readonly Stack<DialogContext> _dialogStack = new();
 
     public DialogService(ILogger logger)
     {
@@ -33,25 +35,21 @@ public class DialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public async Task<IDialogResult?> ShowDialogAsync<TViewModel>(IDialogParameters? parameters = null)
-        where TViewModel : IDialogAware
+    public Task<IDialogResult?> ShowDialogAsync<TView>(IDialogParameters? parameters = null)
     {
-        _logger.Debug("다이얼로그 표시: {ViewModelType}", typeof(TViewModel).Name);
+        return ShowDialogAsync(typeof(TView), parameters);
+    }
 
-        // ViewModel 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
-        var viewModel = (TViewModel?)ResolveOrCreate(typeof(TViewModel));
-        if (viewModel == null)
-        {
-            _logger.Error("ViewModel을 생성할 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
-            return null;
-        }
+    /// <inheritdoc />
+    public async Task<IDialogResult?> ShowDialogAsync(Type viewType, IDialogParameters? parameters = null)
+    {
+        _logger.Debug("다이얼로그 표시: {ViewType}", viewType.Name);
 
-        // View 타입 추론
-        var viewType = ViewModelLocator.ResolveViewType(typeof(TViewModel));
-        if (viewType == null)
+        // DialogHost 확인
+        if (_dialogHost == null)
         {
-            _logger.Error("View 타입을 찾을 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
-            return null;
+            _logger.Error("다이얼로그 호스트가 등록되지 않음");
+            throw new InvalidOperationException("다이얼로그 호스트가 등록되지 않았습니다. RegisterHost()를 먼저 호출하세요.");
         }
 
         // View 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
@@ -62,38 +60,49 @@ public class DialogService : IDialogService
             return null;
         }
 
-        return await ShowDialogAsync(view, viewModel, parameters);
+        // ViewModel 타입 추론 (View-First)
+        var viewModelType = ViewModelLocator.ResolveViewModelType(viewType);
+        if (viewModelType == null)
+        {
+            _logger.Error("ViewModel 타입을 찾을 수 없습니다: {ViewType}", viewType.Name);
+            return null;
+        }
+
+        // ViewModel 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
+        var viewModel = ResolveOrCreate(viewModelType) as IDialogAware;
+        if (viewModel == null)
+        {
+            _logger.Error("ViewModel을 생성할 수 없거나 IDialogAware를 구현하지 않았습니다: {ViewModelType}", viewModelType.Name);
+            return null;
+        }
+
+        return await ShowDialogInternalAsync(view, viewModel, parameters);
     }
 
-    /// <inheritdoc />
-    public async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel)
-    {
-        return await ShowDialogAsync(view, viewModel, null);
-    }
-
-    private async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel, IDialogParameters? parameters)
+    private async Task<IDialogResult?> ShowDialogInternalAsync(object view, IDialogAware viewModel, IDialogParameters? parameters)
     {
         if (_dialogHost == null)
         {
             _logger.Error("다이얼로그 호스트가 등록되지 않음");
-            throw new InvalidOperationException("다이얼로그 호스트가 등록되지 않았습니다. RegisterHost()를 먼저 호출하세요.");
+            throw new InvalidOperationException("다이얼로그 호스트가 등록되지 않았습니다.");
         }
 
-        // 이미 열린 다이얼로그가 있으면 닫기
-        if (_dialogHost.IsDialogOpen)
+        // DialogContext 생성 (중첩 지원)
+        var context = new DialogContext
         {
-            _logger.Warning("이미 열린 다이얼로그가 있어 닫습니다");
-            CloseDialogInternal();
-            await Task.Delay(100); // UI 업데이트 대기
-        }
+            View = view,
+            ViewModel = viewModel,
+            TaskCompletionSource = new TaskCompletionSource<IDialogResult?>()
+        };
 
-        // TaskCompletionSource 생성
-        _currentDialogTcs = new TaskCompletionSource<IDialogResult?>();
+        // 스택에 추가
+        _dialogStack.Push(context);
+        _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
 
         // ViewModel에 이벤트 연결
         viewModel.RequestClose += OnRequestClose;
 
-        // ViewModel의 OnDialogOpened 호출 (전달받은 parameters 사용)
+        // ViewModel의 OnDialogOpened 호출
         viewModel.OnDialogOpened(parameters ?? new DialogParameters());
 
         // UI 쓰레드에서 다이얼로그 표시
@@ -104,73 +113,55 @@ public class DialogService : IDialogService
                 frameworkElement.DataContext = viewModel;
             }
 
-            _dialogHost.DialogContent = view;
-            _dialogHost.IsDialogOpen = true;
+            // DialogHost의 스택에 추가 (가장 최근 다이얼로그가 맨 위에 표시됨)
+            _dialogHost.DialogStack.Add(view);
         });
 
         // 다이얼로그가 닫힐 때까지 대기
-        var result = await _currentDialogTcs.Task;
+        var result = await context.TaskCompletionSource.Task;
         return result;
     }
 
     private void OnRequestClose(IDialogResult result)
     {
-        if (_dialogHost == null || _currentDialogTcs == null)
+        if (_dialogHost == null || _dialogStack.Count == 0)
             return;
 
+        // 가장 최근 다이얼로그 가져오기
+        var context = _dialogStack.Peek();
+        var viewModel = context.ViewModel;
+
         // ViewModel의 CanCloseDialog 확인
-        var viewModel = (_dialogHost.DialogContent as FrameworkElement)?.DataContext as IDialogAware;
-        if (viewModel != null && !viewModel.CanCloseDialog())
+        if (!viewModel.CanCloseDialog())
         {
             _logger.Debug("다이얼로그를 닫을 수 없습니다");
             return;
         }
 
+        // 스택에서 제거
+        _dialogStack.Pop();
+        _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
+
         // 다이얼로그 닫기
         Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            viewModel?.OnDialogClosed();
-            if (viewModel != null)
+            // OnDialogClosed 호출
+            viewModel.OnDialogClosed();
+
+            // 이벤트 해제
+            viewModel.RequestClose -= OnRequestClose;
+
+            // DialogHost 스택에서 제거
+            if (_dialogHost.DialogStack.Contains(context.View))
             {
-                viewModel.RequestClose -= OnRequestClose;
+                _dialogHost.DialogStack.Remove(context.View);
             }
 
-            _dialogHost.IsDialogOpen = false;
-            _dialogHost.DialogContent = null;
-            _currentDialogTcs.TrySetResult(result);
-            _currentDialogTcs = null;
+            // TaskCompletionSource 완료
+            context.TaskCompletionSource.TrySetResult(result);
         });
 
         _logger.Debug("다이얼로그 닫힘");
-    }
-
-    private void CloseDialogInternal()
-    {
-        if (_dialogHost == null)
-            return;
-
-        var viewModel = (_dialogHost.DialogContent as FrameworkElement)?.DataContext as IDialogAware;
-        if (viewModel != null)
-        {
-            viewModel.OnDialogClosed();
-            viewModel.RequestClose -= OnRequestClose;
-        }
-
-        Application.Current.Dispatcher.BeginInvoke(() =>
-        {
-            _dialogHost.IsDialogOpen = false;
-            _dialogHost.DialogContent = null;
-            _currentDialogTcs?.TrySetResult(null);
-            _currentDialogTcs = null;
-        });
-    }
-
-    /// <summary>
-    ///     DI 컨테이너에서 먼저 resolve를 시도하고, 등록되지 않은 경우 ActivatorUtilities로 생성합니다.
-    /// </summary>
-    private static T? ResolveOrCreate<T>() where T : class
-    {
-        return ResolveOrCreate(typeof(T)) as T;
     }
 
     /// <summary>
@@ -187,5 +178,15 @@ public class DialogService : IDialogService
 
         // DI에 없으면 ActivatorUtilities로 생성 (생성자 의존성 주입 지원)
         return ActivatorUtilities.CreateInstance(serviceProvider, type);
+    }
+
+    /// <summary>
+    ///     다이얼로그 컨텍스트 (중첩 지원용)
+    /// </summary>
+    private class DialogContext
+    {
+        public required object View { get; init; }
+        public required IDialogAware ViewModel { get; init; }
+        public required TaskCompletionSource<IDialogResult?> TaskCompletionSource { get; init; }
     }
 }

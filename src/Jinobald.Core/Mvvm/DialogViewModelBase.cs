@@ -56,9 +56,18 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     /// </summary>
     protected void Close()
     {
+        CloseWithButtonResult(ButtonResult.None);
+    }
+
+    /// <summary>
+    ///     버튼 결과와 함께 다이얼로그를 닫습니다.
+    /// </summary>
+    /// <param name="buttonResult">버튼 결과 (OK, Cancel 등)</param>
+    protected void CloseWithButtonResult(ButtonResult buttonResult)
+    {
         if (CanCloseDialog())
         {
-            var dialogResult = new DialogResult();
+            var dialogResult = new DialogResult(buttonResult);
             RequestClose?.Invoke(dialogResult);
         }
     }
@@ -76,13 +85,23 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     /// <summary>
     ///     지정된 파라미터와 함께 다이얼로그를 닫습니다.
     /// </summary>
+    /// <param name="buttonResult">버튼 결과</param>
     /// <param name="parameters">다이얼로그 결과 파라미터</param>
-    protected void CloseWithParameters(IDialogParameters parameters)
+    protected void CloseWithParameters(ButtonResult buttonResult, IDialogParameters parameters)
     {
         if (CanCloseDialog())
         {
-            var dialogResult = new DialogResult(parameters);
+            var dialogResult = new DialogResult(buttonResult, parameters);
             RequestClose?.Invoke(dialogResult);
         }
+    }
+
+    /// <summary>
+    ///     지정된 파라미터와 함께 다이얼로그를 닫습니다. (ButtonResult.None 사용)
+    /// </summary>
+    /// <param name="parameters">다이얼로그 결과 파라미터</param>
+    protected void CloseWithParameters(IDialogParameters parameters)
+    {
+        CloseWithParameters(ButtonResult.None, parameters);
     }
 }

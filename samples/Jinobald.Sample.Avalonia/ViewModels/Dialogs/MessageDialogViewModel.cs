@@ -57,7 +57,7 @@ public partial class MessageDialogViewModel : ViewModelBase, IDialogAware
     [RelayCommand]
     private void Close()
     {
-        var result = new DialogResult();
+        var result = new DialogResult(ButtonResult.OK);
         RequestClose?.Invoke(result);
     }
 }
