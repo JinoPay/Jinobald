@@ -1,22 +1,31 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Jinobald.Sample.Avalonia.Views.HomeView">
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.HomeView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="🎉 Welcome to Jinobald!"
-                   FontSize="32"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center" />
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="16">
+        <TextBlock
+            HorizontalAlignment="Center"
+            FontSize="32"
+            FontWeight="Bold"
+            Text="🎉 Welcome to Jinobald!" />
 
-        <TextBlock Text="Cross-Platform MVVM Framework"
-                   FontSize="18"
-                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,24" />
+        <TextBlock
+            Margin="0,0,0,24"
+            HorizontalAlignment="Center"
+            FontSize="18"
+            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+            Text="Cross-Platform MVVM Framework" />
 
-        <TextBlock Text="✨ Features:" FontSize="16" FontWeight="SemiBold" />
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="✨ Features:" />
 
-        <StackPanel Spacing="8" Margin="32,0,0,0">
+        <StackPanel Margin="32,0,0,0" Spacing="8">
             <TextBlock Text="• DI Container (Prism 스타일)" />
             <TextBlock Text="• Navigation Service (비동기, 히스토리)" />
             <TextBlock Text="• Event Aggregator (Thread-safe)" />
@@ -26,10 +35,11 @@
             <TextBlock Text="• Splash Screen (필수)" />
         </StackPanel>
 
-        <TextBlock Text="왼쪽 메뉴에서 데모를 선택하세요."
-                   FontSize="14"
-                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                   HorizontalAlignment="Center"
-                   Margin="0,24,0,0" />
+        <TextBlock
+            Margin="0,24,0,0"
+            HorizontalAlignment="Center"
+            FontSize="14"
+            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+            Text="왼쪽 메뉴에서 데모를 선택하세요." />
     </StackPanel>
 </UserControl>

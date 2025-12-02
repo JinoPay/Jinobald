@@ -44,7 +44,7 @@ Jinobald/
 ```csharp
 // App.axaml.cs
 using Jinobald.Avalonia.Application;
-using Microsoft.Extensions.DependencyInjection;
+using Jinobald.Core.Ioc;
 
 public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>
 {
@@ -53,14 +53,18 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void ConfigureServices(IServiceCollection services)
+    protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // ViewModels 등록
-        services.AddTransient<HomeViewModel>();
-        services.AddTransient<SettingsViewModel>();
+        // Navigation용 View/ViewModel 등록
+        containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
+        containerRegistry.RegisterForNavigation<SettingsView, SettingsViewModel>();
+
+        // Dialog 등록 (View만 등록 - ViewModel은 자동 매핑)
+        containerRegistry.RegisterDialog<ConfirmDialogView>();
+        containerRegistry.RegisterDialog<MessageDialogView>();
 
         // 애플리케이션 서비스 등록
-        services.AddSingleton<IDataService, DataService>();
+        containerRegistry.RegisterSingleton<IDataService, DataService>();
     }
 }
 ```
@@ -70,15 +74,18 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
 ```csharp
 // App.xaml.cs
 using Jinobald.Wpf.Application;
-using Microsoft.Extensions.DependencyInjection;
+using Jinobald.Core.Ioc;
 
 public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
 {
-    protected override void ConfigureServices(IServiceCollection services)
+    protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // ViewModels 등록
-        services.AddTransient<MainViewModel>();
-        services.AddTransient<DetailViewModel>();
+        // Navigation용 View/ViewModel 등록
+        containerRegistry.RegisterForNavigation<MainView, MainViewModel>();
+        containerRegistry.RegisterForNavigation<DetailView, DetailViewModel>();
+
+        // Dialog 등록 (View만 등록)
+        containerRegistry.RegisterDialog<ConfirmDialogView>();
     }
 }
 ```
@@ -300,9 +307,22 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 
 #### DialogHost 설정
 
-먼저 MainWindow에 DialogHost를 추가합니다:
+**1. App.axaml에 DialogHost 스타일 포함 (Avalonia):**
 
-**Avalonia:**
+```xml
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="YourApp.App">
+    <Application.Styles>
+        <FluentTheme />
+        <!-- DialogHost 스타일 포함 (필수!) -->
+        <StyleInclude Source="avares://Jinobald.Avalonia/Controls/DialogHost.axaml"/>
+    </Application.Styles>
+</Application>
+```
+
+**2. MainWindow에 DialogHost 추가:**
+
 ```xml
 <Window xmlns:jino="https://github.com/JinoPay/Jinobald"
         ...>
@@ -313,7 +333,8 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 </Window>
 ```
 
-**코드비하인드에서 DialogService 등록:**
+**3. 코드비하인드에서 DialogService 등록:**
+
 ```csharp
 public partial class MainWindow : Window
 {
@@ -324,6 +345,17 @@ public partial class MainWindow : Window
         // DialogHost를 DialogService에 등록
         dialogService.RegisterHost(DialogHost);
     }
+}
+```
+
+**4. App.axaml.cs에서 Dialog 등록 (View만 등록):**
+
+```csharp
+protected override void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // View만 등록 - ViewModel은 ViewModelLocator가 자동으로 매핑
+    containerRegistry.RegisterDialog<ConfirmDialogView>();
+    containerRegistry.RegisterDialog<MessageDialogView>();
 }
 ```
 
@@ -502,26 +534,57 @@ using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 
 ### 🎨 Theme Service
 
-런타임에 테마를 동적으로 전환할 수 있습니다.
+다크/라이트 모드를 기본 지원하며, 런타임에 테마를 동적으로 전환할 수 있습니다.
+
+**주요 기능:**
+- ✅ Dark/Light 모드 기본 지원
+- ✅ Avalonia의 FluentTheme 및 WPF 테마와 통합
+- ✅ 런타임 테마 전환
+- ✅ 테마 변경 이벤트 구독
 
 ```csharp
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IThemeService _themeService;
 
-    [RelayCommand]
-    private void ChangeTheme(string themeName)
+    public SettingsViewModel(IThemeService themeService)
     {
-        _themeService.SetTheme(themeName);  // "Light", "Dark", "Custom"
+        _themeService = themeService;
+
+        // 현재 테마 가져오기
+        CurrentTheme = _themeService.CurrentTheme; // "Light", "Dark"
     }
 
     [RelayCommand]
     private void ToggleDarkMode()
     {
+        // 다크/라이트 모드 토글
         var isDark = _themeService.CurrentTheme == "Dark";
         _themeService.SetTheme(isDark ? "Light" : "Dark");
     }
+
+    [RelayCommand]
+    private void SetLightTheme()
+    {
+        _themeService.SetTheme("Light");
+    }
+
+    [RelayCommand]
+    private void SetDarkTheme()
+    {
+        _themeService.SetTheme("Dark");
+    }
 }
+```
+
+**중요:** View나 ViewModel에서 색상을 하드코딩하지 마세요. 항상 DynamicResource를 통해 테마 리소스를 참조하세요:
+
+```xml
+<!-- Good: 테마에 따라 자동으로 변경됨 -->
+<Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+
+<!-- Bad: 하드코딩된 색상은 테마 전환 시 변경되지 않음 -->
+<Border Background="#FFFFFF" />
 ```
 
 ### 💾 Settings Service

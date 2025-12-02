@@ -1,138 +1,158 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Jinobald.Sample.Avalonia.Views.DialogDemoView">
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.DialogDemoView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ScrollViewer>
-        <StackPanel Spacing="16" Margin="16">
-            <TextBlock Text="💬 Dialog Demo"
-                       FontSize="24"
-                       FontWeight="Bold" />
+        <StackPanel Margin="16" Spacing="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="💬 Dialog Demo" />
 
-            <TextBlock Text="In-window overlay dialogs with async/await support."
-                       TextWrapping="Wrap" />
+            <TextBlock Text="In-window overlay dialogs with async/await support." TextWrapping="Wrap" />
 
-            <!-- 메시지 다이얼로그 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  메시지 다이얼로그 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="📋 Message Dialogs"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="📋 Message Dialogs" />
 
-                    <TextBlock Text="간단한 메시지를 표시하는 다이얼로그입니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="간단한 메시지를 표시하는 다이얼로그입니다."
+                        TextWrapping="Wrap" />
 
-                    <!-- 버튼들 -->
+                    <!--  버튼들  -->
                     <WrapPanel>
-                        <Button Content="ℹ️ Info"
-                                Command="{Binding ShowInfoDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowInfoDialogCommand}"
+                            Content="ℹ️ Info" />
 
-                        <Button Content="✅ Success"
-                                Command="{Binding ShowSuccessDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowSuccessDialogCommand}"
+                            Content="✅ Success" />
 
-                        <Button Content="⚠️ Warning"
-                                Command="{Binding ShowWarningDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowWarningDialogCommand}"
+                            Content="⚠️ Warning" />
 
-                        <Button Content="❌ Error"
-                                Command="{Binding ShowErrorDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowErrorDialogCommand}"
+                            Content="❌ Error" />
                     </WrapPanel>
 
-                    <!-- 결과 표시 -->
-                    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="12"
-                            Margin="0,8,0,0">
+                    <!--  결과 표시  -->
+                    <Border
+                        Margin="0,8,0,0"
+                        Padding="12"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="결과:"
-                                       FontWeight="SemiBold"
-                                       FontSize="12" />
-                            <TextBlock Text="{Binding LastDialogResult}"
-                                       TextWrapping="Wrap" />
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="결과:" />
+                            <TextBlock Text="{Binding LastDialogResult}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <!-- 확인 다이얼로그 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  확인 다이얼로그 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="❓ Confirm Dialogs"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="❓ Confirm Dialogs" />
 
-                    <TextBlock Text="Yes/No 선택을 제공하는 확인 다이얼로그입니다. ButtonResult를 사용합니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="Yes/No 선택을 제공하는 확인 다이얼로그입니다. ButtonResult를 사용합니다."
+                        TextWrapping="Wrap" />
 
-                    <Button Content="❓ Confirm"
-                            Command="{Binding ShowConfirmDialogCommand}"
-                            MinWidth="120" />
+                    <Button
+                        MinWidth="120"
+                        Command="{Binding ShowConfirmDialogCommand}"
+                        Content="❓ Confirm" />
                 </StackPanel>
             </Border>
 
-            <!-- 중첩 다이얼로그 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  중첩 다이얼로그 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🔀 Nested Dialogs"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="🔀 Nested Dialogs" />
 
-                    <TextBlock Text="다이얼로그 위에 또 다른 다이얼로그를 표시할 수 있습니다. (중첩 지원)"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="다이얼로그 위에 또 다른 다이얼로그를 표시할 수 있습니다. (중첩 지원)"
+                        TextWrapping="Wrap" />
 
                     <WrapPanel>
-                        <Button Content="🔀 Show Nested Dialog"
-                                Command="{Binding ShowNestedDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowNestedDialogCommand}"
+                            Content="🔀 Show Nested Dialog" />
 
-                        <Button Content="🔗 Nested Test Dialog"
-                                Command="{Binding ShowNestedTestDialogCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="120" />
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowNestedTestDialogCommand}"
+                            Content="🔗 Nested Test Dialog" />
                     </WrapPanel>
                 </StackPanel>
             </Border>
 
-            <!-- 기능 설명 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  기능 설명 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="✅ Features"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="✅ Features" />
 
-                    <StackPanel Spacing="4" Margin="12,0,0,0">
+                    <StackPanel Margin="12,0,0,0" Spacing="4">
                         <TextBlock Text="• Async/await 기반 다이얼로그 서비스" />
                         <TextBlock Text="• In-window overlay 방식 (모달 다이얼로그)" />
                         <TextBlock Text="• 중첩 다이얼로그 지원 (다이얼로그 위에 다이얼로그)" />
@@ -144,22 +164,25 @@
                 </StackPanel>
             </Border>
 
-            <!-- 사용 예제 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="📝 Usage Example"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="📝 Usage Example" />
 
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Consolas, Menlo, Monaco, monospace"
-                               FontSize="11"
-                               xml:space="preserve">var parameters = new DialogParameters
+                    <TextBlock
+                        xml:space="preserve"
+                        FontFamily="Consolas, Menlo, Monaco, monospace"
+                        FontSize="11"
+                        TextWrapping="Wrap">var parameters = new DialogParameters
 {
     { "Title", "알림" },
     { "Message", "메시지 내용" },

@@ -1,117 +1,128 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Jinobald.Sample.Avalonia.Views.ThemeDemoView">
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.ThemeDemoView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ScrollViewer>
-        <StackPanel Spacing="16" Margin="16">
-            <TextBlock Text="🎨 Theme Demo"
-                       FontSize="24"
-                       FontWeight="Bold" />
+        <StackPanel Margin="16" Spacing="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="🎨 Theme Demo" />
 
-            <TextBlock Text="Dynamic theme switching with auto-save to settings."
-                       TextWrapping="Wrap" />
+            <TextBlock Text="Dynamic theme switching with auto-save to settings." TextWrapping="Wrap" />
 
-            <!-- 테마 선택 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  테마 선택 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🌓 Theme Selection"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="🌓 Theme Selection" />
 
-                    <TextBlock Text="애플리케이션의 테마를 변경할 수 있습니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="애플리케이션의 테마를 변경할 수 있습니다."
+                        TextWrapping="Wrap" />
 
-                    <!-- 테마 버튼들 -->
+                    <!--  테마 버튼들  -->
                     <WrapPanel>
-                        <Button Content="☀️ Light Theme"
-                                Command="{Binding SetLightThemeCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding SetLightThemeCommand}"
+                            Content="☀️ Light Theme" />
 
-                        <Button Content="🌙 Dark Theme"
-                                Command="{Binding SetDarkThemeCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding SetDarkThemeCommand}"
+                            Content="🌙 Dark Theme" />
 
-                        <Button Content="💻 System Theme"
-                                Command="{Binding SetSystemThemeCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding SetSystemThemeCommand}"
+                            Content="💻 System Theme" />
                     </WrapPanel>
 
-                    <!-- 현재 테마 표시 -->
-                    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="12"
-                            Margin="0,8,0,0">
+                    <!--  현재 테마 표시  -->
+                    <Border
+                        Margin="0,8,0,0"
+                        Padding="12"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="현재 테마:"
-                                       FontWeight="SemiBold"
-                                       FontSize="12" />
-                            <TextBlock Text="{Binding CurrentThemeName}"
-                                       FontSize="16"
-                                       FontWeight="Bold" />
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="현재 테마:" />
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="{Binding CurrentThemeName}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <!-- 테마 프리뷰 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  테마 프리뷰 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🎨 Theme Preview"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="🎨 Theme Preview" />
 
-                    <TextBlock Text="다양한 UI 요소들이 현재 테마에 따라 어떻게 보이는지 확인할 수 있습니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="다양한 UI 요소들이 현재 테마에 따라 어떻게 보이는지 확인할 수 있습니다."
+                        TextWrapping="Wrap" />
 
-                    <!-- 샘플 UI 요소들 -->
+                    <!--  샘플 UI 요소들  -->
                     <StackPanel Spacing="8">
-                        <TextBlock Text="텍스트 요소"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+                        <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" Text="텍스트 요소" />
 
                         <Button Content="Primary Button" />
 
-                        <TextBox Text="TextBox 예제"
-                                 Watermark="입력하세요..." />
+                        <TextBox Text="TextBox 예제" Watermark="입력하세요..." />
 
-                        <CheckBox Content="CheckBox 예제"
-                                  IsChecked="True" />
+                        <CheckBox Content="CheckBox 예제" IsChecked="True" />
 
-                        <RadioButton Content="RadioButton 예제"
-                                     IsChecked="True" />
+                        <RadioButton Content="RadioButton 예제" IsChecked="True" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- 기능 설명 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  기능 설명 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="✅ Features"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="✅ Features" />
 
-                    <StackPanel Spacing="4" Margin="12,0,0,0">
+                    <StackPanel Margin="12,0,0,0" Spacing="4">
                         <TextBlock Text="• Light/Dark/System 테마 지원" />
                         <TextBlock Text="• 설정 자동 저장 (SettingsService 통합)" />
                         <TextBlock Text="• 커스텀 테마 등록 가능" />
@@ -121,22 +132,25 @@
                 </StackPanel>
             </Border>
 
-            <!-- 사용 예제 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="📝 Usage Example"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="📝 Usage Example" />
 
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Consolas, Menlo, Monaco, monospace"
-                               FontSize="11"
-                               xml:space="preserve">// 테마 변경
+                    <TextBlock
+                        xml:space="preserve"
+                        FontFamily="Consolas, Menlo, Monaco, monospace"
+                        FontSize="11"
+                        TextWrapping="Wrap">// 테마 변경
 _themeService.SetTheme("Dark");
 
 // 현재 테마 확인

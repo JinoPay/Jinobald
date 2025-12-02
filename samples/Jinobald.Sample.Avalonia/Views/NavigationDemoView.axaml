@@ -1,20 +1,22 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Jinobald.Sample.Avalonia.Views.NavigationDemoView">
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.NavigationDemoView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <StackPanel Spacing="16">
-        <TextBlock Text="🧭 Navigation Demo"
-                   FontSize="24"
-                   FontWeight="Bold" />
+        <TextBlock
+            FontSize="24"
+            FontWeight="Bold"
+            Text="🧭 Navigation Demo" />
 
-        <TextBlock Text="This demonstrates Region-based navigation with history and lifecycle management."
-                   TextWrapping="Wrap" />
+        <TextBlock Text="This demonstrates Region-based navigation with history and lifecycle management." TextWrapping="Wrap" />
 
-        <TextBlock Text="✅ Features:"
-                   FontWeight="SemiBold"
-                   Margin="0,16,0,0" />
+        <TextBlock
+            Margin="0,16,0,0"
+            FontWeight="SemiBold"
+            Text="✅ Features:" />
 
-        <StackPanel Spacing="4" Margin="16,0,0,0">
+        <StackPanel Margin="16,0,0,0" Spacing="4">
             <TextBlock Text="• Async navigation with CancellationToken" />
             <TextBlock Text="• Navigation guards (INavigationAware)" />
             <TextBlock Text="• History management (Back/Forward)" />

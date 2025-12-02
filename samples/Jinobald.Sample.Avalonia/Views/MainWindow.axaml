@@ -1,71 +1,82 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:jino="https://github.com/JinoPay/Jinobald"
-        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
-        x:Class="Jinobald.Sample.Avalonia.Views.MainWindow"
-        jino:ViewModelLocator.AutoWireViewModel="True"
-        Title="Jinobald Sample - MVVM Framework Demo"
-        Width="1000"
-        Height="600">
+<Window
+    x:Class="Jinobald.Sample.Avalonia.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:jino="https://github.com/JinoPay/Jinobald"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Jinobald Sample - MVVM Framework Demo"
+    Width="1000"
+    Height="600"
+    d:DesignHeight="600"
+    d:DesignWidth="1000"
+    jino:ViewModelLocator.AutoWireViewModel="True"
+    mc:Ignorable="d">
 
-    <!-- DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원 -->
+    <!--  DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원  -->
     <jino:DialogHost x:Name="DialogHost">
         <Grid>
-            <!-- 네비게이션 영역 (왼쪽) -->
+            <!--  네비게이션 영역 (왼쪽)  -->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- 사이드바 -->
-            <Border Grid.Column="0"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="0,0,1,0">
+            <!--  사이드바  -->
+            <Border
+                Grid.Column="0"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,0,1,0">
                 <StackPanel Margin="16">
-                    <TextBlock Text="Jinobald Demo"
-                               FontSize="20"
-                               FontWeight="Bold"
-                               Margin="0,0,0,24" />
+                    <TextBlock
+                        Margin="0,0,0,24"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Text="Jinobald Demo" />
 
-                    <Button Content="🏠 Home"
-                            Command="{Binding NavigateHomeCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Margin="0,0,0,8" />
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateHomeCommand}"
+                        Content="🏠 Home" />
 
-                    <Button Content="🧭 Navigation"
-                            Command="{Binding NavigateToNavigationDemoCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Margin="0,0,0,8" />
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToNavigationDemoCommand}"
+                        Content="🧭 Navigation" />
 
-                    <Button Content="💬 Dialogs"
-                            Command="{Binding NavigateToDialogDemoCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Margin="0,0,0,8" />
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToDialogDemoCommand}"
+                        Content="💬 Dialogs" />
 
-                    <Button Content="🎨 Themes"
-                            Command="{Binding NavigateToThemeDemoCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Margin="0,0,0,8" />
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToThemeDemoCommand}"
+                        Content="🎨 Themes" />
 
-                    <Button Content="📦 Regions"
-                            Command="{Binding NavigateToRegionDemoCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Margin="0,0,0,8" />
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToRegionDemoCommand}"
+                        Content="📦 Regions" />
                 </StackPanel>
             </Border>
 
-            <!-- 콘텐츠 영역 (오른쪽) - Region 기반 -->
-            <ContentControl Grid.Column="1"
-                            jino:Region.Name="MainContentRegion"
-                            Margin="16" />
+            <!--  콘텐츠 영역 (오른쪽) - Region 기반  -->
+            <ContentControl
+                Grid.Column="1"
+                Margin="16"
+                jino:Region.Name="MainContentRegion" />
         </Grid>
     </jino:DialogHost>
 </Window>

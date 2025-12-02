@@ -1,93 +1,104 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:jino="https://github.com/JinoPay/Jinobald"
-             x:Class="Jinobald.Sample.Avalonia.Views.RegionDemoView">
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.RegionDemoView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:jino="https://github.com/JinoPay/Jinobald">
 
     <ScrollViewer>
-        <StackPanel Spacing="16" Margin="16">
-            <TextBlock Text="📦 Region Demo"
-                       FontSize="24"
-                       FontWeight="Bold" />
+        <StackPanel Margin="16" Spacing="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="📦 Region Demo" />
 
-            <TextBlock Text="Region 시스템을 사용하여 동적으로 뷰를 추가/제거할 수 있습니다."
-                       TextWrapping="Wrap" />
+            <TextBlock Text="Region 시스템을 사용하여 동적으로 뷰를 추가/제거할 수 있습니다." TextWrapping="Wrap" />
 
-            <!-- 컨트롤 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  컨트롤 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🎮 Region Controls"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="🎮 Region Controls" />
 
-                    <TextBlock Text="버튼을 클릭하여 ContentRegion에 뷰를 추가하거나 제거할 수 있습니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="버튼을 클릭하여 ContentRegion에 뷰를 추가하거나 제거할 수 있습니다."
+                        TextWrapping="Wrap" />
 
-                    <!-- 버튼들 -->
+                    <!--  버튼들  -->
                     <WrapPanel>
-                        <Button Content="🔴 Add Red View"
-                                Command="{Binding AddRedViewCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddRedViewCommand}"
+                            Content="🔴 Add Red View" />
 
-                        <Button Content="🔵 Add Blue View"
-                                Command="{Binding AddBlueViewCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddBlueViewCommand}"
+                            Content="🔵 Add Blue View" />
 
-                        <Button Content="🟢 Add Green View"
-                                Command="{Binding AddGreenViewCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddGreenViewCommand}"
+                            Content="🟢 Add Green View" />
 
-                        <Button Content="🗑️ Clear All"
-                                Command="{Binding ClearRegionCommand}"
-                                Margin="0,0,8,8"
-                                MinWidth="140" />
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding ClearRegionCommand}"
+                            Content="🗑️ Clear All" />
                     </WrapPanel>
 
-                    <!-- 결과 표시 -->
-                    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="12"
-                            Margin="0,8,0,0">
+                    <!--  결과 표시  -->
+                    <Border
+                        Margin="0,8,0,0"
+                        Padding="12"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="마지막 액션:"
-                                       FontWeight="SemiBold"
-                                       FontSize="12" />
-                            <TextBlock Text="{Binding LastAction}"
-                                       TextWrapping="Wrap" />
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="마지막 액션:" />
+                            <TextBlock Text="{Binding LastAction}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <!-- Region 영역 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  Region 영역  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="📋 Content Region (ItemsControl)"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="📋 Content Region (ItemsControl)" />
 
-                    <TextBlock Text="ItemsControl로 구현된 Region입니다. 여러 뷰를 동시에 표시할 수 있습니다."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="ItemsControl로 구현된 Region입니다. 여러 뷰를 동시에 표시할 수 있습니다."
+                        TextWrapping="Wrap" />
 
-                    <!-- ItemsControl Region -->
-                    <ItemsControl jino:Region.Name="ContentRegion"
-                                  MinHeight="200">
+                    <!--  ItemsControl Region  -->
+                    <ItemsControl MinHeight="200" jino:Region.Name="ContentRegion">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
@@ -97,19 +108,21 @@
                 </StackPanel>
             </Border>
 
-            <!-- 기능 설명 섹션 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  기능 설명 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="✅ Features"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="✅ Features" />
 
-                    <StackPanel Spacing="4" Margin="12,0,0,0">
+                    <StackPanel Margin="12,0,0,0" Spacing="4">
                         <TextBlock Text="• XAML에서 RegionName 어태치드 프로퍼티로 Region 정의" />
                         <TextBlock Text="• ItemsControl, ContentControl 자동 어댑터 지원" />
                         <TextBlock Text="• RegionManager를 통한 동적 뷰 추가/제거" />
@@ -119,22 +132,25 @@
                 </StackPanel>
             </Border>
 
-            <!-- 사용 예제 -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,8,0,0">
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="📝 Usage Example"
-                               FontSize="16"
-                               FontWeight="SemiBold" />
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="📝 Usage Example" />
 
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Consolas, Menlo, Monaco, monospace"
-                               FontSize="11"
-                               xml:space="preserve">// XAML에서 Region 정의
+                    <TextBlock
+                        xml:space="preserve"
+                        FontFamily="Consolas, Menlo, Monaco, monospace"
+                        FontSize="11"
+                        TextWrapping="Wrap">// XAML에서 Region 정의
 &lt;ItemsControl jino:Region.Name="ContentRegion" /&gt;
 
 // 코드에서 View 추가 (View-first 패턴)
