@@ -16,29 +16,28 @@
                                       Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate}" />
 
-                    <!-- 다이얼로그 오버레이 스택 -->
-                    <ItemsControl Name="PART_DialogStack"
-                                  ItemsSource="{TemplateBinding DialogStack}"
-                                  IsVisible="{TemplateBinding HasDialogs}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Grid />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <!-- 반투명 배경 -->
-                                    <Border Background="#80000000" />
+                    <!-- 다이얼로그 오버레이 (HasDialogs가 true일 때만 표시) -->
+                    <Grid IsVisible="{TemplateBinding HasDialogs}">
+                        <!-- 반투명 배경 -->
+                        <Border Background="#80000000" />
 
-                                    <!-- 다이얼로그 콘텐츠 -->
+                        <!-- 다이얼로그 콘텐츠 스택 -->
+                        <ItemsControl Name="PART_DialogStack"
+                                      ItemsSource="{TemplateBinding DialogStack}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Grid />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
                                     <ContentControl Content="{Binding}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
                 </Grid>
             </ControlTemplate>
         </Setter>
