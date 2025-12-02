@@ -33,6 +33,7 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         // 다이얼로그 등록
         containerRegistry.RegisterDialog<MessageDialogView, MessageDialogViewModel>();
         containerRegistry.RegisterDialog<ConfirmDialogView, ConfirmDialogViewModel>();
+        containerRegistry.RegisterDialog<NestedTestDialogView, NestedTestDialogViewModel>();
 
         // Region Item View/ViewModel 등록
         containerRegistry.RegisterForNavigation<RedItemView, RedItemViewModel>();

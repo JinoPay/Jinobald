@@ -141,4 +141,18 @@ public partial class DialogDemoViewModel : ViewModelBase
             LastDialogResult = "첫 번째 다이얼로그에서 취소됨";
         }
     }
+
+    [RelayCommand]
+    private async Task ShowNestedTestDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "중첩 테스트 다이얼로그" },
+            { "Message", "이 다이얼로그 내부에서 새 다이얼로그를 계속 열 수 있습니다." },
+            { "Level", 1 }
+        };
+
+        var result = await _dialogService.ShowDialogAsync<NestedTestDialogView>(parameters);
+        LastDialogResult = "중첩 테스트 다이얼로그가 닫혔습니다.";
+    }
 }

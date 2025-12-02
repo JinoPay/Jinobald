@@ -106,9 +106,17 @@
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
 
-                    <Button Content="🔀 Show Nested Dialog"
-                            Command="{Binding ShowNestedDialogCommand}"
-                            MinWidth="120" />
+                    <WrapPanel>
+                        <Button Content="🔀 Show Nested Dialog"
+                                Command="{Binding ShowNestedDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+
+                        <Button Content="🔗 Nested Test Dialog"
+                                Command="{Binding ShowNestedTestDialogCommand}"
+                                Margin="0,0,8,8"
+                                MinWidth="120" />
+                    </WrapPanel>
                 </StackPanel>
             </Border>
 

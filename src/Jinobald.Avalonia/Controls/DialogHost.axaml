@@ -1,6 +1,7 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Jinobald.Avalonia.Controls">
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="using:Jinobald.Avalonia.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
         <controls:DialogHost>
             <TextBlock Text="Main Content" />
@@ -11,19 +12,22 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid>
-                    <!-- 메인 콘텐츠 -->
-                    <ContentPresenter Name="PART_ContentPresenter"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    <!--  메인 콘텐츠  -->
+                    <ContentPresenter
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Name="PART_ContentPresenter" />
 
-                    <!-- 다이얼로그 오버레이 (HasDialogs가 true일 때만 표시) -->
+                    <!--  다이얼로그 오버레이 (HasDialogs가 true일 때만 표시)  -->
                     <Grid IsVisible="{TemplateBinding HasDialogs}">
-                        <!-- 반투명 배경 -->
+                        <!--  반투명 배경  -->
                         <Border Background="#80000000" />
 
-                        <!-- 다이얼로그 콘텐츠 스택 -->
-                        <ItemsControl Name="PART_DialogStack"
-                                      ItemsSource="{TemplateBinding DialogStack}">
+                        <!--  다이얼로그 콘텐츠 스택  -->
+                        <ItemsControl
+                            ItemsSource="{TemplateBinding DialogStack}"
+                            Name="PART_DialogStack"
+                            VerticalAlignment="Center">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Grid />
@@ -31,9 +35,11 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <ContentControl Content="{Binding}"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center" />
+                                    <!--  다이얼로그를 중앙에 배치  -->
+                                    <ContentControl
+                                        Content="{Binding}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

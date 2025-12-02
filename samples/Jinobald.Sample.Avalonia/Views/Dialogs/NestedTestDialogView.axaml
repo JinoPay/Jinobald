@@ -1,0 +1,79 @@
+<UserControl
+    MaxWidth="650"
+    MinWidth="450"
+    x:Class="Jinobald.Sample.Avalonia.Views.Dialogs.NestedTestDialogView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border
+        Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+        BorderThickness="1"
+        CornerRadius="8"
+        Padding="24">
+
+        <StackPanel Spacing="16">
+            <!--  제목  -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <!--  중첩 아이콘  -->
+                <TextBlock
+                    FontSize="24"
+                    Text="🔗"
+                    VerticalAlignment="Center" />
+
+                <TextBlock
+                    FontSize="20"
+                    FontWeight="SemiBold"
+                    Text="{Binding Title}"
+                    VerticalAlignment="Center" />
+
+                <!--  레벨 표시  -->
+                <Border
+                    Background="#FF4CAF50"
+                    CornerRadius="12"
+                    Padding="8,4"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{Binding Level, StringFormat='레벨 {0}'}" />
+                </Border>
+            </StackPanel>
+
+            <!--  메시지  -->
+            <TextBlock
+                MaxWidth="600"
+                Text="{Binding Message}"
+                TextWrapping="Wrap" />
+
+            <!--  안내  -->
+            <Border
+                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4"
+                Padding="12">
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                    Text="💡 '새 다이얼로그 호출' 버튼을 눌러서 중첩 다이얼로그를 테스트해보세요!"
+                    TextWrapping="Wrap" />
+            </Border>
+
+            <!--  버튼  -->
+            <StackPanel
+                HorizontalAlignment="Right"
+                Margin="0,8,0,0"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    Command="{Binding OpenNestedDialogCommand}"
+                    Content="🔗 새 다이얼로그 호출"
+                    MinWidth="150" />
+                <Button
+                    Command="{Binding CloseDialogCommand}"
+                    Content="닫기"
+                    MinWidth="100" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
