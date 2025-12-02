@@ -29,8 +29,7 @@
                             <DataTemplate>
                                 <Grid>
                                     <!-- 반투명 배경 -->
-                                    <Border Background="#80000000"
-                                            Opacity="0.5" />
+                                    <Border Background="#80000000" />
 
                                     <!-- 다이얼로그 콘텐츠 -->
                                     <ContentControl Content="{Binding}"

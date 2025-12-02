@@ -6,5 +6,6 @@
 
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://Jinobald.Avalonia/Controls/DialogHost.axaml"/>
     </Application.Styles>
 </Application>
