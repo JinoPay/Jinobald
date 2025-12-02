@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using Jinobald.Avalonia.Mvvm;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Dialog;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace Jinobald.Avalonia.Services.Dialog;
@@ -10,6 +11,7 @@ namespace Jinobald.Avalonia.Services.Dialog;
 /// <summary>
 ///     Avalonia 다이얼로그 서비스 구현
 ///     in-window overlay 방식으로 다이얼로그를 표시합니다.
+///     View-First 방식으로 동작합니다.
 /// </summary>
 public class DialogService : IDialogService
 {
@@ -33,40 +35,44 @@ public class DialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public async Task<IDialogResult?> ShowDialogAsync<TViewModel>(IDialogParameters? parameters = null)
-        where TViewModel : IDialogAware
+    public Task<IDialogResult?> ShowDialogAsync<TView>(IDialogParameters? parameters = null)
     {
-        _logger.Debug("다이얼로그 표시: {ViewModelType}", typeof(TViewModel).Name);
+        return ShowDialogAsync(typeof(TView), parameters);
+    }
 
-        // ViewModel 생성
-        var viewModel = ContainerLocator.Current.Resolve<TViewModel>();
-        if (viewModel == null)
-        {
-            _logger.Error("ViewModel을 생성할 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
-            return null;
-        }
+    /// <inheritdoc />
+    public async Task<IDialogResult?> ShowDialogAsync(Type viewType, IDialogParameters? parameters = null)
+    {
+        _logger.Debug("다이얼로그 표시: {ViewType}", viewType.Name);
 
-        // View 타입 추론
-        var viewType = ViewModelLocator.ResolveViewType(typeof(TViewModel));
-        if (viewType == null)
-        {
-            _logger.Error("View 타입을 찾을 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
-            return null;
-        }
-
-        // View 생성
-        var view = Activator.CreateInstance(viewType);
+        // View 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
+        var view = ResolveOrCreate(viewType);
         if (view == null)
         {
             _logger.Error("View를 생성할 수 없습니다: {ViewType}", viewType.Name);
             return null;
         }
 
-        return await ShowDialogAsync(view, viewModel);
+        // ViewModel 타입 추론 (View-First)
+        var viewModelType = ViewModelLocator.ResolveViewModelType(viewType);
+        if (viewModelType == null)
+        {
+            _logger.Error("ViewModel 타입을 찾을 수 없습니다: {ViewType}", viewType.Name);
+            return null;
+        }
+
+        // ViewModel 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
+        var viewModel = ResolveOrCreate(viewModelType) as IDialogAware;
+        if (viewModel == null)
+        {
+            _logger.Error("ViewModel을 생성할 수 없거나 IDialogAware를 구현하지 않았습니다: {ViewModelType}", viewModelType.Name);
+            return null;
+        }
+
+        return await ShowDialogInternalAsync(view, viewModel, parameters);
     }
 
-    /// <inheritdoc />
-    public async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel)
+    private async Task<IDialogResult?> ShowDialogInternalAsync(object view, IDialogAware viewModel, IDialogParameters? parameters)
     {
         if (_dialogHost == null)
         {
@@ -88,9 +94,8 @@ public class DialogService : IDialogService
         // ViewModel에 이벤트 연결
         viewModel.RequestClose += OnRequestClose;
 
-        // ViewModel의 OnDialogOpened 호출
-        var dialogParameters = new DialogParameters();
-        viewModel.OnDialogOpened(dialogParameters);
+        // ViewModel의 OnDialogOpened 호출 (전달받은 parameters 사용)
+        viewModel.OnDialogOpened(parameters ?? new DialogParameters());
 
         // UI 쓰레드에서 다이얼로그 표시
         await Dispatcher.UIThread.InvokeAsync(() =>
@@ -159,5 +164,29 @@ public class DialogService : IDialogService
             _currentDialogTcs?.TrySetResult(null);
             _currentDialogTcs = null;
         });
+    }
+
+    /// <summary>
+    ///     DI 컨테이너에서 먼저 resolve를 시도하고, 등록되지 않은 경우 ActivatorUtilities로 생성합니다.
+    /// </summary>
+    private static T? ResolveOrCreate<T>() where T : class
+    {
+        return ResolveOrCreate(typeof(T)) as T;
+    }
+
+    /// <summary>
+    ///     DI 컨테이너에서 먼저 resolve를 시도하고, 등록되지 않은 경우 ActivatorUtilities로 생성합니다.
+    /// </summary>
+    private static object? ResolveOrCreate(Type type)
+    {
+        var serviceProvider = (IServiceProvider)ContainerLocator.Current.Instance;
+
+        // DI에서 먼저 시도
+        var service = serviceProvider.GetService(type);
+        if (service != null)
+            return service;
+
+        // DI에 없으면 ActivatorUtilities로 생성 (생성자 의존성 주입 지원)
+        return ActivatorUtilities.CreateInstance(serviceProvider, type);
     }
 }

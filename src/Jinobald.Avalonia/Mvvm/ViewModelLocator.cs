@@ -39,13 +39,20 @@ public static class ViewModelLocator
         if (string.IsNullOrEmpty(viewName))
             return null;
 
-        // Views → ViewModels, View → ViewModel
-        var viewModelName = viewName
-            .Replace(".Views.", ".ViewModels.")
-            .Replace("View", "ViewModel");
+        // 네임스페이스 변환: Views → ViewModels
+        var viewModelName = viewName.Replace(".Views.", ".ViewModels.");
 
-        // Window 접미사 처리 (ShellWindow → ShellViewModel)
-        if (viewModelName.EndsWith("WindowModel")) viewModelName = viewModelName.Replace("WindowModel", "ViewModel");
+        // 클래스명 변환
+        if (viewModelName.EndsWith("Window"))
+        {
+            // MainWindow → MainWindowViewModel
+            viewModelName += "ViewModel";
+        }
+        else if (viewModelName.EndsWith("View"))
+        {
+            // HomeView → HomeViewModel
+            viewModelName = viewModelName[..^4] + "ViewModel";
+        }
 
         return viewType.Assembly.GetType(viewModelName);
     }
@@ -59,10 +66,20 @@ public static class ViewModelLocator
         if (string.IsNullOrEmpty(viewModelName))
             return null;
 
-        // ViewModels → Views, ViewModel → View
-        var viewName = viewModelName
-            .Replace(".ViewModels.", ".Views.")
-            .Replace("ViewModel", "View");
+        // 네임스페이스 변환: ViewModels → Views
+        var viewName = viewModelName.Replace(".ViewModels.", ".Views.");
+
+        // 클래스명 변환
+        if (viewName.EndsWith("WindowViewModel"))
+        {
+            // MainWindowViewModel → MainWindow
+            viewName = viewName[..^9]; // "ViewModel" 제거
+        }
+        else if (viewName.EndsWith("ViewModel"))
+        {
+            // HomeViewModel → HomeView
+            viewName = viewName[..^5] + "View"; // "Model" 제거, "View" 추가
+        }
 
         return viewModelType.Assembly.GetType(viewName);
     }

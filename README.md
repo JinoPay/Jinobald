@@ -31,11 +31,8 @@ Jinobald/
 │   │   └── Ioc/                 # DI 컨테이너 추상화
 │   ├── Jinobald.Wpf/           # WPF 플랫폼 구현체
 │   └── Jinobald.Avalonia/      # Avalonia 플랫폼 구현체
-├── samples/
-│   ├── Jinobald.Sample.Wpf/
-│   └── Jinobald.Sample.Avalonia/
-└── tests/
-    └── Jinobald.Tests/
+└── samples/
+    └── Jinobald.Sample.Avalonia/
 ```
 
 ## 🚀 빠른 시작
@@ -115,16 +112,28 @@ public partial class MainViewModel : ViewModelBase, INavigationAware
     }
 
     // 네비게이션 라이프사이클
+    public Task<bool> OnNavigatingToAsync(NavigationContext context)
+    {
+        // 이 View로 네비게이션 되기 전 (취소 가능)
+        return Task.FromResult(true);
+    }
+
     public Task OnNavigatedToAsync(NavigationContext context)
     {
-        // View가 활성화될 때
+        // 이 View로 네비게이션 완료 후
         return Task.CompletedTask;
     }
 
     public Task<bool> OnNavigatingFromAsync(NavigationContext context)
     {
-        // View에서 나가기 전 검증 (취소 가능)
+        // 이 View에서 나가기 전 검증 (취소 가능)
         return Task.FromResult(true);
+    }
+
+    public Task OnNavigatedFromAsync(NavigationContext context)
+    {
+        // 이 View에서 완전히 나간 후
+        return Task.CompletedTask;
     }
 }
 ```
@@ -192,8 +201,8 @@ public partial class ShellViewModel : ViewModelBase
     [RelayCommand]
     private async Task NavigateWithParameter()
     {
-        // 파라미터 전달
-        var parameter = new { UserId = 123, Mode = "Edit" };
+        // 파라미터 전달 (단일 객체)
+        var parameter = new ProductDetailParameter { ProductId = 123, Mode = "Edit" };
         await _regionManager.NavigateAsync<DetailView>("MainRegion", parameter);
     }
 
@@ -408,15 +417,21 @@ _eventAggregator.Subscribe<DataChangedEvent>(
     ThreadOption.UIThread
 );
 
-// 백그라운드 스레드에서 실행
+// 백그라운드 스레드에서 실행 (비동기)
 _eventAggregator.Subscribe<DataProcessingEvent>(
     async e => await ProcessDataAsync(e),
     ThreadOption.BackgroundThread
 );
 
-// 약한 참조로 구독 (메모리 누수 방지)
+// Prism 스타일 구독
 _eventAggregator.GetEvent<StatusUpdateEvent>()
-    .Subscribe(OnStatusUpdate, ThreadOption.UIThread, keepSubscriberReferenceAlive: false);
+    .Subscribe(OnStatusUpdate, ThreadOption.UIThread);
+
+// 구독 해제
+var token = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
+_eventAggregator.Unsubscribe(token);
+// 또는 Dispose 사용
+using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 ```
 
 ### 🎨 Theme Service
@@ -514,7 +529,7 @@ var viewModel = ContainerLocator.Current.Resolve<DetailViewModel>(parameter);
 ```csharp
 public class ProductViewModel : ViewModelBase, INavigationAware
 {
-    public Task OnNavigatingToAsync(NavigationContext context)
+    public Task<bool> OnNavigatingToAsync(NavigationContext context)
     {
         // 네비게이션 시작 전 (취소 가능)
         return Task.FromResult(true);
@@ -522,21 +537,25 @@ public class ProductViewModel : ViewModelBase, INavigationAware
 
     public Task OnNavigatedToAsync(NavigationContext context)
     {
-        // 네비게이션 완료 후
-        var productId = context.Parameters.GetValue<int>("ProductId");
-        return LoadProductAsync(productId);
+        // 네비게이션 완료 후 - 파라미터 가져오기
+        var parameter = context.GetParameter<ProductDetailParameter>();
+        if (parameter != null)
+        {
+            return LoadProductAsync(parameter.ProductId);
+        }
+        return Task.CompletedTask;
     }
 
-    public Task<bool> OnNavigatingFromAsync(NavigationContext context)
+    public async Task<bool> OnNavigatingFromAsync(NavigationContext context)
     {
         // 다른 페이지로 이동하기 전 (취소 가능)
         if (HasUnsavedChanges)
-            return Task.FromResult(await ConfirmLeaveAsync());
+            return await ConfirmLeaveAsync();
 
-        return Task.FromResult(true);
+        return true;
     }
 
-    public Task OnNavigatedFromAsync()
+    public Task OnNavigatedFromAsync(NavigationContext context)
     {
         // 다른 페이지로 완전히 이동한 후
         return Task.CompletedTask;

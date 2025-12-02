@@ -2,6 +2,7 @@ using System.Windows;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Dialog;
 using Jinobald.Wpf.Mvvm;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace Jinobald.Wpf.Services.Dialog;
@@ -37,8 +38,8 @@ public class DialogService : IDialogService
     {
         _logger.Debug("다이얼로그 표시: {ViewModelType}", typeof(TViewModel).Name);
 
-        // ViewModel 생성
-        var viewModel = ContainerLocator.Current.Resolve<TViewModel>();
+        // ViewModel 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
+        var viewModel = (TViewModel?)ResolveOrCreate(typeof(TViewModel));
         if (viewModel == null)
         {
             _logger.Error("ViewModel을 생성할 수 없습니다: {ViewModelType}", typeof(TViewModel).Name);
@@ -53,19 +54,24 @@ public class DialogService : IDialogService
             return null;
         }
 
-        // View 생성
-        var view = Activator.CreateInstance(viewType);
+        // View 생성 (DI 우선, 없으면 ActivatorUtilities로 생성)
+        var view = ResolveOrCreate(viewType);
         if (view == null)
         {
             _logger.Error("View를 생성할 수 없습니다: {ViewType}", viewType.Name);
             return null;
         }
 
-        return await ShowDialogAsync(view, viewModel);
+        return await ShowDialogAsync(view, viewModel, parameters);
     }
 
     /// <inheritdoc />
     public async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel)
+    {
+        return await ShowDialogAsync(view, viewModel, null);
+    }
+
+    private async Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel, IDialogParameters? parameters)
     {
         if (_dialogHost == null)
         {
@@ -87,9 +93,8 @@ public class DialogService : IDialogService
         // ViewModel에 이벤트 연결
         viewModel.RequestClose += OnRequestClose;
 
-        // ViewModel의 OnDialogOpened 호출
-        var dialogParameters = new DialogParameters();
-        viewModel.OnDialogOpened(dialogParameters);
+        // ViewModel의 OnDialogOpened 호출 (전달받은 parameters 사용)
+        viewModel.OnDialogOpened(parameters ?? new DialogParameters());
 
         // UI 쓰레드에서 다이얼로그 표시
         await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -158,5 +163,29 @@ public class DialogService : IDialogService
             _currentDialogTcs?.TrySetResult(null);
             _currentDialogTcs = null;
         });
+    }
+
+    /// <summary>
+    ///     DI 컨테이너에서 먼저 resolve를 시도하고, 등록되지 않은 경우 ActivatorUtilities로 생성합니다.
+    /// </summary>
+    private static T? ResolveOrCreate<T>() where T : class
+    {
+        return ResolveOrCreate(typeof(T)) as T;
+    }
+
+    /// <summary>
+    ///     DI 컨테이너에서 먼저 resolve를 시도하고, 등록되지 않은 경우 ActivatorUtilities로 생성합니다.
+    /// </summary>
+    private static object? ResolveOrCreate(Type type)
+    {
+        var serviceProvider = (IServiceProvider)ContainerLocator.Current.Instance;
+
+        // DI에서 먼저 시도
+        var service = serviceProvider.GetService(type);
+        if (service != null)
+            return service;
+
+        // DI에 없으면 ActivatorUtilities로 생성 (생성자 의존성 주입 지원)
+        return ActivatorUtilities.CreateInstance(serviceProvider, type);
     }
 }

@@ -1,6 +1,7 @@
 using System.Windows;
 using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
+using Jinobald.Core.Services.Regions;
 using Jinobald.Wpf.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -78,12 +79,16 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
             // 메인 윈도우 타입 등록
             services.AddTransient<TMainWindow>();
 
-            // 사용자 정의 서비스 등록
+            // 사용자 정의 서비스 등록 (IServiceCollection 방식 - deprecated)
             ConfigureServices(services);
+
+            // 4. 컨테이너 빌드 (RegisterTypes 전에 빌드하여 IContainerRegistry 사용 가능하게 함)
+            Container = services.AsContainerExtension();
+
+            // 사용자 정의 서비스 등록 (Prism 스타일 - 권장)
+            RegisterTypes(Container);
             SplashScreen.UpdateProgress("서비스 등록 중...", 0.3);
 
-            // 4. 컨테이너 빌드
-            Container = services.AsContainerExtension();
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
             SplashScreen.UpdateProgress("서비스 구성 완료", 0.5);
@@ -96,7 +101,11 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
             await CreateAndShowMainWindowAsync();
             SplashScreen.UpdateProgress("메인 화면 로드 중...", 0.9);
 
-            // 7. 스플래시 화면 닫기
+            // 7. Region 기본 View 설정 (Prism 스타일)
+            var regionManager = Container.Resolve<IRegionManager>();
+            ConfigureRegions(regionManager);
+
+            // 8. 스플래시 화면 닫기
             await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
@@ -127,13 +136,58 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
     }
 
     /// <summary>
-    ///     DI 컨테이너에 서비스를 등록합니다.
-    ///     파생 클래스에서 필요시 오버라이드합니다.
+    ///     DI 컨테이너에 서비스를 등록합니다. (Deprecated)
+    ///     대신 RegisterTypes(IContainerRegistry)를 사용하세요.
     /// </summary>
     /// <param name="services">서비스 컬렉션</param>
+    [Obsolete("Use RegisterTypes(IContainerRegistry) instead")]
     protected virtual void ConfigureServices(IServiceCollection services)
     {
         // 파생 클래스에서 오버라이드하여 추가 서비스 등록
+    }
+
+    /// <summary>
+    ///     DI 컨테이너에 서비스를 등록합니다. (Prism 스타일)
+    ///     파생 클래스에서 오버라이드하여 View/ViewModel을 등록합니다.
+    /// </summary>
+    /// <param name="containerRegistry">컨테이너 레지스트리</param>
+    /// <example>
+    /// <code>
+    /// protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    /// {
+    ///     // 네비게이션용 View/ViewModel 등록
+    ///     containerRegistry.RegisterForNavigation&lt;HomeView, HomeViewModel&gt;();
+    ///
+    ///     // 다이얼로그 등록
+    ///     containerRegistry.RegisterDialog&lt;MessageDialogView, MessageDialogViewModel&gt;();
+    ///
+    ///     // 서비스 등록
+    ///     containerRegistry.RegisterSingleton&lt;IMyService, MyService&gt;();
+    /// }
+    /// </code>
+    /// </example>
+    protected virtual void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // 파생 클래스에서 오버라이드하여 View/ViewModel 등록
+    }
+
+    /// <summary>
+    ///     Region에 기본 View를 등록합니다. (Prism 스타일)
+    ///     파생 클래스에서 오버라이드하여 Region의 기본 View를 설정합니다.
+    /// </summary>
+    /// <param name="regionManager">리전 매니저</param>
+    /// <example>
+    /// <code>
+    /// protected override void ConfigureRegions(IRegionManager regionManager)
+    /// {
+    ///     regionManager.RegisterViewWithRegion&lt;HomeView&gt;("MainContentRegion");
+    ///     regionManager.RegisterViewWithRegion&lt;SidebarView&gt;("SidebarRegion");
+    /// }
+    /// </code>
+    /// </example>
+    protected virtual void ConfigureRegions(IRegionManager regionManager)
+    {
+        // 파생 클래스에서 오버라이드하여 Region 기본 View 설정
     }
 
     /// <summary>
@@ -157,8 +211,8 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
         await Dispatcher.InvokeAsync(() =>
         {
             MainWindow = CreateMainWindow();
-            MainWindow.Show();
-            Logger.Information("메인 윈도우 표시됨: {WindowType}", MainWindow.GetType().Name);
+            MainWindow?.Show();
+            Logger.Information("메인 윈도우 표시됨: {WindowType}", MainWindow?.GetType().Name);
         });
 
         // 메인 윈도우 표시 후 추가 초기화

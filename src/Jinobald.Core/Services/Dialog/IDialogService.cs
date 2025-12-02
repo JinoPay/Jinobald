@@ -3,25 +3,26 @@ namespace Jinobald.Core.Services.Dialog;
 /// <summary>
 ///     다이얼로그 표시 서비스
 ///     오버레이 기반의 in-window 다이얼로그를 표시합니다.
+///     View-First 방식으로 동작합니다.
 /// </summary>
 public interface IDialogService
 {
     /// <summary>
-    ///     다이얼로그를 표시합니다.
+    ///     다이얼로그를 표시합니다. (View-First)
+    ///     ViewModel은 ViewModelLocator를 통해 자동으로 resolve됩니다.
     /// </summary>
-    /// <typeparam name="TViewModel">다이얼로그 ViewModel 타입</typeparam>
+    /// <typeparam name="TView">다이얼로그 View 타입</typeparam>
     /// <param name="parameters">다이얼로그에 전달할 파라미터</param>
     /// <returns>다이얼로그 결과</returns>
-    Task<IDialogResult?> ShowDialogAsync<TViewModel>(IDialogParameters? parameters = null)
-        where TViewModel : IDialogAware;
+    Task<IDialogResult?> ShowDialogAsync<TView>(IDialogParameters? parameters = null);
 
     /// <summary>
-    ///     다이얼로그를 표시합니다. (View와 ViewModel 직접 지정)
+    ///     다이얼로그를 표시합니다. (View 타입으로)
     /// </summary>
-    /// <param name="view">다이얼로그 View</param>
-    /// <param name="viewModel">다이얼로그 ViewModel</param>
+    /// <param name="viewType">다이얼로그 View 타입</param>
+    /// <param name="parameters">다이얼로그에 전달할 파라미터</param>
     /// <returns>다이얼로그 결과</returns>
-    Task<IDialogResult?> ShowDialogAsync(object view, IDialogAware viewModel);
+    Task<IDialogResult?> ShowDialogAsync(Type viewType, IDialogParameters? parameters = null);
 }
 
 /// <summary>

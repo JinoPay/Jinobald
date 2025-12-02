@@ -11,6 +11,7 @@ public class RegionManager : IRegionManager
 {
     private readonly Dictionary<string, IRegion> _regions = new();
     private readonly Dictionary<string, IRegionNavigationService> _navigationServices = new();
+    private readonly Dictionary<string, Type> _pendingViewRegistrations = new();
     private readonly IViewResolver _viewResolver;
 
     public RegionManager(IViewResolver viewResolver)
@@ -68,6 +69,13 @@ public class RegionManager : IRegionManager
         _navigationServices[region.Name] = navigationService;
 
         RegionAdded?.Invoke(this, region);
+
+        // RegisterViewWithRegion으로 등록된 View가 있으면 자동으로 네비게이션
+        if (_pendingViewRegistrations.TryGetValue(region.Name, out var viewType))
+        {
+            _pendingViewRegistrations.Remove(region.Name);
+            _ = NavigateAsync(region.Name, viewType);
+        }
     }
 
     public bool RemoveRegion(string regionName)
@@ -190,6 +198,35 @@ public class RegionManager : IRegionManager
             return false;
 
         return await navigationService.GoForwardAsync(cancellationToken);
+    }
+
+    #endregion
+
+    #region RegisterViewWithRegion
+
+    public void RegisterViewWithRegion(string regionName, Type viewType)
+    {
+        if (string.IsNullOrWhiteSpace(regionName))
+            throw new ArgumentException("Region name cannot be null or empty.", nameof(regionName));
+
+        if (viewType == null)
+            throw new ArgumentNullException(nameof(viewType));
+
+        // 이미 리전이 존재하면 바로 네비게이션
+        if (_regions.ContainsKey(regionName))
+        {
+            _ = NavigateAsync(regionName, viewType);
+        }
+        else
+        {
+            // 리전이 아직 생성되지 않았으면 pending에 저장
+            _pendingViewRegistrations[regionName] = viewType;
+        }
+    }
+
+    public void RegisterViewWithRegion<TView>(string regionName) where TView : class
+    {
+        RegisterViewWithRegion(regionName, typeof(TView));
     }
 
     #endregion

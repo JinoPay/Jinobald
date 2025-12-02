@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Dialog;
-using Jinobald.Sample.Avalonia.ViewModels.Dialogs;
+using Jinobald.Sample.Avalonia.Views.Dialogs;
 
 namespace Jinobald.Sample.Avalonia.ViewModels;
 
@@ -34,7 +34,7 @@ public partial class DialogDemoViewModel : ViewModelBase
             { "MessageType", "Info" }
         };
 
-        var result = await _dialogService.ShowDialogAsync<MessageDialogViewModel>(parameters);
+        var result = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters);
         LastDialogResult = "정보 다이얼로그가 닫혔습니다.";
     }
 
@@ -48,7 +48,7 @@ public partial class DialogDemoViewModel : ViewModelBase
             { "MessageType", "Success" }
         };
 
-        var result = await _dialogService.ShowDialogAsync<MessageDialogViewModel>(parameters);
+        var result = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters);
         LastDialogResult = "성공 다이얼로그가 닫혔습니다.";
     }
 
@@ -62,7 +62,7 @@ public partial class DialogDemoViewModel : ViewModelBase
             { "MessageType", "Warning" }
         };
 
-        var result = await _dialogService.ShowDialogAsync<MessageDialogViewModel>(parameters);
+        var result = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters);
         LastDialogResult = "경고 다이얼로그가 닫혔습니다.";
     }
 
@@ -76,7 +76,7 @@ public partial class DialogDemoViewModel : ViewModelBase
             { "MessageType", "Error" }
         };
 
-        var result = await _dialogService.ShowDialogAsync<MessageDialogViewModel>(parameters);
+        var result = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters);
         LastDialogResult = "오류 다이얼로그가 닫혔습니다.";
     }
 }

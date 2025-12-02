@@ -113,7 +113,7 @@
 };
 
 var result = await _dialogService
-    .ShowDialogAsync&lt;MessageDialogViewModel&gt;(parameters);</TextBlock>
+    .ShowDialogAsync&lt;MessageDialogView&gt;(parameters);</TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>

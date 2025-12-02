@@ -8,6 +8,7 @@ using Jinobald.Core.Services.Regions;
 using Jinobald.Core.Services.Settings;
 using Jinobald.Core.Services.Theme;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Jinobald.Avalonia.Hosting;
 
@@ -27,6 +28,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         string? settingsFilePath = null)
     {
+        // Serilog ILogger 등록 (Log.Logger를 사용, ConfigureLogging()에서 설정됨)
+        services.AddSingleton<ILogger>(_ => Log.Logger);
+
         // 핵심 서비스 등록
         services.AddSingleton<IEventAggregator, EventAggregator>();
         services.AddSingleton<ISettingsService>(sp => new JsonSettingsService(settingsFilePath));

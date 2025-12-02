@@ -151,6 +151,26 @@ public interface IRegionManager
 
     #endregion
 
+    #region RegisterViewWithRegion
+
+    /// <summary>
+    ///     리전에 기본 View를 등록합니다.
+    ///     리전이 생성될 때 자동으로 해당 View로 네비게이션됩니다.
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <param name="viewType">기본으로 표시할 View 타입</param>
+    void RegisterViewWithRegion(string regionName, Type viewType);
+
+    /// <summary>
+    ///     리전에 기본 View를 등록합니다 (제네릭).
+    ///     리전이 생성될 때 자동으로 해당 View로 네비게이션됩니다.
+    /// </summary>
+    /// <param name="regionName">리전 이름</param>
+    /// <typeparam name="TView">기본으로 표시할 View 타입</typeparam>
+    void RegisterViewWithRegion<TView>(string regionName) where TView : class;
+
+    #endregion
+
     #region 이벤트
 
     /// <summary>
