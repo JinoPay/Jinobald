@@ -30,10 +30,10 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         containerRegistry.RegisterForNavigation<ThemeDemoView, ThemeDemoViewModel>();
         containerRegistry.RegisterForNavigation<RegionDemoView, RegionDemoViewModel>();
 
-        // 다이얼로그 등록
-        containerRegistry.RegisterDialog<MessageDialogView, MessageDialogViewModel>();
-        containerRegistry.RegisterDialog<ConfirmDialogView, ConfirmDialogViewModel>();
-        containerRegistry.RegisterDialog<NestedTestDialogView, NestedTestDialogViewModel>();
+        // 다이얼로그 등록 (View만 등록 - ViewModel은 ViewModelLocator가 자동 매핑)
+        containerRegistry.RegisterDialog<MessageDialogView>();
+        containerRegistry.RegisterDialog<ConfirmDialogView>();
+        containerRegistry.RegisterDialog<NestedTestDialogView>();
 
         // Region Item View/ViewModel 등록
         containerRegistry.RegisterForNavigation<RedItemView, RedItemViewModel>();

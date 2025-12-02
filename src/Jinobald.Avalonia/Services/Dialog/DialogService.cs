@@ -125,6 +125,12 @@ public class DialogService : IDialogService
 
     private void OnRequestClose(IDialogResult result)
     {
+        // 비동기 처리를 위해 Task.Run 사용
+        _ = OnRequestCloseAsync(result);
+    }
+
+    private async Task OnRequestCloseAsync(IDialogResult result)
+    {
         if (_dialogHost == null || _dialogStack.Count == 0)
             return;
 
@@ -132,37 +138,50 @@ public class DialogService : IDialogService
         var context = _dialogStack.Peek();
         var viewModel = context.ViewModel;
 
-        // ViewModel의 CanCloseDialog 확인
-        if (!viewModel.CanCloseDialog())
+        try
         {
-            _logger.Debug("다이얼로그를 닫을 수 없습니다");
-            return;
-        }
-
-        // 스택에서 제거
-        _dialogStack.Pop();
-        _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
-
-        // 다이얼로그 닫기
-        Dispatcher.UIThread.Post(() =>
-        {
-            // OnDialogClosed 호출
-            viewModel.OnDialogClosed();
-
-            // 이벤트 해제
-            viewModel.RequestClose -= OnRequestClose;
-
-            // DialogHost 스택에서 제거
-            if (_dialogHost.DialogStack.Contains(context.View))
+            // ViewModel의 CanCloseDialogAsync 확인 (비동기)
+            var canClose = await viewModel.CanCloseDialogAsync();
+            if (!canClose)
             {
-                _dialogHost.DialogStack.Remove(context.View);
+                _logger.Debug("다이얼로그 닫기가 취소됨");
+                return;
             }
 
-            // TaskCompletionSource 완료
-            context.TaskCompletionSource.TrySetResult(result);
-        });
+            // OnClosingAsync 호출 (닫히기 직전)
+            await viewModel.OnClosingAsync();
 
-        _logger.Debug("다이얼로그 닫힘");
+            // 스택에서 제거
+            _dialogStack.Pop();
+            _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
+
+            // 다이얼로그 닫기 (UI 스레드)
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                // OnDialogClosed 호출 (완전히 닫힌 후)
+                viewModel.OnDialogClosed();
+
+                // 이벤트 해제
+                viewModel.RequestClose -= OnRequestClose;
+
+                // DialogHost 스택에서 제거
+                if (_dialogHost.DialogStack.Contains(context.View))
+                {
+                    _dialogHost.DialogStack.Remove(context.View);
+                }
+
+                // TaskCompletionSource 완료
+                context.TaskCompletionSource.TrySetResult(result);
+            });
+
+            _logger.Debug("다이얼로그 닫힘");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "다이얼로그 닫기 중 오류 발생");
+            // 오류 발생 시에도 TaskCompletionSource 완료
+            context.TaskCompletionSource.TrySetException(ex);
+        }
     }
 
     /// <summary>

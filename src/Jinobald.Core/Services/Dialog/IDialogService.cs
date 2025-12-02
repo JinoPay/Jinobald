@@ -39,6 +39,7 @@ public interface IDialogService
 
 /// <summary>
 ///     다이얼로그 ViewModel 인터페이스
+///     비동기 라이프사이클을 지원합니다.
 /// </summary>
 public interface IDialogAware
 {
@@ -49,12 +50,20 @@ public interface IDialogAware
     void OnDialogOpened(IDialogParameters parameters);
 
     /// <summary>
-    ///     다이얼로그를 닫을 수 있는지 확인합니다.
+    ///     다이얼로그를 닫을 수 있는지 비동기로 확인합니다.
+    ///     예: "정말로 닫으시겠습니까?" 같은 확인 다이얼로그 표시 가능
     /// </summary>
-    bool CanCloseDialog();
+    /// <returns>닫기 가능 여부 (true: 닫기 허용, false: 닫기 취소)</returns>
+    Task<bool> CanCloseDialogAsync();
 
     /// <summary>
-    ///     다이얼로그가 닫혔을 때 호출됩니다.
+    ///     다이얼로그가 닫히기 직전에 호출됩니다.
+    ///     정리 작업, 저장 확인 등을 수행할 수 있습니다.
+    /// </summary>
+    Task OnClosingAsync();
+
+    /// <summary>
+    ///     다이얼로그가 완전히 닫힌 후 호출됩니다.
     /// </summary>
     void OnDialogClosed();
 
