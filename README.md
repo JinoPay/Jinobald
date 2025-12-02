@@ -289,49 +289,76 @@ protected override void ConfigureServices(IServiceCollection services)
 
 ### 💬 Dialog Service
 
-모던한 오버레이 기반 다이얼로그 시스템으로 깔끔한 UX를 제공합니다.
+Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
+
+**주요 기능:**
+- ✅ In-window overlay 방식 (모달 다이얼로그)
+- ✅ 중첩 다이얼로그 지원 (다이얼로그 위에 다이얼로그)
+- ✅ Prism 스타일 ButtonResult (OK, Cancel, Yes, No 등)
+- ✅ Async/await 기반 API
+- ✅ View-First 방식 (자동 ViewModel 매핑)
+
+#### DialogHost 설정
+
+먼저 MainWindow에 DialogHost를 추가합니다:
+
+**Avalonia:**
+```xml
+<Window xmlns:jino="https://github.com/JinoPay/Jinobald"
+        ...>
+    <jino:DialogHost x:Name="DialogHost">
+        <!-- 메인 콘텐츠 -->
+        <ContentControl jino:Region.Name="MainContentRegion" />
+    </jino:DialogHost>
+</Window>
+```
+
+**코드비하인드에서 DialogService 등록:**
+```csharp
+public partial class MainWindow : Window
+{
+    public MainWindow(DialogService dialogService)
+    {
+        InitializeComponent();
+        dialogService.RegisterHost(DialogHost);
+    }
+}
+```
 
 #### Dialog ViewModel 작성
+
+`DialogViewModelBase`를 상속하고 ButtonResult를 사용합니다:
 
 ```csharp
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Dialog;
 
-public partial class ConfirmDialogViewModel : ViewModelBase, IDialogAware
+public partial class ConfirmDialogViewModel : DialogViewModelBase
 {
     [ObservableProperty]
     private string _message = string.Empty;
 
-    public event Action<IDialogResult>? RequestClose;
-
-    public void OnDialogOpened(IDialogParameters parameters)
+    public override void OnDialogOpened(IDialogParameters parameters)
     {
         Message = parameters.GetValue<string>("Message") ?? "확인하시겠습니까?";
     }
 
-    public bool CanCloseDialog() => true;
-
-    public void OnDialogClosed() { }
-
     [RelayCommand]
-    private void Confirm()
+    private void Yes()
     {
-        var result = new DialogResult();
-        result.Parameters.Add("Confirmed", true);
-        RequestClose?.Invoke(result);
+        // Prism 스타일 ButtonResult 사용
+        CloseWithButtonResult(ButtonResult.Yes);
     }
 
     [RelayCommand]
-    private void Cancel()
+    private void No()
     {
-        var result = new DialogResult();
-        result.Parameters.Add("Confirmed", false);
-        RequestClose?.Invoke(result);
+        CloseWithButtonResult(ButtonResult.No);
     }
 }
 ```
 
-#### Dialog 호출
+#### Dialog 호출 및 결과 처리
 
 ```csharp
 public partial class MainViewModel : ViewModelBase
@@ -341,17 +368,54 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task ShowConfirmDialog()
     {
-        var parameters = new DialogParameters();
-        parameters.Add("Message", "정말로 삭제하시겠습니까?");
-
-        var result = await _dialogService.ShowDialogAsync<ConfirmDialogViewModel>(parameters);
-
-        if (result?.Parameters.GetValue<bool>("Confirmed") == true)
+        var parameters = new DialogParameters
         {
-            // 확인 버튼 클릭됨
+            { "Message", "정말로 삭제하시겠습니까?" }
+        };
+
+        var result = await _dialogService.ShowDialogAsync<ConfirmDialogView>(parameters);
+
+        if (result?.Result == ButtonResult.Yes)
+        {
+            // Yes 버튼 클릭됨
             await DeleteItemAsync();
         }
     }
+}
+```
+
+#### 중첩 다이얼로그
+
+다이얼로그 안에서 또 다른 다이얼로그를 표시할 수 있습니다:
+
+```csharp
+[RelayCommand]
+private async Task ShowNestedDialog()
+{
+    // 첫 번째 다이얼로그 표시
+    var result1 = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters1);
+
+    if (result1?.Result == ButtonResult.OK)
+    {
+        // 두 번째 다이얼로그 표시 (첫 번째 위에 오버레이)
+        var result2 = await _dialogService.ShowDialogAsync<ConfirmDialogView>(parameters2);
+    }
+}
+```
+
+#### ButtonResult 종류
+
+```csharp
+public enum ButtonResult
+{
+    None = 0,    // 결과 없음
+    OK = 1,      // OK 버튼
+    Cancel = 2,  // Cancel 버튼
+    Yes = 3,     // Yes 버튼
+    No = 4,      // No 버튼
+    Abort = 5,   // Abort 버튼
+    Retry = 6,   // Retry 버튼
+    Ignore = 7   // Ignore 버튼
 }
 ```
 

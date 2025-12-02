@@ -1,4 +1,3 @@
-using System;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Dialog;
@@ -9,7 +8,7 @@ namespace Jinobald.Sample.Avalonia.ViewModels.Dialogs;
 ///     메시지 다이얼로그 ViewModel
 ///     간단한 메시지를 표시하고 확인 버튼으로 닫을 수 있습니다.
 /// </summary>
-public partial class MessageDialogViewModel : ViewModelBase, IDialogAware
+public partial class MessageDialogViewModel : DialogViewModelBase
 {
     private string _title = "알림";
     private string _message = "";
@@ -33,31 +32,26 @@ public partial class MessageDialogViewModel : ViewModelBase, IDialogAware
         set => SetProperty(ref _messageType, value);
     }
 
-    #region IDialogAware 구현
-
-    public event Action<IDialogResult>? RequestClose;
-
-    public void OnDialogOpened(IDialogParameters parameters)
+    /// <summary>
+    ///     다이얼로그가 열렸을 때 호출됩니다.
+    ///     파라미터로부터 Title, Message, MessageType을 가져옵니다.
+    /// </summary>
+    public override void OnDialogOpened(IDialogParameters parameters)
     {
-        // 파라미터로부터 Title, Message, MessageType을 가져옵니다
         Title = parameters.GetValue<string>("Title") ?? "알림";
         Message = parameters.GetValue<string>("Message") ?? "";
         MessageType = parameters.GetValue<string>("MessageType") ?? "Info";
     }
 
-    public bool CanCloseDialog() => true;
-
-    public void OnDialogClosed()
+    [RelayCommand]
+    private void Ok()
     {
-        // 정리 작업이 필요한 경우 여기에 구현
+        CloseWithButtonResult(ButtonResult.OK);
     }
 
-    #endregion
-
     [RelayCommand]
-    private void Close()
+    private void Cancel()
     {
-        var result = new DialogResult(ButtonResult.OK);
-        RequestClose?.Invoke(result);
+        CloseWithButtonResult(ButtonResult.Cancel);
     }
 }

@@ -1,13 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Jinobald.Sample.Avalonia.Views.Dialogs"
-             x:Class="Jinobald.Sample.Avalonia.Views.Dialogs.MessageDialogView"
+             x:Class="Jinobald.Sample.Avalonia.Views.Dialogs.ConfirmDialogView"
              MinWidth="400"
              MaxWidth="600">
-
-    <UserControl.Resources>
-        <local:MessageTypeToIconConverter x:Key="MessageTypeToIconConverter" />
-    </UserControl.Resources>
 
     <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
@@ -18,10 +13,10 @@
         <StackPanel Spacing="16">
             <!-- 제목 -->
             <StackPanel Spacing="8" Orientation="Horizontal">
-                <!-- 아이콘 -->
+                <!-- 질문 아이콘 -->
                 <TextBlock FontSize="24"
                            VerticalAlignment="Center"
-                           Text="{Binding MessageType, Converter={StaticResource MessageTypeToIconConverter}}" />
+                           Text="❓" />
 
                 <TextBlock Text="{Binding Title}"
                            FontSize="20"
@@ -39,11 +34,11 @@
                         HorizontalAlignment="Right"
                         Spacing="8"
                         Margin="0,8,0,0">
-                <Button Content="확인"
-                        Command="{Binding OkCommand}"
+                <Button Content="예"
+                        Command="{Binding YesCommand}"
                         MinWidth="100" />
-                <Button Content="취소"
-                        Command="{Binding CancelCommand}"
+                <Button Content="아니오"
+                        Command="{Binding NoCommand}"
                         MinWidth="100" />
             </StackPanel>
         </StackPanel>

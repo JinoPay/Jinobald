@@ -10,6 +10,9 @@ using Avalonia.Metadata;
 // MVVM
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Mvvm")]
 
+// Controls
+[assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Controls")]
+
 // Services
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Regions")]
 [assembly: XmlnsDefinition("https://github.com/JinoPay/Jinobald", "Jinobald.Avalonia.Services.Dialog")]

@@ -77,6 +77,68 @@ public partial class DialogDemoViewModel : ViewModelBase
         };
 
         var result = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters);
-        LastDialogResult = "오류 다이얼로그가 닫혔습니다.";
+        LastDialogResult = result != null
+            ? $"오류 다이얼로그 닫힘 - 결과: {result.Result}"
+            : "오류 다이얼로그 닫힘 - 결과 없음";
+    }
+
+    [RelayCommand]
+    private async Task ShowConfirmDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "확인" },
+            { "Message", "이 작업을 계속하시겠습니까?" }
+        };
+
+        var result = await _dialogService.ShowDialogAsync<ConfirmDialogView>(parameters);
+
+        if (result?.Result == ButtonResult.Yes)
+        {
+            LastDialogResult = "확인 다이얼로그 - '예' 선택됨";
+        }
+        else if (result?.Result == ButtonResult.No)
+        {
+            LastDialogResult = "확인 다이얼로그 - '아니오' 선택됨";
+        }
+        else
+        {
+            LastDialogResult = "확인 다이얼로그 닫힘 - 결과 없음";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowNestedDialog()
+    {
+        // 첫 번째 다이얼로그 표시
+        var parameters1 = new DialogParameters
+        {
+            { "Title", "첫 번째 다이얼로그" },
+            { "Message", "이것은 첫 번째 다이얼로그입니다.\n이제 두 번째 다이얼로그를 열어볼까요?" },
+            { "MessageType", "Info" }
+        };
+
+        LastDialogResult = "첫 번째 다이얼로그 열림...";
+        var result1 = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters1);
+
+        if (result1?.Result == ButtonResult.OK)
+        {
+            // 두 번째 다이얼로그 표시 (중첩)
+            var parameters2 = new DialogParameters
+            {
+                { "Title", "중첩된 다이얼로그" },
+                { "Message", "이것은 중첩된 두 번째 다이얼로그입니다!\n첫 번째 다이얼로그 위에 표시됩니다." },
+                { "MessageType", "Success" }
+            };
+
+            LastDialogResult = "두 번째 다이얼로그 열림 (중첩)...";
+            var result2 = await _dialogService.ShowDialogAsync<MessageDialogView>(parameters2);
+
+            LastDialogResult = $"중첩 다이얼로그 데모 완료!\n첫 번째: {result1.Result}, 두 번째: {result2?.Result}";
+        }
+        else
+        {
+            LastDialogResult = "첫 번째 다이얼로그에서 취소됨";
+        }
     }
 }

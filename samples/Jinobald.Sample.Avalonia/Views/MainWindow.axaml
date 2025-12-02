@@ -10,59 +10,62 @@
         Width="1000"
         Height="600">
 
-    <Grid>
-        <!-- 네비게이션 영역 (왼쪽) -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <!-- DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원 -->
+    <jino:DialogHost x:Name="DialogHost">
+        <Grid>
+            <!-- 네비게이션 영역 (왼쪽) -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!-- 사이드바 -->
-        <Border Grid.Column="0"
-                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                BorderThickness="0,0,1,0">
-            <StackPanel Margin="16">
-                <TextBlock Text="Jinobald Demo"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Margin="0,0,0,24" />
+            <!-- 사이드바 -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="0,0,1,0">
+                <StackPanel Margin="16">
+                    <TextBlock Text="Jinobald Demo"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="0,0,0,24" />
 
-                <Button Content="🏠 Home"
-                        Command="{Binding NavigateHomeCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Margin="0,0,0,8" />
+                    <Button Content="🏠 Home"
+                            Command="{Binding NavigateHomeCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,8" />
 
-                <Button Content="🧭 Navigation"
-                        Command="{Binding NavigateToNavigationDemoCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Margin="0,0,0,8" />
+                    <Button Content="🧭 Navigation"
+                            Command="{Binding NavigateToNavigationDemoCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,8" />
 
-                <Button Content="💬 Dialogs"
-                        Command="{Binding NavigateToDialogDemoCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Margin="0,0,0,8" />
+                    <Button Content="💬 Dialogs"
+                            Command="{Binding NavigateToDialogDemoCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,8" />
 
-                <Button Content="🎨 Themes"
-                        Command="{Binding NavigateToThemeDemoCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Margin="0,0,0,8" />
+                    <Button Content="🎨 Themes"
+                            Command="{Binding NavigateToThemeDemoCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,8" />
 
-                <Button Content="📦 Regions"
-                        Command="{Binding NavigateToRegionDemoCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Margin="0,0,0,8" />
-            </StackPanel>
-        </Border>
+                    <Button Content="📦 Regions"
+                            Command="{Binding NavigateToRegionDemoCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,8" />
+                </StackPanel>
+            </Border>
 
-        <!-- 콘텐츠 영역 (오른쪽) - Region 기반 -->
-        <ContentControl Grid.Column="1"
-                        jino:Region.Name="MainContentRegion"
-                        Margin="16" />
-    </Grid>
+            <!-- 콘텐츠 영역 (오른쪽) - Region 기반 -->
+            <ContentControl Grid.Column="1"
+                            jino:Region.Name="MainContentRegion"
+                            Margin="16" />
+        </Grid>
+    </jino:DialogHost>
 </Window>

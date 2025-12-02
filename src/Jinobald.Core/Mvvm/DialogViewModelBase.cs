@@ -3,22 +3,11 @@ using Jinobald.Core.Services.Dialog;
 namespace Jinobald.Core.Mvvm;
 
 /// <summary>
-///     모든 다이얼로그 ViewModel의 기본 클래스
+///     모든 다이얼로그 ViewModel의 기본 클래스 (Prism 스타일)
+///     ButtonResult와 IDialogParameters를 사용하여 결과를 전달합니다.
 /// </summary>
-/// <typeparam name="TResult">다이얼로그 결과 타입</typeparam>
-public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
+public abstract class DialogViewModelBase : ViewModelBase, IDialogAware
 {
-    private TResult _result = default!;
-
-    /// <summary>
-    ///     다이얼로그 결과
-    /// </summary>
-    public TResult Result
-    {
-        get => _result;
-        protected set => SetProperty(ref _result, value);
-    }
-
     #region IDialogAware 구현
 
     /// <summary>
@@ -52,7 +41,7 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     #endregion
 
     /// <summary>
-    ///     다이얼로그를 닫습니다.
+    ///     다이얼로그를 닫습니다. (ButtonResult.None)
     /// </summary>
     protected void Close()
     {
@@ -62,7 +51,7 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     /// <summary>
     ///     버튼 결과와 함께 다이얼로그를 닫습니다.
     /// </summary>
-    /// <param name="buttonResult">버튼 결과 (OK, Cancel 등)</param>
+    /// <param name="buttonResult">버튼 결과 (OK, Cancel, Yes, No 등)</param>
     protected void CloseWithButtonResult(ButtonResult buttonResult)
     {
         if (CanCloseDialog())
@@ -73,20 +62,10 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     }
 
     /// <summary>
-    ///     결과를 설정하고 다이얼로그를 닫습니다.
-    /// </summary>
-    /// <param name="result">다이얼로그 결과</param>
-    protected void CloseWithResult(TResult result)
-    {
-        Result = result;
-        Close();
-    }
-
-    /// <summary>
-    ///     지정된 파라미터와 함께 다이얼로그를 닫습니다.
+    ///     버튼 결과와 커스텀 파라미터와 함께 다이얼로그를 닫습니다.
     /// </summary>
     /// <param name="buttonResult">버튼 결과</param>
-    /// <param name="parameters">다이얼로그 결과 파라미터</param>
+    /// <param name="parameters">다이얼로그 결과 파라미터 (커스텀 데이터 전달용)</param>
     protected void CloseWithParameters(ButtonResult buttonResult, IDialogParameters parameters)
     {
         if (CanCloseDialog())
@@ -97,7 +76,7 @@ public abstract class DialogViewModelBase<TResult> : ViewModelBase, IDialogAware
     }
 
     /// <summary>
-    ///     지정된 파라미터와 함께 다이얼로그를 닫습니다. (ButtonResult.None 사용)
+    ///     커스텀 파라미터와 함께 다이얼로그를 닫습니다. (ButtonResult.None 사용)
     /// </summary>
     /// <param name="parameters">다이얼로그 결과 파라미터</param>
     protected void CloseWithParameters(IDialogParameters parameters)
