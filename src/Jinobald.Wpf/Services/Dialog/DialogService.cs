@@ -19,9 +19,9 @@ public class DialogService : IDialogService
     private IDialogHost? _dialogHost;
     private readonly Stack<DialogContext> _dialogStack = new();
 
-    public DialogService(ILogger logger)
+    public DialogService()
     {
-        _logger = logger.ForContext<DialogService>();
+        _logger = Log.ForContext<DialogService>();
     }
 
     /// <summary>

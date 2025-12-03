@@ -5,6 +5,7 @@
     <Project Path="src\Jinobald.Avalonia\Jinobald.Avalonia.csproj" />
   </Folder>
   <Folder Name="/samples/">
+    <Project Path="samples/Jinobald.Sample.Wpf/Jinobald.Sample.Wpf.csproj" />
     <Project Path="samples\Jinobald.Sample.Avalonia\Jinobald.Sample.Avalonia.csproj" />
   </Folder>
 </Solution>
