@@ -2,11 +2,13 @@ using Jinobald.Avalonia.Services.Dialog;
 using Jinobald.Avalonia.Services.Events;
 using Jinobald.Avalonia.Services.Regions;
 using Jinobald.Avalonia.Services.Theme;
+using Jinobald.Avalonia.Services.Toast;
 using Jinobald.Core.Services.Dialog;
 using Jinobald.Core.Services.Events;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Core.Services.Settings;
 using Jinobald.Core.Services.Theme;
+using Jinobald.Core.Services.Toast;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -19,7 +21,7 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     ///     Jinobald 핵심 서비스를 DI 컨테이너에 등록합니다.
-    ///     RegionManager, EventAggregator, DialogService, ThemeService, SettingsService가 자동으로 등록됩니다.
+    ///     RegionManager, EventAggregator, DialogService, ToastService, ThemeService, SettingsService가 자동으로 등록됩니다.
     /// </summary>
     /// <param name="services">서비스 컬렉션</param>
     /// <param name="settingsFilePath">설정 파일 경로 (null이면 기본 경로 사용)</param>
@@ -37,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IThemeService>(sp =>
             new ThemeService(sp.GetRequiredService<ISettingsService>()));
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IToastService, ToastService>();
 
         // Region 서비스 등록 (네비게이션은 Region 기반으로 통합됨)
         services.AddSingleton<IViewResolver, AvaloniaViewResolver>();

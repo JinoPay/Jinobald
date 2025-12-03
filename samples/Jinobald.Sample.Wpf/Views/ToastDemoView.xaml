@@ -1,0 +1,169 @@
+<UserControl
+    x:Class="Jinobald.Sample.Wpf.Views.ToastDemoView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer>
+        <StackPanel Margin="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="🔔 Toast Demo" />
+
+            <TextBlock
+                Margin="0,8,0,0"
+                Text="Non-intrusive notifications with modern styling."
+                TextWrapping="Wrap" />
+
+            <!--  기본 토스트 섹션  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="📋 Basic Toasts" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="Gray"
+                        Text="다양한 타입의 토스트 알림을 표시할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <!--  버튼들  -->
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowSuccessToastCommand}"
+                            Content="✅ Success" />
+
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowInfoToastCommand}"
+                            Content="ℹ️ Info" />
+
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowWarningToastCommand}"
+                            Content="⚠️ Warning" />
+
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowErrorToastCommand}"
+                            Content="❌ Error" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  고급 토스트 섹션  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="🚀 Advanced Toasts" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="Gray"
+                        Text="긴 메시지, 여러 토스트 동시 표시 등 고급 기능을 테스트할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowLongToastCommand}"
+                            Content="📝 Long Message" />
+
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ShowMultipleToastsCommand}"
+                            Content="📚 Multiple Toasts" />
+
+                        <Button
+                            MinWidth="120"
+                            Margin="0,0,8,8"
+                            Command="{Binding ClearAllToastsCommand}"
+                            Content="🗑️ Clear All" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  기능 설명 섹션  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="✅ Features" />
+
+                    <StackPanel Margin="12,8,0,0">
+                        <TextBlock Text="• 비침투적(non-intrusive) 알림 방식" />
+                        <TextBlock Margin="0,4,0,0" Text="• 자동 닫힘 (타임아웃 설정 가능)" />
+                        <TextBlock Margin="0,4,0,0" Text="• 여러 토스트 동시 표시 가능" />
+                        <TextBlock Margin="0,4,0,0" Text="• 4가지 토스트 타입 (Success, Info, Warning, Error)" />
+                        <TextBlock Margin="0,4,0,0" Text="• 커스터마이징 가능한 UI (DataTemplate)" />
+                        <TextBlock Margin="0,4,0,0" Text="• 위치 설정 지원 (TopRight, BottomRight 등)" />
+                        <TextBlock Margin="0,4,0,0" Text="• 현대적인 디자인과 애니메이션" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="📝 Usage Example" />
+
+                    <TextBlock
+                        xml:space="preserve"
+                        Margin="0,8,0,0"
+                        FontFamily="Consolas"
+                        FontSize="11"
+                        TextWrapping="Wrap">// 간단한 사용법
+_toastService.ShowSuccess("작업 완료!");
+
+// 커스텀 토스트
+_toastService.Show(new ToastMessage
+{
+    Type = ToastType.Info,
+    Title = "알림",
+    Message = "메시지 내용",
+    Duration = 5 // 5초 동안 표시
+});</TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
