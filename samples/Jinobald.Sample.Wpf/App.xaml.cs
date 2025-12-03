@@ -19,6 +19,9 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
 
+        // MainWindow ViewModel 등록 (Window는 네비게이션이 아니므로 명시적 등록 필요)
+        containerRegistry.RegisterSingleton<ViewModels.MainWindowViewModel>();
+
         // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterForNavigation<HomeView>();
         containerRegistry.RegisterForNavigation<NavigationDemoView>();
