@@ -54,14 +54,16 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         regionManager.RegisterViewWithRegion<HomeView>("MainContentRegion");
     }
 
-    public override Task OnInitializeAsync(IProgress<InitializationProgress> progress)
+    public override async Task OnInitializeAsync(IProgress<InitializationProgress> progress)
     {
         progress.Report(new("초기화 중...", 50));
 
         // Avalonia는 테마가 ThemeVariant로 자동 처리됨 (별도 등록 불필요)
 
-        progress.Report(new("완료!", 100));
+        await Task.Delay(2000);
 
-        return Task.CompletedTask;
+        progress.Report(new("완료!", 100));
+        
+        await Task.Delay(1000);
     }
 }

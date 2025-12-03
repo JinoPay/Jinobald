@@ -44,7 +44,7 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<GreenItemView>();
     }
 
-    public override Task OnInitializeAsync(IProgress<InitializationProgress> progress)
+    public override async Task OnInitializeAsync(IProgress<InitializationProgress> progress)
     {
         progress.Report(new("테마 로딩 중...", 30));
 
@@ -67,9 +67,11 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         // 저장된 테마 적용 (또는 기본 테마)
         themeService.ApplySavedTheme();
 
-        progress.Report(new("완료!", 100));
+        await Task.Delay(2000);
 
-        return Task.CompletedTask;
+        progress.Report(new("완료!", 100));
+        
+        await Task.Delay(1000);
     }
 
     public override void ConfigureRegions(IRegionManager regionManager)
