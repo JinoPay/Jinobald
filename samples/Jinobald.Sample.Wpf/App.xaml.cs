@@ -30,6 +30,7 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<ThemeDemoView>();
         containerRegistry.RegisterForNavigation<RegionDemoView>();
         containerRegistry.RegisterForNavigation<EventDemoView>();
+        containerRegistry.RegisterForNavigation<ToastDemoView>();  // Toast 데모
         containerRegistry.RegisterForNavigation<AdvancedDemoView>();  // Advanced Features 데모
 
         // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)

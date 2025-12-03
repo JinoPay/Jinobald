@@ -15,6 +15,8 @@
 
     <!--  DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원  -->
     <jino:DialogHost x:Name="DialogHost">
+        <!--  ToastHost를 추가하여 토스트 알림 표시  -->
+        <Panel>
         <Grid>
             <!--  네비게이션 영역 (왼쪽)  -->
             <Grid.ColumnDefinitions>
@@ -81,6 +83,13 @@
                         Margin="0,0,0,8"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToToastDemoCommand}"
+                        Content="🔔 Toasts" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
                         Command="{Binding NavigateToAdvancedDemoCommand}"
                         Content="⚡ Advanced"
                         FontWeight="Bold" />
@@ -93,5 +102,9 @@
                 Margin="16"
                 jino:Region.Name="MainContentRegion" />
         </Grid>
+
+            <!--  ToastHost는 Grid 위에 표시되어야 함  -->
+            <jino:ToastHost x:Name="ToastHost" Position="TopRight" MaxToasts="5" />
+        </Panel>
     </jino:DialogHost>
 </Window>

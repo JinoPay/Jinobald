@@ -19,6 +19,10 @@
 
     <!--  DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원  -->
     <controls:DialogHost x:Name="DialogHost">
+        <!--  ToastHost를 추가하여 토스트 알림 표시  -->
+        <Grid>
+            <controls:ToastHost x:Name="ToastHost" Panel.ZIndex="1000" />
+
         <Grid>
             <!--  네비게이션 영역 (왼쪽)  -->
             <Grid.ColumnDefinitions>
@@ -85,6 +89,13 @@
                         Margin="0,0,0,8"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToToastDemoCommand}"
+                        Content="Toasts" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
                         Command="{Binding NavigateToAdvancedDemoCommand}"
                         Content="Advanced"
                         FontWeight="Bold" />
@@ -96,6 +107,7 @@
                 Grid.Column="1"
                 Margin="16"
                 regions:Region.Name="MainContentRegion" />
+        </Grid>
         </Grid>
     </controls:DialogHost>
 </Window>
