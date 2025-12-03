@@ -47,9 +47,23 @@ public abstract class ApplicationBase<TMainWindow> : System.Windows.Application,
     {
         Logger = Log.ForContext(GetType());
         ConfigureExceptionHandling();
+        LoadDefaultResources();
 
         // WPF Startup 이벤트에서 초기화
         Startup += OnStartup;
+    }
+
+    /// <summary>
+    ///     기본 리소스 로드 (DialogHost 등)
+    /// </summary>
+    private void LoadDefaultResources()
+    {
+        // DialogHost 스타일 자동 추가
+        var genericDictionary = new ResourceDictionary
+        {
+            Source = new System.Uri("pack://application:,,,/Jinobald.Wpf;component/Themes/Generic.xaml")
+        };
+        Resources.MergedDictionaries.Add(genericDictionary);
     }
 
     /// <summary>
@@ -283,9 +297,23 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
     {
         Logger = Log.ForContext(GetType());
         ConfigureExceptionHandling();
+        LoadDefaultResources();
 
         // WPF Startup 이벤트에서 초기화
         Startup += OnStartup;
+    }
+
+    /// <summary>
+    ///     기본 리소스 로드 (DialogHost 등)
+    /// </summary>
+    private void LoadDefaultResources()
+    {
+        // DialogHost 스타일 자동 추가
+        var genericDictionary = new ResourceDictionary
+        {
+            Source = new System.Uri("pack://application:,,,/Jinobald.Wpf;component/Themes/Generic.xaml")
+        };
+        Resources.MergedDictionaries.Add(genericDictionary);
     }
 
     /// <summary>
