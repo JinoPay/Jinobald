@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Jinobald.Avalonia.Hosting;
 using Jinobald.Core.Application;
@@ -49,6 +51,20 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
     {
         Logger = Log.ForContext(GetType());
         ConfigureExceptionHandling();
+        LoadDefaultStyles();
+    }
+
+    /// <summary>
+    ///     기본 스타일 로드 (DialogHost 등)
+    /// </summary>
+    private void LoadDefaultStyles()
+    {
+        // DialogHost 스타일 자동 추가
+        var dialogHostStyle = new StyleInclude(new System.Uri("avares://Jinobald.Avalonia/"))
+        {
+            Source = new System.Uri("avares://Jinobald.Avalonia/Controls/DialogHost.axaml")
+        };
+        Styles.Add(dialogHostStyle);
     }
 
     /// <summary>
@@ -278,6 +294,20 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
     {
         Logger = Log.ForContext(GetType());
         ConfigureExceptionHandling();
+        LoadDefaultStyles();
+    }
+
+    /// <summary>
+    ///     기본 스타일 로드 (DialogHost 등)
+    /// </summary>
+    private void LoadDefaultStyles()
+    {
+        // DialogHost 스타일 자동 추가
+        var dialogHostStyle = new StyleInclude(new System.Uri("avares://Jinobald.Avalonia/"))
+        {
+            Source = new System.Uri("avares://Jinobald.Avalonia/Controls/DialogHost.axaml")
+        };
+        Styles.Add(dialogHostStyle);
     }
 
     /// <summary>
