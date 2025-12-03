@@ -1,5 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using System.Windows;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
+using Jinobald.Core.Services.Theme;
 using Jinobald.Sample.Wpf.ViewModels;
 using Jinobald.Sample.Wpf.ViewModels.Dialogs;
 using Jinobald.Sample.Wpf.ViewModels.Regions;
@@ -33,6 +37,28 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<RedItemView, RedItemViewModel>();
         containerRegistry.RegisterForNavigation<BlueItemView, BlueItemViewModel>();
         containerRegistry.RegisterForNavigation<GreenItemView, GreenItemViewModel>();
+    }
+
+    protected override Task OnInitializeAsync()
+    {
+        // 테마 서비스 가져오기
+        var themeService = Container!.Resolve<IThemeService>();
+
+        // 테마 리소스 등록
+        themeService.RegisterTheme("Light", new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/Themes/LightTheme.xaml")
+        });
+
+        themeService.RegisterTheme("Dark", new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
+        });
+
+        // 저장된 테마 적용 (또는 기본 테마)
+        themeService.ApplySavedTheme();
+
+        return Task.CompletedTask;
     }
 
     protected override void ConfigureRegions(IRegionManager regionManager)
