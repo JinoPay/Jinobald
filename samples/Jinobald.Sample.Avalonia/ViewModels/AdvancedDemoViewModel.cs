@@ -220,21 +220,20 @@ public partial class AdvancedDemoViewModel : ValidatableViewModelBase,
     [RelayCommand]
     private async Task ShowTypedDialog()
     {
-        // Generic IDialogResult<T> 사용
         var result = await _dialogService.ShowDialogAsync<UserSelectDialogView>();
 
         if (result != null)
         {
-            if (result.IsSuccess())
+            if (result.Result == ButtonResult.OK)
             {
-                // 강타입 데이터 가져오기
-                var user = result.GetData<UserInfo>();
+                // Parameters에서 선택된 사용자 가져오기
+                var user = result.Parameters.GetValue<UserInfo>("SelectedUser");
                 if (user != null)
                 {
                     SelectedUserInfo = $"선택: {user.Name} ({user.Email})";
                 }
             }
-            else if (result.IsCancelled())
+            else if (result.Result == ButtonResult.Cancel)
             {
                 SelectedUserInfo = "선택 취소됨";
             }

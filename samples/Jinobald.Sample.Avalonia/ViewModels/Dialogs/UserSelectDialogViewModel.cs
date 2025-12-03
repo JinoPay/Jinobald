@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,20 +8,15 @@ namespace Jinobald.Sample.Avalonia.ViewModels.Dialogs;
 
 /// <summary>
 ///     사용자 선택 다이얼로그 ViewModel
-///     Generic IDialogResult{T}를 사용하여 강타입 결과를 반환합니다.
+///     DialogParameters를 통해 강타입 데이터를 반환합니다.
 /// </summary>
-public partial class UserSelectDialogViewModel : DialogViewModelBase, IDialogAware<UserInfo>
+public partial class UserSelectDialogViewModel : DialogViewModelBase
 {
     [ObservableProperty]
     private ObservableCollection<UserInfo> _users = new();
 
     [ObservableProperty]
     private UserInfo? _selectedUser;
-
-    /// <summary>
-    ///     강타입 RequestClose 이벤트 (IDialogAware{T})
-    /// </summary>
-    public new event Action<IDialogResult<UserInfo>>? RequestClose;
 
     public override void OnDialogOpened(IDialogParameters parameters)
     {
@@ -42,16 +36,17 @@ public partial class UserSelectDialogViewModel : DialogViewModelBase, IDialogAwa
     {
         if (SelectedUser != null)
         {
-            // 강타입 DialogResult<T> 사용
-            RequestClose?.Invoke(DialogResult<UserInfo>.Ok(SelectedUser));
+            // Parameters를 통해 선택된 사용자 전달
+            var parameters = new DialogParameters();
+            parameters.Add("SelectedUser", SelectedUser);
+            CloseWithParameters(ButtonResult.OK, parameters);
         }
     }
 
     [RelayCommand]
     private void Cancel()
     {
-        // 취소 시 기본값 반환
-        RequestClose?.Invoke(DialogResult<UserInfo>.Cancel());
+        CloseWithButtonResult(ButtonResult.Cancel);
     }
 }
 

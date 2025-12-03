@@ -124,14 +124,17 @@ public class RegionManagerTests
     }
 
     [Fact]
-    public void RegisterRegion_ShouldThrowForDuplicateRegion()
+    public void RegisterRegion_ShouldIgnoreDuplicateRegion()
     {
         // Arrange
-        _regionManager.CreateOrGetRegion("TestRegion");
+        var originalRegion = _regionManager.CreateOrGetRegion("TestRegion");
         var duplicateRegion = new Region("TestRegion");
 
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => _regionManager.RegisterRegion(duplicateRegion));
+        // Act - 중복 등록은 예외 없이 무시됨
+        _regionManager.RegisterRegion(duplicateRegion);
+
+        // Assert - 원래 Region이 유지됨
+        Assert.Same(originalRegion, _regionManager.GetRegion("TestRegion"));
     }
 
     [Fact]

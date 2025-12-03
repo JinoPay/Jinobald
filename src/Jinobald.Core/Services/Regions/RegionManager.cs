@@ -59,8 +59,9 @@ public class RegionManager : IRegionManager
         if (region == null)
             throw new ArgumentNullException(nameof(region));
 
+        // 이미 등록된 Region이면 기존 Region 사용 (중복 등록 허용)
         if (_regions.ContainsKey(region.Name))
-            throw new InvalidOperationException($"Region '{region.Name}' is already registered.");
+            return;
 
         _regions[region.Name] = region;
 
