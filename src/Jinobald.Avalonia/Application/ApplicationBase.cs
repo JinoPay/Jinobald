@@ -1,12 +1,17 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Jinobald.Avalonia.Controls;
 using Jinobald.Avalonia.Hosting;
 using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
+using Jinobald.Core.Services.Dialog;
 using Jinobald.Core.Services.Regions;
+using Jinobald.Core.Services.Toast;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using AvaloniaRegion = Jinobald.Avalonia.Services.Regions.Region;
@@ -215,6 +220,8 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
     /// </summary>
     protected virtual Task OnMainWindowShownAsync(Window mainWindow)
     {
+        // DialogHost와 ToastHost를 자동으로 찾아서 등록
+        AutoRegisterHosts(mainWindow);
         return Task.CompletedTask;
     }
 
@@ -249,6 +256,68 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
 
     protected virtual void HandleUnobservedTaskException(Exception exception)
     {
+    }
+
+    /// <summary>
+    ///     Visual Tree를 탐색하여 DialogHost와 ToastHost를 자동으로 등록합니다.
+    /// </summary>
+    private void AutoRegisterHosts(Window mainWindow)
+    {
+        if (Container == null)
+            return;
+
+        try
+        {
+            // DialogHost 찾기 및 등록
+            var dialogHost = FindVisualChild<DialogHost>(mainWindow);
+            if (dialogHost != null)
+            {
+                var dialogService = Container.Resolve<IDialogService>();
+                dialogService.RegisterHost(dialogHost);
+                Logger.Information("DialogHost가 자동으로 등록되었습니다.");
+            }
+            else
+            {
+                Logger.Warning("MainWindow에서 DialogHost를 찾을 수 없습니다. 다이얼로그 기능이 작동하지 않을 수 있습니다.");
+            }
+
+            // ToastHost 찾기 및 등록
+            var toastHost = FindVisualChild<ToastHost>(mainWindow);
+            if (toastHost != null)
+            {
+                var toastService = Container.Resolve<IToastService>();
+                toastService.RegisterHost(toastHost);
+                Logger.Information("ToastHost가 자동으로 등록되었습니다.");
+            }
+            else
+            {
+                Logger.Warning("MainWindow에서 ToastHost를 찾을 수 없습니다. Toast 알림 기능이 작동하지 않을 수 있습니다.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Host 자동 등록 중 오류 발생");
+        }
+    }
+
+    /// <summary>
+    ///     Visual Tree에서 특정 타입의 자식 컨트롤을 찾습니다.
+    /// </summary>
+    private static T? FindVisualChild<T>(Visual parent) where T : class
+    {
+        // 현재 노드가 찾고자 하는 타입인지 확인
+        if (parent is T result)
+            return result;
+
+        // 자식 노드들을 순회하며 재귀적으로 검색
+        foreach (var child in parent.GetVisualChildren())
+        {
+            var foundChild = FindVisualChild<T>(child);
+            if (foundChild != null)
+                return foundChild;
+        }
+
+        return null;
     }
 }
 
@@ -498,6 +567,8 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
     /// </summary>
     protected virtual Task OnMainWindowShownAsync(Window mainWindow)
     {
+        // DialogHost와 ToastHost를 자동으로 찾아서 등록
+        AutoRegisterHosts(mainWindow);
         return Task.CompletedTask;
     }
 
@@ -532,5 +603,67 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
 
     protected virtual void HandleUnobservedTaskException(Exception exception)
     {
+    }
+
+    /// <summary>
+    ///     Visual Tree를 탐색하여 DialogHost와 ToastHost를 자동으로 등록합니다.
+    /// </summary>
+    private void AutoRegisterHosts(Window mainWindow)
+    {
+        if (Container == null)
+            return;
+
+        try
+        {
+            // DialogHost 찾기 및 등록
+            var dialogHost = FindVisualChild<DialogHost>(mainWindow);
+            if (dialogHost != null)
+            {
+                var dialogService = Container.Resolve<IDialogService>();
+                dialogService.RegisterHost(dialogHost);
+                Logger.Information("DialogHost가 자동으로 등록되었습니다.");
+            }
+            else
+            {
+                Logger.Warning("MainWindow에서 DialogHost를 찾을 수 없습니다. 다이얼로그 기능이 작동하지 않을 수 있습니다.");
+            }
+
+            // ToastHost 찾기 및 등록
+            var toastHost = FindVisualChild<ToastHost>(mainWindow);
+            if (toastHost != null)
+            {
+                var toastService = Container.Resolve<IToastService>();
+                toastService.RegisterHost(toastHost);
+                Logger.Information("ToastHost가 자동으로 등록되었습니다.");
+            }
+            else
+            {
+                Logger.Warning("MainWindow에서 ToastHost를 찾을 수 없습니다. Toast 알림 기능이 작동하지 않을 수 있습니다.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Host 자동 등록 중 오류 발생");
+        }
+    }
+
+    /// <summary>
+    ///     Visual Tree에서 특정 타입의 자식 컨트롤을 찾습니다.
+    /// </summary>
+    private static T? FindVisualChild<T>(Visual parent) where T : class
+    {
+        // 현재 노드가 찾고자 하는 타입인지 확인
+        if (parent is T result)
+            return result;
+
+        // 자식 노드들을 순회하며 재귀적으로 검색
+        foreach (var child in parent.GetVisualChildren())
+        {
+            var foundChild = FindVisualChild<T>(child);
+            if (foundChild != null)
+                return foundChild;
+        }
+
+        return null;
     }
 }

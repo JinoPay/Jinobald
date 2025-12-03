@@ -1,19 +1,12 @@
 using Avalonia.Controls;
-using Jinobald.Core.Services.Dialog;
-using Jinobald.Core.Services.Toast;
 
 namespace Jinobald.Sample.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(IDialogService dialogService, IToastService toastService)
+    public MainWindow()
     {
         InitializeComponent();
-
-        // DialogService에 DialogHost 등록 (생성자 주입)
-        dialogService.RegisterHost(DialogHost);
-
-        // ToastService에 ToastHost 등록
-        toastService.RegisterHost(ToastHost);
+        // DialogHost와 ToastHost는 ApplicationBase에서 자동으로 등록됩니다.
     }
 }
