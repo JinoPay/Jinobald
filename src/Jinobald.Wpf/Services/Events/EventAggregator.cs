@@ -7,6 +7,7 @@ namespace Jinobald.Wpf.Services.Events;
 /// <summary>
 ///     이벤트 집계기 WPF 구현
 ///     Thread-safe한 Pub/Sub 패턴 구현
+///     Weak Reference 옵션 지원
 /// </summary>
 public sealed class EventAggregator : IEventAggregator
 {
@@ -38,18 +39,49 @@ public sealed class EventAggregator : IEventAggregator
 
     public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : PubSubEvent
     {
-        return SubscribeInternal<TEvent>(handler, threadOption);
+        return Subscribe(handler, threadOption, keepSubscriberReferenceAlive: true);
+    }
+
+    public SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption, bool keepSubscriberReferenceAlive) where TEvent : PubSubEvent
+    {
+        return SubscribeInternal<TEvent>(handler, null, threadOption, keepSubscriberReferenceAlive);
     }
 
     public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : PubSubEvent
     {
-        return Subscribe(handler, ThreadOption.UIThread);
+        return Subscribe(handler, ThreadOption.UIThread, keepSubscriberReferenceAlive: true);
     }
 
     public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption)
         where TEvent : PubSubEvent
     {
-        return SubscribeInternal<TEvent>(handler, threadOption);
+        return Subscribe(handler, threadOption, keepSubscriberReferenceAlive: true);
+    }
+
+    public SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption, bool keepSubscriberReferenceAlive)
+        where TEvent : PubSubEvent
+    {
+        return SubscribeInternal<TEvent>(handler, null, threadOption, keepSubscriberReferenceAlive);
+    }
+
+    public SubscriptionToken Subscribe<TEvent>(
+        Action<TEvent> handler,
+        Predicate<TEvent> filter,
+        ThreadOption threadOption = ThreadOption.UIThread,
+        bool keepSubscriberReferenceAlive = true) where TEvent : PubSubEvent
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SubscribeInternal<TEvent>(handler, filter, threadOption, keepSubscriberReferenceAlive);
+    }
+
+    public SubscriptionToken Subscribe<TEvent>(
+        Func<TEvent, Task> handler,
+        Predicate<TEvent> filter,
+        ThreadOption threadOption = ThreadOption.UIThread,
+        bool keepSubscriberReferenceAlive = true) where TEvent : PubSubEvent
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SubscribeInternal<TEvent>(handler, filter, threadOption, keepSubscriberReferenceAlive);
     }
 
     public async Task PublishAsync<TEvent>(TEvent eventData) where TEvent : PubSubEvent
@@ -59,6 +91,8 @@ public sealed class EventAggregator : IEventAggregator
             return;
 
         List<Subscription> subscriptionsCopy;
+        List<Subscription>? deadSubscriptions = null;
+
         lock (_lock)
         {
             subscriptionsCopy = subscriptions.ToList();
@@ -68,8 +102,26 @@ public sealed class EventAggregator : IEventAggregator
 
         foreach (var subscription in subscriptionsCopy)
         {
+            // Weak Reference가 죽었는지 확인
+            if (!subscription.IsAlive)
+            {
+                deadSubscriptions ??= new List<Subscription>();
+                deadSubscriptions.Add(subscription);
+                continue;
+            }
+
             var task = ExecuteHandlerAsync(subscription, eventData);
             if (task != null) tasks.Add(task);
+        }
+
+        // 죽은 구독 제거
+        if (deadSubscriptions != null)
+        {
+            lock (_lock)
+            {
+                foreach (var dead in deadSubscriptions)
+                    subscriptions.Remove(dead);
+            }
         }
 
         if (tasks.Count > 0) await Task.WhenAll(tasks);
@@ -82,12 +134,35 @@ public sealed class EventAggregator : IEventAggregator
             return;
 
         List<Subscription> subscriptionsCopy;
+        List<Subscription>? deadSubscriptions = null;
+
         lock (_lock)
         {
             subscriptionsCopy = subscriptions.ToList();
         }
 
-        foreach (var subscription in subscriptionsCopy) ExecuteHandler(subscription, eventData);
+        foreach (var subscription in subscriptionsCopy)
+        {
+            // Weak Reference가 죽었는지 확인
+            if (!subscription.IsAlive)
+            {
+                deadSubscriptions ??= new List<Subscription>();
+                deadSubscriptions.Add(subscription);
+                continue;
+            }
+
+            ExecuteHandler(subscription, eventData);
+        }
+
+        // 죽은 구독 제거
+        if (deadSubscriptions != null)
+        {
+            lock (_lock)
+            {
+                foreach (var dead in deadSubscriptions)
+                    subscriptions.Remove(dead);
+            }
+        }
     }
 
     public void Unsubscribe(SubscriptionToken token)
@@ -101,7 +176,7 @@ public sealed class EventAggregator : IEventAggregator
         }
     }
 
-    private SubscriptionToken SubscribeInternal<TEvent>(Delegate handler, ThreadOption threadOption)
+    private SubscriptionToken SubscribeInternal<TEvent>(Delegate handler, Delegate? filter, ThreadOption threadOption, bool keepSubscriberReferenceAlive)
         where TEvent : PubSubEvent
     {
         var eventType = typeof(TEvent);
@@ -111,7 +186,10 @@ public sealed class EventAggregator : IEventAggregator
         {
             Token = token,
             Handler = handler,
-            ThreadOption = threadOption
+            Filter = filter,
+            ThreadOption = threadOption,
+            IsWeakReference = !keepSubscriberReferenceAlive,
+            WeakHandler = keepSubscriberReferenceAlive ? null : new WeakReference<Delegate>(handler)
         };
 
         lock (_lock)
@@ -141,14 +219,22 @@ public sealed class EventAggregator : IEventAggregator
     {
         try
         {
+            var handler = subscription.GetHandler();
+            if (handler == null)
+                return null;
+
+            // Check filter predicate
+            if (subscription.Filter is Predicate<TEvent> filter && !filter(eventData))
+                return null;
+
             return subscription.ThreadOption switch
             {
-                ThreadOption.PublisherThread => InvokeHandlerAsync(subscription.Handler, eventData),
+                ThreadOption.PublisherThread => InvokeHandlerAsync(handler, eventData),
 
                 ThreadOption.UIThread => _dispatcher.InvokeAsync(async () =>
-                    await InvokeHandlerAsync(subscription.Handler, eventData)).Task,
+                    await InvokeHandlerAsync(handler, eventData)).Task,
 
-                ThreadOption.BackgroundThread => Task.Run(() => InvokeHandlerAsync(subscription.Handler, eventData)),
+                ThreadOption.BackgroundThread => Task.Run(() => InvokeHandlerAsync(handler, eventData)),
 
                 _ => null
             };
@@ -163,18 +249,26 @@ public sealed class EventAggregator : IEventAggregator
     {
         try
         {
+            var handler = subscription.GetHandler();
+            if (handler == null)
+                return;
+
+            // Check filter predicate
+            if (subscription.Filter is Predicate<TEvent> filter && !filter(eventData))
+                return;
+
             switch (subscription.ThreadOption)
             {
                 case ThreadOption.PublisherThread:
-                    InvokeHandler(subscription.Handler, eventData);
+                    InvokeHandler(handler, eventData);
                     break;
 
                 case ThreadOption.UIThread:
-                    _dispatcher.BeginInvoke(() => InvokeHandler(subscription.Handler, eventData));
+                    _dispatcher.BeginInvoke(() => InvokeHandler(handler, eventData));
                     break;
 
                 case ThreadOption.BackgroundThread:
-                    ThreadPool.QueueUserWorkItem(_ => InvokeHandler(subscription.Handler, eventData));
+                    ThreadPool.QueueUserWorkItem(_ => InvokeHandler(handler, eventData));
                     break;
             }
         }
@@ -202,6 +296,28 @@ public sealed class EventAggregator : IEventAggregator
     {
         public required Delegate Handler { get; init; }
         public required SubscriptionToken Token { get; init; }
+        public Delegate? Filter { get; init; }
         public ThreadOption ThreadOption { get; init; }
+        public bool IsWeakReference { get; init; }
+        public WeakReference<Delegate>? WeakHandler { get; init; }
+
+        /// <summary>
+        ///     현재 유효한 핸들러 가져오기 (Weak Reference인 경우 null 반환 가능)
+        /// </summary>
+        public Delegate? GetHandler()
+        {
+            if (!IsWeakReference)
+                return Handler;
+
+            if (WeakHandler != null && WeakHandler.TryGetTarget(out var handler))
+                return handler;
+
+            return null;
+        }
+
+        /// <summary>
+        ///     구독이 유효한지 확인 (Weak Reference가 살아있는지)
+        /// </summary>
+        public bool IsAlive => !IsWeakReference || (WeakHandler?.TryGetTarget(out _) ?? false);
     }
 }

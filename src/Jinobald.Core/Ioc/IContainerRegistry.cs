@@ -96,4 +96,18 @@ public interface IContainerRegistry
     /// <typeparam name="TTo">구현 타입</typeparam>
     /// <returns>현재 레지스트리</returns>
     IContainerRegistry RegisterScoped<TFrom, TTo>() where TFrom : class where TTo : class, TFrom;
+
+    /// <summary>
+    ///     스코프드로 서비스를 등록합니다.
+    /// </summary>
+    /// <param name="type">서비스 타입</param>
+    /// <returns>현재 레지스트리</returns>
+    IContainerRegistry RegisterScoped(Type type);
+
+    /// <summary>
+    ///     스코프드로 서비스를 등록합니다.
+    /// </summary>
+    /// <typeparam name="T">서비스 타입</typeparam>
+    /// <returns>현재 레지스트리</returns>
+    IContainerRegistry RegisterScoped<T>() where T : class;
 }

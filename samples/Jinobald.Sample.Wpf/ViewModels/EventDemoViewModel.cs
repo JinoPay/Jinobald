@@ -152,9 +152,12 @@ public partial class EventDemoViewModel : ViewModelBase
             EventLog.RemoveAt(EventLog.Count - 1);
     }
 
-    protected override void OnDestroy()
+    protected override void OnDestroy(bool disposing)
     {
-        AddLog("EventDemoViewModel destroyed");
-        base.OnDestroy();
+        if (disposing)
+        {
+            AddLog("EventDemoViewModel destroyed");
+        }
+        base.OnDestroy(disposing);
     }
 }

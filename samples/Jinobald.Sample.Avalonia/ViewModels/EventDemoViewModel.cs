@@ -155,10 +155,13 @@ public partial class EventDemoViewModel : ViewModelBase
             EventLog.RemoveAt(EventLog.Count - 1);
     }
 
-    protected override void OnDestroy()
+    protected override void OnDestroy(bool disposing)
     {
-        // 구독 해제는 WeakReference로 자동 처리되지만, 명시적 해제 권장
-        AddLog("EventDemoViewModel 소멸");
-        base.OnDestroy();
+        if (disposing)
+        {
+            // 구독 해제는 WeakReference로 자동 처리되지만, 명시적 해제 권장
+            AddLog("EventDemoViewModel 소멸");
+        }
+        base.OnDestroy(disposing);
     }
 }

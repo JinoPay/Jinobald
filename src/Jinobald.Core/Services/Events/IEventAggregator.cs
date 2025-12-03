@@ -49,6 +49,17 @@ public interface IEventAggregator
     SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption) where TEvent : PubSubEvent;
 
     /// <summary>
+    ///     이벤트 구독 (스레드 옵션 및 참조 유지 옵션 지정)
+    /// </summary>
+    /// <param name="handler">이벤트 핸들러</param>
+    /// <param name="threadOption">실행 스레드 옵션</param>
+    /// <param name="keepSubscriberReferenceAlive">
+    ///     true이면 Strong Reference 유지 (기본값),
+    ///     false이면 Weak Reference 사용 (구독자가 GC되면 자동 구독 해제)
+    /// </param>
+    SubscriptionToken Subscribe<TEvent>(Action<TEvent> handler, ThreadOption threadOption, bool keepSubscriberReferenceAlive) where TEvent : PubSubEvent;
+
+    /// <summary>
     ///     비동기 이벤트 구독 (기본: UI 스레드)
     /// </summary>
     SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : PubSubEvent;
@@ -57,6 +68,34 @@ public interface IEventAggregator
     ///     비동기 이벤트 구독 (스레드 옵션 지정)
     /// </summary>
     SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption) where TEvent : PubSubEvent;
+
+    /// <summary>
+    ///     비동기 이벤트 구독 (스레드 옵션 및 참조 유지 옵션 지정)
+    /// </summary>
+    SubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> handler, ThreadOption threadOption, bool keepSubscriberReferenceAlive) where TEvent : PubSubEvent;
+
+    /// <summary>
+    ///     이벤트 구독 (필터 조건 지정)
+    ///     필터 조건을 만족하는 이벤트만 핸들러로 전달됩니다.
+    /// </summary>
+    /// <param name="handler">이벤트 핸들러</param>
+    /// <param name="filter">이벤트 필터 (true 반환 시에만 핸들러 호출)</param>
+    /// <param name="threadOption">실행 스레드 옵션</param>
+    /// <param name="keepSubscriberReferenceAlive">참조 유지 옵션</param>
+    SubscriptionToken Subscribe<TEvent>(
+        Action<TEvent> handler,
+        Predicate<TEvent> filter,
+        ThreadOption threadOption = ThreadOption.UIThread,
+        bool keepSubscriberReferenceAlive = true) where TEvent : PubSubEvent;
+
+    /// <summary>
+    ///     비동기 이벤트 구독 (필터 조건 지정)
+    /// </summary>
+    SubscriptionToken Subscribe<TEvent>(
+        Func<TEvent, Task> handler,
+        Predicate<TEvent> filter,
+        ThreadOption threadOption = ThreadOption.UIThread,
+        bool keepSubscriberReferenceAlive = true) where TEvent : PubSubEvent;
 
     /// <summary>
     ///     이벤트를 비동기로 발행

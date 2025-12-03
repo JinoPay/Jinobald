@@ -1,4 +1,5 @@
 using Jinobald.Core.Ioc;
+using Jinobald.Core.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -19,6 +20,16 @@ public abstract class ApplicationBase
     ///     스플래시 화면
     /// </summary>
     protected ISplashScreen? SplashScreen { get; private set; }
+
+    /// <summary>
+    ///     모듈 카탈로그
+    /// </summary>
+    protected IModuleCatalog? ModuleCatalog { get; private set; }
+
+    /// <summary>
+    ///     모듈 매니저
+    /// </summary>
+    protected IModuleManager? ModuleManager { get; private set; }
 
     /// <summary>
     ///     로거
@@ -61,17 +72,27 @@ public abstract class ApplicationBase
             Container = services.AsContainerExtension();
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
-            SplashScreen.UpdateProgress("서비스 구성 완료", 0.5);
+            SplashScreen.UpdateProgress("서비스 구성 완료", 0.4);
 
-            // 5. 애플리케이션별 초기화
+            // 5. 모듈 카탈로그 구성
+            ModuleCatalog = CreateModuleCatalog();
+            ConfigureModuleCatalog(ModuleCatalog);
+            SplashScreen.UpdateProgress("모듈 카탈로그 구성 완료", 0.5);
+
+            // 6. 모듈 초기화
+            ModuleManager = CreateModuleManager();
+            InitializeModules();
+            SplashScreen.UpdateProgress("모듈 초기화 완료", 0.6);
+
+            // 7. 애플리케이션별 초기화
             await OnInitializeAsync();
             SplashScreen.UpdateProgress("애플리케이션 구성 중...", 0.7);
 
-            // 6. 메인 윈도우 생성
+            // 8. 메인 윈도우 생성
             await CreateAndShowMainWindowAsync();
             SplashScreen.UpdateProgress("메인 화면 로드 중...", 0.9);
 
-            // 7. 스플래시 화면 닫기
+            // 9. 스플래시 화면 닫기
             await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
@@ -189,6 +210,52 @@ public abstract class ApplicationBase
     {
         // 기본 구현: 로깅만 수행
         // 파생 클래스에서 추가 처리 가능
+    }
+
+    /// <summary>
+    ///     모듈 카탈로그를 생성합니다.
+    ///     파생 클래스에서 오버라이드하여 커스텀 카탈로그를 사용할 수 있습니다.
+    /// </summary>
+    /// <returns>모듈 카탈로그</returns>
+    protected virtual IModuleCatalog CreateModuleCatalog()
+    {
+        return new ModuleCatalog();
+    }
+
+    /// <summary>
+    ///     모듈 카탈로그에 모듈을 등록합니다.
+    ///     파생 클래스에서 오버라이드하여 모듈을 추가합니다.
+    /// </summary>
+    /// <param name="moduleCatalog">모듈 카탈로그</param>
+    protected virtual void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+    {
+        // 기본 구현: 빈 카탈로그
+        // 파생 클래스에서 모듈 등록:
+        // moduleCatalog.AddModule<MyModule>();
+    }
+
+    /// <summary>
+    ///     모듈 매니저를 생성합니다.
+    ///     파생 클래스에서 오버라이드하여 커스텀 매니저를 사용할 수 있습니다.
+    /// </summary>
+    /// <returns>모듈 매니저</returns>
+    protected virtual IModuleManager CreateModuleManager()
+    {
+        if (Container == null)
+            throw new InvalidOperationException("Container must be initialized before creating ModuleManager.");
+
+        if (ModuleCatalog == null)
+            throw new InvalidOperationException("ModuleCatalog must be created before creating ModuleManager.");
+
+        return new ModuleManager(ModuleCatalog, Container, Container);
+    }
+
+    /// <summary>
+    ///     모듈을 초기화합니다.
+    /// </summary>
+    protected virtual void InitializeModules()
+    {
+        ModuleManager?.Run();
     }
 
     /// <summary>

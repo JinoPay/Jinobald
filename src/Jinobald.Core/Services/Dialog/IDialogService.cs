@@ -74,6 +74,19 @@ public interface IDialogAware
 }
 
 /// <summary>
+///     제네릭 다이얼로그 ViewModel 인터페이스
+///     강타입 데이터를 반환할 때 사용합니다.
+/// </summary>
+/// <typeparam name="T">반환 데이터 타입</typeparam>
+public interface IDialogAware<T> : IDialogAware
+{
+    /// <summary>
+    ///     다이얼로그 닫기 요청 이벤트 (강타입)
+    /// </summary>
+    new event Action<IDialogResult<T>>? RequestClose;
+}
+
+/// <summary>
 ///     다이얼로그 파라미터
 /// </summary>
 public interface IDialogParameters
@@ -127,6 +140,19 @@ public interface IDialogResult
     ///     다이얼로그 파라미터 (추가 데이터 전달용)
     /// </summary>
     IDialogParameters Parameters { get; }
+}
+
+/// <summary>
+///     제네릭 다이얼로그 결과
+///     강타입 데이터를 반환할 때 사용합니다.
+/// </summary>
+/// <typeparam name="T">반환 데이터 타입</typeparam>
+public interface IDialogResult<out T> : IDialogResult
+{
+    /// <summary>
+    ///     다이얼로그에서 반환된 데이터
+    /// </summary>
+    T? Data { get; }
 }
 
 /// <summary>

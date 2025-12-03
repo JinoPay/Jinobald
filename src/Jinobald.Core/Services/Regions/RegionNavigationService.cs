@@ -370,15 +370,13 @@ public class RegionNavigationService : IRegionNavigationService
 
     /// <summary>
     ///     현재 뷰에서 나갈 수 있는지 확인 (Guard)
+    ///     IConfirmNavigationRequest, IConfirmNavigationRequestAsync, INavigationAware 순으로 확인
     /// </summary>
     private async Task<bool> CanNavigateFromAsync(NavigationContext context)
     {
-        if (CurrentViewModel is INavigationAware aware)
-        {
-            return await aware.OnNavigatingFromAsync(context);
-        }
-
-        return true;
+        // IConfirmNavigationRequest 또는 IConfirmNavigationRequestAsync를 통합적으로 처리
+        // 이 메서드는 INavigationAware.OnNavigatingFromAsync도 확인함
+        return await context.ConfirmNavigationAsync(CurrentViewModel);
     }
 
     /// <summary>

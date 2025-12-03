@@ -140,6 +140,18 @@ public sealed class MicrosoftDependencyInjectionExtension : IContainerExtension
         return this;
     }
 
+    public IContainerRegistry RegisterScoped(Type type)
+    {
+        _services.AddScoped(type);
+        return this;
+    }
+
+    public IContainerRegistry RegisterScoped<T>() where T : class
+    {
+        _services.AddScoped<T>();
+        return this;
+    }
+
     #endregion
 
     #region IContainerExtension Implementation

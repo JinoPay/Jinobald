@@ -93,10 +93,13 @@ public partial class ThemeDemoViewModel : ViewModelBase
         _themeService.SetTheme("Dark");
     }
 
-    protected override void OnDestroy()
+    protected override void OnDestroy(bool disposing)
     {
-        _themeService.ThemeChanged -= OnThemeChanged;
-        _settingsService.SettingsChanged -= OnSettingsChanged;
-        base.OnDestroy();
+        if (disposing)
+        {
+            _themeService.ThemeChanged -= OnThemeChanged;
+            _settingsService.SettingsChanged -= OnSettingsChanged;
+        }
+        base.OnDestroy(disposing);
     }
 }
