@@ -9,6 +9,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 ### Core Features
 - **🎯 View-First Region Navigation** - Prism 스타일의 리전 기반 View-First 네비게이션 (Back/Forward, KeepAlive 지원)
 - **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템 (중첩 지원, 강타입 `IDialogResult<T>`)
+- **🔔 Toast Service** - 현대적이고 비침투적인 알림 시스템 (자동 닫힘, 위치 설정, UI 커스터마이징)
 - **📡 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신 (Weak Event, 필터 지원)
 - **🎨 Theme Management** - 동적 테마 전환 및 스타일 관리 (Light/Dark/System)
 - **💾 Strongly-Typed Settings** - 컴파일 타임 타입 안전성과 IntelliSense 지원하는 설정 시스템
@@ -596,6 +597,187 @@ public enum ButtonResult
     Retry = 6,   // Retry 버튼
     Ignore = 7   // Ignore 버튼
 }
+```
+
+### 🔔 Toast Service
+
+현대적이고 비침투적인 알림 시스템을 제공합니다.
+
+**주요 기능:**
+- ✅ 비침투적(non-intrusive) 알림 방식
+- ✅ 자동 닫힘 (타임아웃 설정 가능)
+- ✅ 여러 토스트 동시 표시 가능
+- ✅ 4가지 토스트 타입 (Success, Info, Warning, Error)
+- ✅ 커스터마이징 가능한 UI (DataTemplate)
+- ✅ 위치 설정 지원 (TopRight, BottomRight 등)
+
+#### ToastHost 설정
+
+**1. App.axaml에 ToastHost 스타일 포함 (Avalonia):**
+
+```xml
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="YourApp.App">
+    <Application.Styles>
+        <FluentTheme />
+        <!-- ToastHost 스타일 포함 -->
+        <StyleInclude Source="avares://Jinobald.Avalonia/Controls/ToastHost.axaml"/>
+    </Application.Styles>
+</Application>
+```
+
+**2. MainWindow에 ToastHost 추가:**
+
+```xml
+<Window xmlns:jino="https://github.com/JinoPay/Jinobald"
+        ...>
+    <Grid>
+        <!-- 메인 콘텐츠 -->
+        <ContentControl jino:Region.Name="MainContentRegion" />
+
+        <!-- ToastHost는 콘텐츠 위에 오버레이 -->
+        <jino:ToastHost x:Name="ToastHost" Position="TopRight" />
+    </Grid>
+</Window>
+```
+
+**3. 코드비하인드에서 ToastService 등록:**
+
+```csharp
+// Avalonia
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        // ToastHost를 ToastService에 등록
+        var toastService = ContainerLocator.Current.Resolve<IToastService>();
+        toastService.RegisterHost(ToastHost);
+    }
+}
+
+// WPF
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var toastService = ContainerLocator.Current.Resolve<IToastService>();
+        toastService.RegisterHost(ToastHost);
+    }
+}
+```
+
+#### 토스트 사용법
+
+**간단한 사용:**
+
+```csharp
+public partial class MainViewModel : ViewModelBase
+{
+    private readonly IToastService _toastService;
+
+    public MainViewModel(IToastService toastService)
+    {
+        _toastService = toastService;
+    }
+
+    [RelayCommand]
+    private void SaveData()
+    {
+        // 데이터 저장 로직...
+
+        // 성공 토스트 표시
+        _toastService.ShowSuccess("데이터가 저장되었습니다!");
+    }
+
+    [RelayCommand]
+    private void LoadData()
+    {
+        try
+        {
+            // 데이터 로드 로직...
+            _toastService.ShowInfo("데이터를 불러왔습니다.");
+        }
+        catch (Exception ex)
+        {
+            _toastService.ShowError($"오류 발생: {ex.Message}");
+        }
+    }
+}
+```
+
+**커스텀 토스트:**
+
+```csharp
+// 긴 메시지와 커스텀 표시 시간
+_toastService.ShowInfo(
+    "이것은 상세한 메시지입니다...",
+    title: "상세 정보",
+    duration: 5  // 5초 동안 표시
+);
+
+// 완전히 커스텀 토스트
+_toastService.Show(new ToastMessage
+{
+    Type = ToastType.Warning,
+    Title = "주의",
+    Message = "이 작업은 취소할 수 없습니다.",
+    Duration = 10  // 10초 동안 표시
+});
+```
+
+**여러 토스트 동시 표시:**
+
+```csharp
+_toastService.ShowSuccess("첫 번째 작업 완료");
+_toastService.ShowSuccess("두 번째 작업 완료");
+_toastService.ShowInfo("세 번째 작업 완료");
+// 모든 토스트가 동시에 표시됨
+```
+
+**모든 토스트 닫기:**
+
+```csharp
+_toastService.ClearAll();
+```
+
+#### ToastPosition 종류
+
+```csharp
+public enum ToastPosition
+{
+    TopRight,     // 상단 오른쪽 (기본값)
+    TopLeft,      // 상단 왼쪽
+    TopCenter,    // 상단 중앙
+    BottomRight,  // 하단 오른쪽
+    BottomLeft,   // 하단 왼쪽
+    BottomCenter  // 하단 중앙
+}
+```
+
+#### UI 커스터마이징
+
+ToastHost는 사용자가 DataTemplate을 통해 UI를 완전히 커스터마이징할 수 있습니다:
+
+```xml
+<jino:ToastHost x:Name="ToastHost" Position="TopRight">
+    <jino:ToastHost.ItemTemplate>
+        <DataTemplate DataType="toast:ToastMessage">
+            <!-- 커스텀 토스트 UI -->
+            <Border Background="Purple" CornerRadius="16" Padding="20">
+                <TextBlock Text="{Binding Message}" Foreground="White" />
+            </Border>
+        </DataTemplate>
+    </jino:ToastHost.ItemTemplate>
+</jino:ToastHost>
 ```
 
 ### 🔄 Event Aggregation
