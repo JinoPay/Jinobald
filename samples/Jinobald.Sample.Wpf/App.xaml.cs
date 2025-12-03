@@ -4,6 +4,7 @@ using System.Windows;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Core.Services.Theme;
+using Jinobald.Sample.Wpf.Settings;
 using Jinobald.Sample.Wpf.ViewModels;
 using Jinobald.Sample.Wpf.ViewModels.Dialogs;
 using Jinobald.Sample.Wpf.ViewModels.Regions;
@@ -18,6 +19,9 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
 {
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // Strongly-Typed 설정 서비스 등록
+        containerRegistry.RegisterSettings<AppSettings>();
+
         // MainWindow ViewModel 등록
         containerRegistry.RegisterSingleton<MainWindowViewModel>();
 

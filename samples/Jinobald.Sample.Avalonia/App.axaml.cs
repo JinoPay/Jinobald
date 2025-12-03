@@ -2,6 +2,7 @@ using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
+using Jinobald.Sample.Avalonia.Settings;
 using Jinobald.Sample.Avalonia.ViewModels;
 using Jinobald.Sample.Avalonia.ViewModels.Dialogs;
 using Jinobald.Sample.Avalonia.ViewModels.Regions;
@@ -20,6 +21,9 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // Strongly-Typed 설정 서비스 등록
+        containerRegistry.RegisterSettings<AppSettings>();
+
         // MainWindow ViewModel 등록
         containerRegistry.RegisterSingleton<MainWindowViewModel>();
 

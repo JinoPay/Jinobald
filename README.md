@@ -678,48 +678,110 @@ public partial class SettingsViewModel : ViewModelBase
 
 ### 💾 Settings Service
 
-타입 안전한 애플리케이션 설정 관리를 제공합니다.
+Strongly-Typed 설정 서비스를 제공합니다. 컴파일 타임 타입 안전성과 IntelliSense 지원을 제공합니다.
+
+#### 설정 클래스 정의
 
 ```csharp
-public partial class AppSettingsViewModel : ViewModelBase
+// Settings/AppSettings.cs
+public class AppSettings
 {
-    private readonly ISettingsService _settingsService;
+    public string Theme { get; set; } = "Light";
+    public string Language { get; set; } = "ko-KR";
+    public WindowSettings Window { get; set; } = new();
+    public UserSettings User { get; set; } = new();
+}
 
-    public AppSettingsViewModel(ISettingsService settingsService)
+public class WindowSettings
+{
+    public double Width { get; set; } = 1024;
+    public double Height { get; set; } = 768;
+    public bool IsMaximized { get; set; }
+}
+
+public class UserSettings
+{
+    public string Name { get; set; } = string.Empty;
+    public bool AutoSave { get; set; } = true;
+    public int MaxRecentFiles { get; set; } = 10;
+}
+```
+
+#### 설정 서비스 등록
+
+```csharp
+// App.xaml.cs 또는 App.axaml.cs
+protected override void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // Strongly-Typed 설정 서비스 등록
+    containerRegistry.RegisterSettings<AppSettings>();
+
+    // 사용자 지정 파일 경로로 등록
+    // containerRegistry.RegisterSettings<AppSettings>("C:/MyApp/settings.json");
+}
+```
+
+#### ViewModel에서 사용
+
+```csharp
+public partial class SettingsViewModel : ViewModelBase
+{
+    private readonly ITypedSettingsService<AppSettings> _settings;
+
+    public SettingsViewModel(ITypedSettingsService<AppSettings> settings)
     {
-        _settingsService = settingsService;
+        _settings = settings;
+
+        // 타입 안전한 설정 접근 (IntelliSense 지원!)
+        var theme = _settings.Value.Theme;
+        var userName = _settings.Value.User.Name;
 
         // 설정 변경 감지
-        _settingsService.SettingChanged += OnSettingChanged;
-
-        LoadSettings();
-    }
-
-    private void LoadSettings()
-    {
-        Language = _settingsService.Get("Language", "ko-KR");
-        Theme = _settingsService.Get("Theme", "Light");
-        AutoSave = _settingsService.Get("AutoSave", true);
-        MaxRecentFiles = _settingsService.Get("MaxRecentFiles", 10);
+        _settings.SettingsChanged += OnSettingsChanged;
     }
 
     [RelayCommand]
-    private void SaveSettings()
+    private void ChangeTheme(string theme)
     {
-        _settingsService.Set("Language", Language);
-        _settingsService.Set("Theme", Theme);
-        _settingsService.Set("AutoSave", AutoSave);
-        _settingsService.Set("MaxRecentFiles", MaxRecentFiles);
-
-        // 자동으로 JSON 파일에 저장됨
+        // 설정 업데이트 (자동 저장됨)
+        _settings.Update(s => s.Theme = theme);
     }
 
-    private void OnSettingChanged(string key, object value)
+    [RelayCommand]
+    private void UpdateUserSettings()
     {
-        Console.WriteLine($"Setting changed: {key} = {value}");
+        // 중첩된 설정도 쉽게 업데이트
+        _settings.Update(s =>
+        {
+            s.User.Name = "홍길동";
+            s.User.AutoSave = true;
+            s.User.MaxRecentFiles = 20;
+        });
+    }
+
+    [RelayCommand]
+    private void ResetToDefaults()
+    {
+        // 기본값으로 초기화
+        _settings.Reset();
+    }
+
+    private void OnSettingsChanged(AppSettings settings)
+    {
+        Console.WriteLine($"테마 변경됨: {settings.Theme}");
     }
 }
 ```
+
+#### 키-값 vs Strongly-Typed 비교
+
+| 기능 | 키-값 방식 | Strongly-Typed |
+|------|-----------|----------------|
+| 컴파일 타임 검증 | ❌ 런타임 오류 | ✅ 컴파일 오류 |
+| IntelliSense | ❌ | ✅ |
+| 리팩토링 | ❌ 수동 검색 | ✅ 자동 |
+| 중첩 설정 | 불편함 | 자연스러움 |
+| 기본값 정의 | 코드에 분산 | 클래스에 집중 |
 
 
 ## 🔌 의존성 주입

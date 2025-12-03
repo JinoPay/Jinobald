@@ -1,3 +1,5 @@
+using Jinobald.Core.Services.Settings;
+
 namespace Jinobald.Core.Ioc;
 
 /// <summary>
@@ -118,6 +120,42 @@ public static class ContainerRegistryExtensions
         where TViewModel : class
     {
         containerRegistry.RegisterSingleton<TViewModel>();
+        return containerRegistry;
+    }
+
+    #endregion
+
+    #region RegisterSettings
+
+    /// <summary>
+    ///     Strongly-Typed 설정 서비스를 싱글톤으로 등록합니다.
+    ///     기본 경로(%AppData%/Jinobald/{typename}.json)에 저장됩니다.
+    /// </summary>
+    /// <typeparam name="TSettings">설정 POCO 클래스 타입</typeparam>
+    /// <param name="containerRegistry">컨테이너 레지스트리</param>
+    /// <returns>현재 레지스트리</returns>
+    public static IContainerRegistry RegisterSettings<TSettings>(this IContainerRegistry containerRegistry)
+        where TSettings : class, new()
+    {
+        containerRegistry.RegisterSingleton<ITypedSettingsService<TSettings>, JsonTypedSettingsService<TSettings>>();
+        return containerRegistry;
+    }
+
+    /// <summary>
+    ///     Strongly-Typed 설정 서비스를 싱글톤으로 등록합니다.
+    ///     사용자 지정 파일 경로에 저장됩니다.
+    /// </summary>
+    /// <typeparam name="TSettings">설정 POCO 클래스 타입</typeparam>
+    /// <param name="containerRegistry">컨테이너 레지스트리</param>
+    /// <param name="settingsFilePath">설정 파일의 전체 경로</param>
+    /// <returns>현재 레지스트리</returns>
+    public static IContainerRegistry RegisterSettings<TSettings>(
+        this IContainerRegistry containerRegistry,
+        string settingsFilePath)
+        where TSettings : class, new()
+    {
+        var service = new JsonTypedSettingsService<TSettings>(settingsFilePath);
+        containerRegistry.RegisterInstance<ITypedSettingsService<TSettings>>(service);
         return containerRegistry;
     }
 
