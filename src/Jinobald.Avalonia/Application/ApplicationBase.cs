@@ -55,7 +55,7 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
     }
 
     /// <summary>
-    ///     기본 스타일 로드 (DialogHost 등)
+    ///     기본 스타일 로드 (DialogHost, ToastHost 등)
     /// </summary>
     private void LoadDefaultStyles()
     {
@@ -65,6 +65,13 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
             Source = new System.Uri("avares://Jinobald.Avalonia/Controls/DialogHost.axaml")
         };
         Styles.Add(dialogHostStyle);
+
+        // ToastHost 스타일 자동 추가
+        var toastHostStyle = new StyleInclude(new System.Uri("avares://Jinobald.Avalonia/"))
+        {
+            Source = new System.Uri("avares://Jinobald.Avalonia/Controls/ToastHost.axaml")
+        };
+        Styles.Add(toastHostStyle);
     }
 
     /// <summary>
@@ -298,7 +305,7 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
     }
 
     /// <summary>
-    ///     기본 스타일 로드 (DialogHost 등)
+    ///     기본 스타일 로드 (DialogHost, ToastHost 등)
     /// </summary>
     private void LoadDefaultStyles()
     {
@@ -308,6 +315,13 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
             Source = new System.Uri("avares://Jinobald.Avalonia/Controls/DialogHost.axaml")
         };
         Styles.Add(dialogHostStyle);
+
+        // ToastHost 스타일 자동 추가
+        var toastHostStyle = new StyleInclude(new System.Uri("avares://Jinobald.Avalonia/"))
+        {
+            Source = new System.Uri("avares://Jinobald.Avalonia/Controls/ToastHost.axaml")
+        };
+        Styles.Add(toastHostStyle);
     }
 
     /// <summary>

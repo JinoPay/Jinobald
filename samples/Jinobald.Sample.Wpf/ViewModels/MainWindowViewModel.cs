@@ -52,6 +52,12 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task NavigateToToastDemo()
+    {
+        await _regionManager.NavigateAsync<ToastDemoView>("MainContentRegion");
+    }
+
+    [RelayCommand]
     private async Task NavigateToAdvancedDemo()
     {
         await _regionManager.NavigateAsync<AdvancedDemoView>("MainContentRegion");

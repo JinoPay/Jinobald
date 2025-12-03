@@ -250,6 +250,7 @@ WPF와 Avalonia 샘플 앱은 프레임워크의 모든 주요 기능을 데모�
 | **Themes** | 동적 테마 전환 (Light/Dark), 설정 저장 | `IThemeService`, `ITypedSettingsService` |
 | **Regions** | 다중 리전, KeepAlive, NavigationMode | `IRegionManager` |
 | **Events** | Pub/Sub 이벤트, ThreadOption, 구독/발행 | `IEventAggregator` |
+| **Toasts** | 비침투적 알림, 4가지 타입, 위치 설정, 자동 닫힘 | `IToastService` |
 | **Advanced** | ValidatableViewModelBase, CompositeCommand, Event Filter/Weak, IConfirmNavigationRequest, IRegionMemberLifetime, IDisposable | 복합 |
 
 ```bash
@@ -435,19 +436,9 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 
 #### DialogHost 설정
 
-**1. App.axaml에 DialogHost 스타일 포함 (Avalonia):**
+**1. DialogHost 스타일은 자동으로 로드됩니다**
 
-```xml
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="YourApp.App">
-    <Application.Styles>
-        <FluentTheme />
-        <!-- DialogHost 스타일 포함 (필수!) -->
-        <StyleInclude Source="avares://Jinobald.Avalonia/Controls/DialogHost.axaml"/>
-    </Application.Styles>
-</Application>
-```
+`ApplicationBase`가 자동으로 DialogHost 스타일을 로드하므로, 별도로 StyleInclude를 추가할 필요가 없습니다.
 
 **2. MainWindow에 DialogHost 추가:**
 
@@ -461,34 +452,17 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 </Window>
 ```
 
-**3. 코드비하인드에서 DialogService 등록:**
+**3. 코드비하인드에서 DialogService 등록 (생성자 주입):**
 
 ```csharp
-// Avalonia
+// Avalonia & WPF
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(IDialogService dialogService)
     {
         InitializeComponent();
 
-        // DialogHost를 DialogService에 등록
-        var dialogService = ContainerLocator.Current.Resolve<IDialogService>();
-        dialogService.RegisterHost(DialogHost);
-    }
-}
-
-// WPF
-public partial class MainWindow : Window
-{
-    public MainWindow()
-    {
-        InitializeComponent();
-        Loaded += OnLoaded;
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        var dialogService = ContainerLocator.Current.Resolve<IDialogService>();
+        // DialogHost를 DialogService에 등록 (생성자 주입)
         dialogService.RegisterHost(DialogHost);
     }
 }
@@ -613,63 +587,39 @@ public enum ButtonResult
 
 #### ToastHost 설정
 
-**1. App.axaml에 ToastHost 스타일 포함 (Avalonia):**
+**1. ToastHost 스타일은 자동으로 로드됩니다**
 
-```xml
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="YourApp.App">
-    <Application.Styles>
-        <FluentTheme />
-        <!-- ToastHost 스타일 포함 -->
-        <StyleInclude Source="avares://Jinobald.Avalonia/Controls/ToastHost.axaml"/>
-    </Application.Styles>
-</Application>
-```
+`ApplicationBase`가 자동으로 ToastHost 스타일을 로드하므로, 별도로 StyleInclude를 추가할 필요가 없습니다.
 
 **2. MainWindow에 ToastHost 추가:**
 
 ```xml
 <Window xmlns:jino="https://github.com/JinoPay/Jinobald"
         ...>
-    <Grid>
+    <Panel>
         <!-- 메인 콘텐츠 -->
         <ContentControl jino:Region.Name="MainContentRegion" />
 
-        <!-- ToastHost는 콘텐츠 위에 오버레이 -->
-        <jino:ToastHost x:Name="ToastHost" Position="TopRight" />
-    </Grid>
+        <!-- ToastHost는 콘텐츠 위에 오버레이 (Panel의 마지막 자식으로 배치) -->
+        <jino:ToastHost x:Name="ToastHost" Position="TopRight" MaxToasts="5" />
+    </Panel>
 </Window>
 ```
 
-**3. 코드비하인드에서 ToastService 등록:**
+> **중요:** ToastHost는 Panel의 **마지막 자식**으로 배치해야 다른 콘텐츠 위에 표시됩니다.
+
+**3. 코드비하인드에서 ToastService 등록 (생성자 주입):**
 
 ```csharp
-// Avalonia
+// Avalonia & WPF
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(IDialogService dialogService, IToastService toastService)
     {
         InitializeComponent();
 
-        // ToastHost를 ToastService에 등록
-        var toastService = ContainerLocator.Current.Resolve<IToastService>();
-        toastService.RegisterHost(ToastHost);
-    }
-}
-
-// WPF
-public partial class MainWindow : Window
-{
-    public MainWindow()
-    {
-        InitializeComponent();
-        Loaded += OnLoaded;
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        var toastService = ContainerLocator.Current.Resolve<IToastService>();
+        // DialogService와 ToastService에 Host 등록 (생성자 주입)
+        dialogService.RegisterHost(DialogHost);
         toastService.RegisterHost(ToastHost);
     }
 }
