@@ -8,4 +8,7 @@
     <Project Path="samples/Jinobald.Sample.Wpf/Jinobald.Sample.Wpf.csproj" />
     <Project Path="samples\Jinobald.Sample.Avalonia\Jinobald.Sample.Avalonia.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\Jinobald.Core.Tests\Jinobald.Core.Tests.csproj" />
+  </Folder>
 </Solution>
