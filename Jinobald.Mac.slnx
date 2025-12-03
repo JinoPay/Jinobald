@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Jinobald.Core/Jinobald.Core.csproj" />
+    <Project Path="src/Jinobald.Avalonia/Jinobald.Avalonia.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
+  </Folder>
+</Solution>
