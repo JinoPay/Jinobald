@@ -9,14 +9,14 @@ using Jinobald.Sample.Avalonia.Views.Regions;
 
 namespace Jinobald.Sample.Avalonia;
 
-public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>
+public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    public override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
@@ -45,7 +45,7 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         containerRegistry.RegisterForNavigation<GreenItemView>();
     }
 
-    protected override void ConfigureRegions(IRegionManager regionManager)
+    public override void ConfigureRegions(IRegionManager regionManager)
     {
         // Region에 기본 View 등록
         regionManager.RegisterViewWithRegion<HomeView>("MainContentRegion");

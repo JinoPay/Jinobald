@@ -61,36 +61,36 @@ public abstract class ApplicationBase
                 throw new InvalidOperationException("스플래시 화면을 생성할 수 없습니다. CreateSplashScreen()을 구현하세요.");
 
             SplashScreen.Show();
-            SplashScreen.UpdateProgress("서비스 초기화 중...", 0.1);
+            SplashScreen.UpdateProgress("서비스 초기화 중...", null);
 
             // 3. DI 컨테이너 생성 및 설정
             var services = new ServiceCollection();
             ConfigureServices(services);
-            SplashScreen.UpdateProgress("서비스 등록 중...", 0.3);
+            SplashScreen.UpdateProgress("서비스 등록 중...", 30);
 
             // 4. 컨테이너 빌드
             Container = services.AsContainerExtension();
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
-            SplashScreen.UpdateProgress("서비스 구성 완료", 0.4);
+            SplashScreen.UpdateProgress("서비스 구성 완료", 40);
 
             // 5. 모듈 카탈로그 구성
             ModuleCatalog = CreateModuleCatalog();
             ConfigureModuleCatalog(ModuleCatalog);
-            SplashScreen.UpdateProgress("모듈 카탈로그 구성 완료", 0.5);
+            SplashScreen.UpdateProgress("모듈 카탈로그 구성 완료", 50);
 
             // 6. 모듈 초기화
             ModuleManager = CreateModuleManager();
             InitializeModules();
-            SplashScreen.UpdateProgress("모듈 초기화 완료", 0.6);
+            SplashScreen.UpdateProgress("모듈 초기화 완료", 60);
 
             // 7. 애플리케이션별 초기화
             await OnInitializeAsync();
-            SplashScreen.UpdateProgress("애플리케이션 구성 중...", 0.7);
+            SplashScreen.UpdateProgress("애플리케이션 구성 중...", 70);
 
             // 8. 메인 윈도우 생성
             await CreateAndShowMainWindowAsync();
-            SplashScreen.UpdateProgress("메인 화면 로드 중...", 0.9);
+            SplashScreen.UpdateProgress("메인 화면 로드 중...", 90);
 
             // 9. 스플래시 화면 닫기
             await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연

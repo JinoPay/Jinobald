@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Jinobald.Core.Application;
@@ -29,17 +30,36 @@ public partial class SplashScreenWindow : Window, ISplashScreen
     bool ISplashScreen.IsVisible => IsActive;
 
     /// <summary>
-    ///     진행 상태 업데이트
+    ///     진행 상태 업데이트 (새 API)
     /// </summary>
-    public void UpdateProgress(string message, double? progress = null)
+    public void UpdateProgress(string message, int? percent)
     {
         Dispatcher.UIThread.Post(() =>
         {
             if (_messageTextBlock != null)
                 _messageTextBlock.Text = message;
 
-            if (_progressBar != null && progress.HasValue)
-                _progressBar.Value = progress.Value * 100;
+            if (_progressBar != null)
+            {
+                if (percent.HasValue)
+                {
+                    _progressBar.IsIndeterminate = false;
+                    _progressBar.Value = percent.Value;
+                }
+                else
+                {
+                    _progressBar.IsIndeterminate = true;
+                }
+            }
         });
+    }
+
+    /// <summary>
+    ///     진행 상태 업데이트 (기존 API 호환)
+    /// </summary>
+    [Obsolete("Use UpdateProgress(string, int?) instead")]
+    public void UpdateProgress(string message, double? progress)
+    {
+        UpdateProgress(message, progress.HasValue ? (int)(progress.Value * 100) : null);
     }
 }

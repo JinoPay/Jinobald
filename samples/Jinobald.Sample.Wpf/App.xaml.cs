@@ -12,9 +12,9 @@ using Jinobald.Wpf.Application;
 
 namespace Jinobald.Sample.Wpf;
 
-public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
+public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
-    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    public override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
@@ -43,7 +43,7 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<GreenItemView>();
     }
 
-    protected override Task OnInitializeAsync()
+    public override Task OnInitializeAsync()
     {
         // 테마 서비스 가져오기
         var themeService = Container!.Resolve<IThemeService>();
@@ -65,7 +65,7 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         return Task.CompletedTask;
     }
 
-    protected override void ConfigureRegions(IRegionManager regionManager)
+    public override void ConfigureRegions(IRegionManager regionManager)
     {
         // Region에 기본 View 등록
         regionManager.RegisterViewWithRegion<HomeView>("MainContentRegion");
