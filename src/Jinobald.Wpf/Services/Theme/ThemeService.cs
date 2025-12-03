@@ -41,6 +41,11 @@ public sealed class ThemeService : IThemeService
     public IEnumerable<string> AvailableThemes => _registeredThemes.Keys;
 
     /// <summary>
+    ///     테마 변경 이벤트
+    /// </summary>
+    public event Action<string>? ThemeChanged;
+
+    /// <summary>
     ///     테마를 등록합니다.
     /// </summary>
     public void RegisterTheme(string themeName, object theme)
@@ -83,6 +88,9 @@ public sealed class ThemeService : IThemeService
 
             // SettingsService에 테마 설정 저장
             _settingsService.Set(ThemeSettingsKey, themeName);
+
+            // 테마 변경 이벤트 발생
+            ThemeChanged?.Invoke(themeName);
 
             _logger.Information("테마 변경됨: {Theme}", themeName);
         }
@@ -170,5 +178,13 @@ public sealed class ThemeService : IThemeService
             _logger.Warning("저장된 테마를 찾을 수 없음: {Theme}, 기본 테마 사용", savedTheme);
             SetTheme(DefaultTheme);
         }
+    }
+
+    /// <summary>
+    ///     저장된 테마 설정을 적용합니다.
+    /// </summary>
+    public void ApplySavedTheme()
+    {
+        LoadTheme();
     }
 }

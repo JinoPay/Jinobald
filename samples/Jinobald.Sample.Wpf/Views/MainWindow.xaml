@@ -1,0 +1,84 @@
+<Window
+    x:Class="Jinobald.Sample.Wpf.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:jino="clr-namespace:Jinobald.Wpf.Mvvm;assembly=Jinobald.Wpf"
+    xmlns:regions="clr-namespace:Jinobald.Wpf.Services.Regions;assembly=Jinobald.Wpf"
+    xmlns:controls="clr-namespace:Jinobald.Wpf.Controls;assembly=Jinobald.Wpf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Jinobald Sample - MVVM Framework Demo"
+    Width="1000"
+    Height="600"
+    d:DesignHeight="600"
+    d:DesignWidth="1000"
+    jino:ViewModelLocator.AutoWireViewModel="True"
+    mc:Ignorable="d">
+
+    <!--  DialogHost로 전체 콘텐츠를 감싸서 다이얼로그 표시 지원  -->
+    <controls:DialogHost x:Name="DialogHost">
+        <Grid>
+            <!--  네비게이션 영역 (왼쪽)  -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  사이드바  -->
+            <Border
+                Grid.Column="0"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="0,0,1,0">
+                <StackPanel Margin="16">
+                    <TextBlock
+                        Margin="0,0,0,24"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Text="Jinobald Demo" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateHomeCommand}"
+                        Content="Home" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToNavigationDemoCommand}"
+                        Content="Navigation" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToDialogDemoCommand}"
+                        Content="Dialogs" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToThemeDemoCommand}"
+                        Content="Themes" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToRegionDemoCommand}"
+                        Content="Regions" />
+                </StackPanel>
+            </Border>
+
+            <!--  콘텐츠 영역 (오른쪽) - Region 기반  -->
+            <ContentControl
+                Grid.Column="1"
+                Margin="16"
+                regions:Region.Name="MainContentRegion" />
+        </Grid>
+    </controls:DialogHost>
+</Window>

@@ -106,7 +106,7 @@ public class DialogService : IDialogService
         viewModel.OnDialogOpened(parameters ?? new DialogParameters());
 
         // UI 쓰레드에서 다이얼로그 표시
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (view is FrameworkElement frameworkElement)
             {
@@ -155,7 +155,7 @@ public class DialogService : IDialogService
             _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
 
             // 다이얼로그 닫기 (UI 스레드)
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 // OnDialogClosed 호출 (완전히 닫힌 후)
                 viewModel.OnDialogClosed();

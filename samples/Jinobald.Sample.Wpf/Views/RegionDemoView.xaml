@@ -1,0 +1,177 @@
+<UserControl
+    x:Class="Jinobald.Sample.Wpf.Views.RegionDemoView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:regions="clr-namespace:Jinobald.Wpf.Services.Regions;assembly=Jinobald.Wpf">
+
+    <ScrollViewer>
+        <StackPanel Margin="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="Region Demo" />
+
+            <TextBlock
+                Margin="0,8,0,0"
+                Text="Region 시스템을 사용하여 동적으로 뷰를 추가/제거할 수 있습니다."
+                TextWrapping="Wrap" />
+
+            <!--  컨트롤 섹션  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="Region Controls" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="Gray"
+                        Text="버튼을 클릭하여 ContentRegion에 뷰를 추가하거나 제거할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <!--  버튼들  -->
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddRedViewCommand}"
+                            Content="Add Red View" />
+
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddBlueViewCommand}"
+                            Content="Add Blue View" />
+
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddGreenViewCommand}"
+                            Content="Add Green View" />
+
+                        <Button
+                            MinWidth="140"
+                            Margin="0,0,8,8"
+                            Command="{Binding ClearRegionCommand}"
+                            Content="Clear All" />
+                    </WrapPanel>
+
+                    <!--  결과 표시  -->
+                    <Border
+                        Margin="0,8,0,0"
+                        Padding="12"
+                        Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                        BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="마지막 액션:" />
+                            <TextBlock Text="{Binding LastAction}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!--  Region 영역  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="Content Region (ItemsControl)" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="Gray"
+                        Text="ItemsControl로 구현된 Region입니다. 여러 뷰를 동시에 표시할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <!--  ItemsControl Region  -->
+                    <ItemsControl
+                        MinHeight="200"
+                        Margin="0,12,0,0"
+                        regions:Region.Name="ContentRegion">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!--  기능 설명 섹션  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="Features" />
+
+                    <StackPanel Margin="12,8,0,0">
+                        <TextBlock Text="- XAML에서 Region.Name 어태치드 프로퍼티로 Region 정의" Margin="0,4"/>
+                        <TextBlock Text="- ItemsControl, ContentControl 자동 어댑터 지원" Margin="0,4"/>
+                        <TextBlock Text="- RegionManager를 통한 동적 뷰 추가/제거" Margin="0,4"/>
+                        <TextBlock Text="- ViewModel 기반 뷰 생성 (View-ViewModel 자동 매핑)" Margin="0,4"/>
+                        <TextBlock Text="- Region별 뷰 활성화/비활성화 지원" Margin="0,4"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,16,0,0"
+                Padding="16"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="Usage Example" />
+
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        xml:space="preserve"
+                        FontFamily="Consolas"
+                        FontSize="11"
+                        TextWrapping="Wrap">// XAML에서 Region 정의
+&lt;ItemsControl regions:Region.Name="ContentRegion" /&gt;
+
+// 코드에서 View 추가 (View-first 패턴)
+_regionManager.AddToRegion&lt;MyView&gt;("ContentRegion");
+
+// 네비게이션 (Back/Forward 지원)
+await _regionManager.NavigateAsync&lt;MyView&gt;("ContentRegion");
+
+// Region 가져오기
+var region = _regionManager.GetRegion("ContentRegion");</TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
