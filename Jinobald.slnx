@@ -10,5 +10,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests\Jinobald.Core.Tests\Jinobald.Core.Tests.csproj" />
+    <Project Path="tests\Jinobald.Wpf.Tests\Jinobald.Wpf.Tests.csproj" />
+    <Project Path="tests\Jinobald.Avalonia.Tests\Jinobald.Avalonia.Tests.csproj" />
   </Folder>
 </Solution>

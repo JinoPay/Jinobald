@@ -78,7 +78,7 @@ public static class ViewModelLocator
         else if (viewName.EndsWith("ViewModel"))
         {
             // HomeViewModel → HomeView
-            viewName = viewName[..^5] + "View"; // "Model" 제거, "View" 추가
+            viewName = viewName[..^9] + "View"; // "ViewModel" 제거, "View" 추가
         }
 
         return viewModelType.Assembly.GetType(viewName);

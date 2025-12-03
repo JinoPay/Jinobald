@@ -6,4 +6,8 @@
   <Folder Name="/samples/">
     <Project Path="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jinobald.Core.Tests/Jinobald.Core.Tests.csproj" />
+    <Project Path="tests/Jinobald.Avalonia.Tests/Jinobald.Avalonia.Tests.csproj" />
+  </Folder>
 </Solution>
