@@ -5,6 +5,7 @@ using Jinobald.Core.Services.Regions;
 using Jinobald.Wpf.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using WpfRegion = Jinobald.Wpf.Services.Regions.Region;
 
 namespace Jinobald.Wpf.Application;
 
@@ -213,6 +214,14 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
             MainWindow = CreateMainWindow();
             MainWindow?.Show();
             Logger.Information("메인 윈도우 표시됨: {WindowType}", MainWindow?.GetType().Name);
+
+            // RegionManager를 MainWindow에 자동 연결 (Prism 스타일)
+            if (MainWindow != null)
+            {
+                var regionManager = Container!.Resolve<IRegionManager>();
+                WpfRegion.SetManager(MainWindow, regionManager);
+                Logger.Debug("RegionManager가 MainWindow에 연결됨");
+            }
         });
 
         // 메인 윈도우 표시 후 추가 초기화
