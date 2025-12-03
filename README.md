@@ -6,15 +6,26 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 
 ## ✨ 핵심 기능
 
+### Core Features
 - **🎯 View-First Region Navigation** - Prism 스타일의 리전 기반 View-First 네비게이션 (Back/Forward, KeepAlive 지원)
-- **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템 (중첩 지원)
-- **📡 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신 (Thread-safe)
+- **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템 (중첩 지원, 강타입 `IDialogResult<T>`)
+- **📡 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신 (Weak Event, 필터 지원)
 - **🎨 Theme Management** - 동적 테마 전환 및 스타일 관리 (Light/Dark/System)
 - **💾 Strongly-Typed Settings** - 컴파일 타임 타입 안전성과 IntelliSense 지원하는 설정 시스템
+- **🔗 ViewModelLocator** - View-ViewModel 자동 매핑 (컨벤션 기반)
+
+### Advanced Features
+- **🧩 Module System** - Prism 스타일 모듈 시스템 (의존성 해결, 순환 참조 감지)
+- **⚡ CompositeCommand** - 여러 명령을 하나로 조합 (IActiveAware 지원)
+- **✅ Validation Support** - `INotifyDataErrorInfo` 기반 Data Annotations 검증
+- **🔐 Navigation Confirmation** - 다이얼로그 기반 네비게이션 확인 (`IConfirmNavigationRequest`)
+- **🔄 Service Scopes** - AsyncLocal 기반 범위 지정 서비스 (IScopeAccessor)
+- **♻️ Resource Management** - `IDisposable` 자동 정리, `IRegionMemberLifetime`
+
+### Infrastructure
 - **🚀 Application Bootstrap** - 스플래시 스크린과 함께하는 자동 초기화
 - **📝 Comprehensive Logging** - Serilog 기반 구조화된 로깅
 - **🏗️ Dependency Injection** - Microsoft.Extensions.DependencyInjection 통합
-- **🔗 ViewModelLocator** - View-ViewModel 자동 매핑 (컨벤션 기반)
 
 ## 📦 프로젝트 구조
 
@@ -22,14 +33,16 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 Jinobald/
 ├── src/
 │   ├── Jinobald.Core/          # 플랫폼 독립적 추상화 계층
-│   │   ├── Mvvm/                # ViewModelBase, INavigationAware, IActivatable
+│   │   ├── Mvvm/                # ViewModelBase, ValidatableViewModelBase, INavigationAware
+│   │   ├── Commands/            # CompositeCommand, IActiveAware
+│   │   ├── Modularity/          # IModule, ModuleCatalog, ModuleManager
 │   │   ├── Services/            # 핵심 서비스 인터페이스
-│   │   │   ├── Events/          # IEventAggregator, PubSubEvent
-│   │   │   ├── Dialog/          # IDialogService, IDialogAware
-│   │   │   ├── Regions/         # IRegionManager, IRegion, IRegionNavigationService
+│   │   │   ├── Events/          # IEventAggregator, PubSubEvent (Weak Event, Filter)
+│   │   │   ├── Dialog/          # IDialogService, IDialogResult<T>, IDialogAware<T>
+│   │   │   ├── Regions/         # IRegionManager, IRegion, IConfirmNavigationRequest
 │   │   │   ├── Theme/           # IThemeService
 │   │   │   └── Settings/        # ITypedSettingsService (Strongly-Typed)
-│   │   └── Ioc/                 # DI 컨테이너 추상화
+│   │   └── Ioc/                 # DI 컨테이너 추상화, IScopeAccessor
 │   ├── Jinobald.Wpf/           # WPF 플랫폼 구현체
 │   └── Jinobald.Avalonia/      # Avalonia 플랫폼 구현체
 ├── samples/
@@ -852,6 +865,506 @@ public partial class SettingsViewModel : ViewModelBase
 | 기본값 정의 | 코드에 분산 | 클래스에 집중 |
 
 
+## 🧩 Module System
+
+Prism 스타일의 모듈 시스템으로 대규모 애플리케이션을 모듈화할 수 있습니다.
+
+### 모듈 정의
+
+```csharp
+using Jinobald.Core.Modularity;
+using Jinobald.Core.Ioc;
+
+// 기본 모듈
+public class ProductModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterForNavigation<ProductListView>();
+        containerRegistry.RegisterForNavigation<ProductDetailView>();
+        containerRegistry.RegisterSingleton<IProductService, ProductService>();
+    }
+
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        // 모듈 초기화 로직
+        var regionManager = containerProvider.Resolve<IRegionManager>();
+        regionManager.RegisterViewWithRegion<ProductMenuView>("MenuRegion");
+    }
+}
+
+// 의존성이 있는 모듈
+[ModuleDependency(typeof(CoreModule))]
+[ModuleDependency(typeof(SecurityModule))]
+public class OrderModule : IModule
+{
+    // CoreModule과 SecurityModule이 먼저 초기화된 후 실행됨
+    public void RegisterTypes(IContainerRegistry containerRegistry) { }
+    public void OnInitialized(IContainerProvider containerProvider) { }
+}
+```
+
+### 모듈 카탈로그에 등록
+
+```csharp
+// App.xaml.cs
+protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+{
+    // 즉시 로드 (기본값)
+    moduleCatalog.AddModule<ProductModule>();
+
+    // 지연 로드 (OnDemand)
+    moduleCatalog.AddModule<ReportModule>(InitializationMode.OnDemand);
+
+    // 명시적 의존성 지정
+    moduleCatalog.AddModule<OrderModule>(
+        dependsOn: new[] { typeof(ProductModule), typeof(CustomerModule) }
+    );
+}
+```
+
+### 모듈 수동 로드
+
+```csharp
+public class ShellViewModel : ViewModelBase
+{
+    private readonly IModuleManager _moduleManager;
+
+    [RelayCommand]
+    private async Task LoadReportModule()
+    {
+        // OnDemand 모듈 수동 로드
+        await _moduleManager.LoadModuleAsync(typeof(ReportModule));
+    }
+}
+```
+
+## ⚡ CompositeCommand
+
+여러 명령을 하나로 조합하는 복합 명령 패턴입니다.
+
+```csharp
+using Jinobald.Core.Commands;
+
+public class ShellViewModel : ViewModelBase
+{
+    public CompositeCommand SaveAllCommand { get; }
+
+    public ShellViewModel()
+    {
+        // 기본 CompositeCommand
+        SaveAllCommand = new CompositeCommand();
+
+        // 활성 명령만 실행하는 CompositeCommand
+        // SaveAllCommand = new CompositeCommand(monitorCommandActivity: true);
+    }
+}
+
+// 개별 ViewModel에서 명령 등록
+public class DocumentViewModel : ViewModelBase, IActiveAware
+{
+    public DocumentViewModel(ShellViewModel shell)
+    {
+        SaveCommand = new RelayCommand(Save, CanSave);
+
+        // CompositeCommand에 등록
+        shell.SaveAllCommand.RegisterCommand(SaveCommand);
+    }
+
+    public ICommand SaveCommand { get; }
+
+    // IActiveAware 구현 (monitorCommandActivity: true일 때 사용)
+    public bool IsActive { get; set; }
+    public event EventHandler? IsActiveChanged;
+
+    private void Save() { /* 저장 로직 */ }
+    private bool CanSave() => HasChanges;
+}
+```
+
+**Shell에서 전체 저장:**
+```xml
+<Button Command="{Binding SaveAllCommand}" Content="Save All" />
+```
+
+## ✅ Validation (INotifyDataErrorInfo)
+
+`ValidatableViewModelBase`를 사용하여 Data Annotations 기반 검증을 구현합니다.
+
+```csharp
+using Jinobald.Core.Mvvm;
+using System.ComponentModel.DataAnnotations;
+
+public partial class UserFormViewModel : ValidatableViewModelBase
+{
+    private string _email = string.Empty;
+    private string _name = string.Empty;
+    private int _age;
+
+    [Required(ErrorMessage = "이메일은 필수입니다")]
+    [EmailAddress(ErrorMessage = "올바른 이메일 형식이 아닙니다")]
+    public string Email
+    {
+        get => _email;
+        set => SetPropertyAndValidate(ref _email, value);
+    }
+
+    [Required(ErrorMessage = "이름은 필수입니다")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "이름은 2-50자 사이여야 합니다")]
+    public string Name
+    {
+        get => _name;
+        set => SetPropertyAndValidate(ref _name, value);
+    }
+
+    [Range(1, 150, ErrorMessage = "나이는 1-150 사이여야 합니다")]
+    public int Age
+    {
+        get => _age;
+        set => SetPropertyAndValidate(ref _age, value);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task Save()
+    {
+        // 전체 검증
+        if (!ValidateAll())
+        {
+            // 오류가 있음
+            return;
+        }
+
+        await SaveUserAsync();
+    }
+
+    private bool CanSave() => !HasErrors;
+}
+```
+
+**XAML에서 오류 표시:**
+```xml
+<TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
+<TextBlock Text="{Binding (Validation.Errors)[0].ErrorContent,
+           RelativeSource={RelativeSource AncestorType=TextBox}}"
+           Foreground="Red" />
+```
+
+## 📡 Advanced Event Aggregation
+
+### Weak Event Subscription
+
+구독자 참조를 약하게 유지하여 메모리 누수를 방지합니다:
+
+```csharp
+public class DashboardViewModel : ViewModelBase
+{
+    public DashboardViewModel(IEventAggregator eventAggregator)
+    {
+        // Weak 구독 - GC에 의해 자동 정리됨
+        eventAggregator.SubscribeWeak<DataChangedEvent>(OnDataChanged);
+
+        // 일반 구독 (수동 해제 필요)
+        // eventAggregator.Subscribe<DataChangedEvent>(OnDataChanged);
+    }
+
+    private void OnDataChanged(DataChangedEvent e)
+    {
+        // 이벤트 처리
+    }
+}
+```
+
+### Event Filter Predicates
+
+이벤트를 필터링하여 특정 조건을 만족하는 이벤트만 처리합니다:
+
+```csharp
+public class OrderViewModel : ViewModelBase
+{
+    private readonly string _currentUserId;
+
+    public OrderViewModel(IEventAggregator eventAggregator)
+    {
+        _currentUserId = "user123";
+
+        // 필터를 사용한 구독 - 현재 사용자의 주문만 처리
+        eventAggregator.Subscribe<OrderCreatedEvent>(
+            handler: OnOrderCreated,
+            filter: e => e.UserId == _currentUserId,
+            threadOption: ThreadOption.UIThread
+        );
+
+        // Prism 스타일
+        eventAggregator.GetEvent<OrderCreatedEvent>()
+            .Subscribe(
+                action: OnOrderCreated,
+                filter: e => e.Status == OrderStatus.Pending
+            );
+    }
+
+    private void OnOrderCreated(OrderCreatedEvent e)
+    {
+        // 필터 조건을 만족하는 이벤트만 여기에 도달
+    }
+}
+```
+
+## 🔐 Navigation Confirmation
+
+네비게이션 전에 사용자 확인을 요청합니다 (예: 저장되지 않은 변경사항).
+
+### Callback 방식
+
+```csharp
+public class EditViewModel : ViewModelBase, IConfirmNavigationRequest
+{
+    private readonly IDialogService _dialogService;
+    public bool HasUnsavedChanges { get; set; }
+
+    public void ConfirmNavigationRequest(NavigationContext context, Action<bool> continuationCallback)
+    {
+        if (!HasUnsavedChanges)
+        {
+            continuationCallback(true);
+            return;
+        }
+
+        // 비동기 다이얼로그 표시 후 콜백 호출
+        Task.Run(async () =>
+        {
+            var result = await _dialogService.ShowDialogAsync<ConfirmDialogView>(
+                new DialogParameters { { "Message", "저장하지 않은 변경사항이 있습니다. 나가시겠습니까?" } }
+            );
+            continuationCallback(result?.Result == ButtonResult.Yes);
+        });
+    }
+
+    // INavigationAware 메서드 구현...
+}
+```
+
+### Async 방식 (권장)
+
+```csharp
+public class EditViewModel : ViewModelBase, IConfirmNavigationRequestAsync
+{
+    private readonly IDialogService _dialogService;
+    public bool HasUnsavedChanges { get; set; }
+
+    public async Task<bool> ConfirmNavigationRequestAsync(NavigationContext context)
+    {
+        if (!HasUnsavedChanges)
+            return true;
+
+        var result = await _dialogService.ShowDialogAsync<ConfirmDialogView>(
+            new DialogParameters { { "Message", "저장하지 않은 변경사항이 있습니다. 나가시겠습니까?" } }
+        );
+
+        return result?.Result == ButtonResult.Yes;
+    }
+
+    // INavigationAware 메서드 구현...
+}
+```
+
+## 💬 Generic Dialog Result
+
+강타입 데이터를 반환하는 다이얼로그입니다.
+
+### ViewModel 정의
+
+```csharp
+public partial class UserSelectDialogViewModel : DialogViewModelBase, IDialogAware<User>
+{
+    [ObservableProperty]
+    private ObservableCollection<User> _users = new();
+
+    [ObservableProperty]
+    private User? _selectedUser;
+
+    // 강타입 RequestClose 이벤트
+    public new event Action<IDialogResult<User>>? RequestClose;
+
+    [RelayCommand]
+    private void Confirm()
+    {
+        if (SelectedUser != null)
+        {
+            RequestClose?.Invoke(DialogResult<User>.Ok(SelectedUser));
+        }
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        RequestClose?.Invoke(DialogResult<User>.Cancel());
+    }
+}
+```
+
+### 호출 및 결과 처리
+
+```csharp
+public class MainViewModel : ViewModelBase
+{
+    [RelayCommand]
+    private async Task SelectUser()
+    {
+        var result = await _dialogService.ShowDialogAsync<UserSelectDialogView>();
+
+        if (result != null)
+        {
+            // 확장 메서드로 쉽게 확인
+            if (result.IsSuccess())
+            {
+                var user = result.GetData<User>();
+                // 또는 기본값과 함께
+                var userOrDefault = result.GetDataOrDefault<User>(defaultUser);
+            }
+
+            if (result.IsCancelled())
+            {
+                // 취소됨
+            }
+
+            // 강타입 캐스팅
+            var typedResult = result.AsTyped<User>();
+            if (typedResult != null)
+            {
+                var selectedUser = typedResult.Data;
+            }
+        }
+    }
+}
+```
+
+### DialogResult Factory Methods
+
+```csharp
+// 기본 DialogResult
+DialogResult.Ok();
+DialogResult.Cancel();
+DialogResult.Yes();
+DialogResult.No();
+
+// 강타입 DialogResult<T>
+DialogResult<User>.Ok(selectedUser);
+DialogResult<int>.Ok(42);
+DialogResult<string>.Cancel();  // Data는 default(string) = null
+DialogResult<bool>.Yes(true);
+DialogResult<bool>.No();        // Data는 default(bool) = false
+```
+
+## 🔄 Service Scopes
+
+AsyncLocal 기반의 범위 지정 서비스를 지원합니다.
+
+### Scoped 서비스 등록
+
+```csharp
+protected override void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // Scoped 서비스 등록
+    containerRegistry.RegisterScoped<IUnitOfWork, UnitOfWork>();
+    containerRegistry.RegisterScoped<IDbContext, AppDbContext>();
+}
+```
+
+### 범위 내에서 사용
+
+```csharp
+public class OrderService
+{
+    private readonly IScopeFactory _scopeFactory;
+
+    public async Task ProcessOrderAsync(Order order)
+    {
+        // 새 범위 생성
+        using var scope = _scopeFactory.CreateScope();
+
+        var unitOfWork = scope.Resolve<IUnitOfWork>();
+        var repository = scope.Resolve<IOrderRepository>();
+
+        await repository.AddAsync(order);
+        await unitOfWork.SaveChangesAsync();
+
+        // 범위 종료 시 자동 정리
+    }
+}
+```
+
+### IScopeAccessor로 현재 범위 접근
+
+```csharp
+public class AuditService
+{
+    private readonly IScopeAccessor _scopeAccessor;
+
+    public void LogAction(string action)
+    {
+        // 현재 범위의 서비스에 접근
+        var currentUser = _scopeAccessor.Resolve<ICurrentUser>();
+        // ...
+    }
+}
+```
+
+## ♻️ Resource Management
+
+### IDisposable in ViewModelBase
+
+`DisposableCollection`을 통해 리소스를 자동 정리합니다:
+
+```csharp
+public class DataViewModel : ViewModelBase
+{
+    private readonly IDataService _dataService;
+
+    public DataViewModel(IDataService dataService)
+    {
+        _dataService = dataService;
+
+        // 구독을 Disposables에 추가 - ViewModel 파괴 시 자동 해제
+        var subscription = _dataService.DataChanged.Subscribe(OnDataChanged);
+        Disposables.Add(subscription);
+
+        // 또는 람다로
+        Disposables.Add(Disposable.Create(() =>
+        {
+            _connection?.Close();
+            _timer?.Stop();
+        }));
+    }
+
+    // ViewModelBase.Dispose() 호출 시 모든 Disposables 자동 정리
+}
+```
+
+### IRegionMemberLifetime
+
+Region에서 View의 수명을 제어합니다:
+
+```csharp
+public class CachedViewModel : ViewModelBase, IRegionMemberLifetime
+{
+    // true: Region에서 유지됨 (캐시)
+    // false: 네비게이션 시 파괴됨
+    public bool KeepAlive => true;
+}
+
+public class TransientViewModel : ViewModelBase, IRegionMemberLifetime
+{
+    public bool KeepAlive => false;  // 매번 새로 생성
+}
+```
+
+**XAML에서 설정:**
+```xml
+<!-- Region 레벨에서 KeepAlive 설정 (기본값) -->
+<ContentControl jino:Region.Name="MainRegion"
+                jino:Region.KeepAlive="True" />
+```
+
 ## 🔌 의존성 주입
 
 ContainerLocator를 통해 어디서든 서비스를 해결할 수 있습니다.
@@ -1001,6 +1514,13 @@ dotnet test tests/Jinobald.Core.Tests
 dotnet test tests/Jinobald.Avalonia.Tests
 dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 ```
+
+**테스트 커버리지:** 259+ 유닛 테스트
+- Core Services (Events, Dialog, Regions, Settings)
+- MVVM (ViewModelBase, ValidatableViewModelBase, Navigation)
+- Commands (CompositeCommand, IActiveAware)
+- Modularity (ModuleCatalog, ModuleManager)
+- Ioc (ScopeAccessor, ContainerRegistry)
 
 ## 🔧 핵심 의존성
 
