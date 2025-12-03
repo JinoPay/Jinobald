@@ -107,7 +107,6 @@ public abstract class WpfApplicationBase<TMainWindow, TSplashWindow> : System.Wi
             ConfigureRegions(regionManager);
 
             // 8. 스플래시 화면 닫기
-            await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
             Logger.Information("애플리케이션 초기화 완료");

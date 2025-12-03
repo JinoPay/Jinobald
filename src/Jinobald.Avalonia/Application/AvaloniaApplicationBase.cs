@@ -108,9 +108,8 @@ public abstract class AvaloniaApplicationBase<TMainWindow, TSplashWindow> : glob
             // 7. Region 기본 View 설정 (Prism 스타일)
             var regionManager = Container.Resolve<IRegionManager>();
             ConfigureRegions(regionManager);
-
+            
             // 8. 스플래시 화면 닫기
-            await Task.Delay(500); // 사용자가 진행 상황을 볼 수 있도록 짧은 지연
             SplashScreen.Close();
 
             Logger.Information("애플리케이션 초기화 완료");

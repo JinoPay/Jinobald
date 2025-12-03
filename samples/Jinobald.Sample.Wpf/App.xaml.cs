@@ -29,11 +29,13 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<ThemeDemoView>();
         containerRegistry.RegisterForNavigation<RegionDemoView>();
         containerRegistry.RegisterForNavigation<EventDemoView>();
+        containerRegistry.RegisterForNavigation<AdvancedDemoView>();  // Advanced Features 데모
 
         // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterDialog<MessageDialogView>();
         containerRegistry.RegisterDialog<ConfirmDialogView>();
         containerRegistry.RegisterDialog<NestedTestDialogView>();
+        containerRegistry.RegisterDialog<UserSelectDialogView>();  // Generic IDialogResult<T> 데모용
 
         // Region Item View 등록
         containerRegistry.RegisterForNavigation<RedItemView>();
