@@ -35,8 +35,8 @@ public class JsonSettingsService : ISettingsService
 
         _logger = Log.ForContext<JsonSettingsService>();
 
-        // 설정 파일 로드
-        _ = LoadSettingsAsync();
+        // 설정 파일 동기 로드 (생성자에서 async fire-and-forget 사용 시 race condition 발생)
+        LoadSettingsSync();
     }
 
     /// <summary>
@@ -261,13 +261,38 @@ public class JsonSettingsService : ISettingsService
         await _lock.WaitAsync();
         try
         {
+            LoadSettingsInternal();
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    private void LoadSettingsSync()
+    {
+        _lock.Wait();
+        try
+        {
+            LoadSettingsInternal();
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    private void LoadSettingsInternal()
+    {
+        try
+        {
             if (!File.Exists(_settingsFilePath))
             {
                 _logger.Debug("설정 파일이 존재하지 않습니다. 새로운 설정 파일이 생성됩니다: {FilePath}", _settingsFilePath);
                 return;
             }
 
-            var json = await File.ReadAllTextAsync(_settingsFilePath);
+            var json = File.ReadAllText(_settingsFilePath);
             var loadedSettings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, _jsonOptions);
 
             if (loadedSettings != null)
@@ -284,10 +309,6 @@ public class JsonSettingsService : ISettingsService
         catch (Exception ex)
         {
             _logger.Error(ex, "설정 파일 로드 실패: {FilePath}", _settingsFilePath);
-        }
-        finally
-        {
-            _lock.Release();
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Jinobald.Wpf.Services.Theme;
 /// <summary>
 ///     WPF 테마 관리 서비스
 ///     SettingsService와 통합되어 테마 설정을 자동으로 저장/로드합니다.
+///     사용자가 RegisterTheme()으로 테마 리소스를 등록해야 합니다.
 /// </summary>
 public sealed class ThemeService : IThemeService
 {
@@ -17,37 +18,72 @@ public sealed class ThemeService : IThemeService
     private readonly ILogger _logger;
     private readonly Dictionary<string, ResourceDictionary> _registeredThemes = new();
     private readonly ISettingsService _settingsService;
+    private string _currentTheme = DefaultTheme;
 
     public ThemeService(ISettingsService settingsService)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _logger = Log.ForContext<ThemeService>();
-
-        // 기본 테마 등록
-        RegisterDefaultThemes();
-
-        // 저장된 테마 불러오기
-        LoadTheme();
     }
 
-    /// <summary>
-    ///     현재 적용된 테마 이름
-    /// </summary>
-    public string CurrentTheme { get; private set; } = DefaultTheme;
+    #region IThemeService Properties
 
-    /// <summary>
-    ///     등록된 테마 목록
-    /// </summary>
+    public string CurrentTheme
+    {
+        get => _currentTheme;
+        private set
+        {
+            if (_currentTheme != value)
+            {
+                _currentTheme = value;
+                ThemeChanged?.Invoke(value);
+            }
+        }
+    }
+
     public IEnumerable<string> AvailableThemes => _registeredThemes.Keys;
 
-    /// <summary>
-    ///     테마 변경 이벤트
-    /// </summary>
     public event Action<string>? ThemeChanged;
+
+    #endregion
+
+    #region IThemeService Methods
+
+    /// <summary>
+    ///     저장된 테마 설정을 적용합니다.
+    ///     앱 초기화 시 테마가 등록된 후 호출해야 합니다.
+    /// </summary>
+    public void ApplySavedTheme()
+    {
+        if (_registeredThemes.Count == 0)
+        {
+            _logger.Warning("등록된 테마가 없습니다. RegisterTheme()으로 테마를 먼저 등록하세요.");
+            return;
+        }
+
+        var savedTheme = _settingsService.Get<string>(ThemeSettingsKey);
+        if (!string.IsNullOrEmpty(savedTheme) && _registeredThemes.ContainsKey(savedTheme))
+        {
+            SetTheme(savedTheme);
+            _logger.Information("저장된 테마 적용됨: {Theme}", savedTheme);
+        }
+        else
+        {
+            // 첫 번째 등록된 테마를 기본으로 사용
+            var firstTheme = _registeredThemes.Keys.FirstOrDefault() ?? DefaultTheme;
+            if (_registeredThemes.ContainsKey(firstTheme))
+            {
+                SetTheme(firstTheme);
+                _logger.Information("기본 테마 적용됨: {Theme}", firstTheme);
+            }
+        }
+    }
 
     /// <summary>
     ///     테마를 등록합니다.
     /// </summary>
+    /// <param name="themeName">테마 이름 (예: Light, Dark)</param>
+    /// <param name="theme">테마 ResourceDictionary</param>
     public void RegisterTheme(string themeName, object theme)
     {
         if (string.IsNullOrEmpty(themeName))
@@ -63,8 +99,12 @@ public sealed class ThemeService : IThemeService
     /// <summary>
     ///     테마를 변경합니다.
     /// </summary>
+    /// <param name="themeName">테마 이름</param>
     public void SetTheme(string themeName)
     {
+        if (string.IsNullOrEmpty(themeName))
+            throw new ArgumentNullException(nameof(themeName));
+
         if (!_registeredThemes.TryGetValue(themeName, out var theme))
         {
             _logger.Warning("등록되지 않은 테마: {Theme}", themeName);
@@ -81,16 +121,15 @@ public sealed class ThemeService : IThemeService
         try
         {
             // WPF 테마 변경 - MergedDictionaries에서 기존 테마 제거 후 새 테마 추가
-            app.Resources.MergedDictionaries.Clear();
+            // 주의: 앱의 다른 리소스(예: Generic.xaml)는 유지해야 함
+            // 테마 리소스만 교체
+            RemoveCurrentThemeFromMergedDictionaries(app);
             app.Resources.MergedDictionaries.Add(theme);
 
             CurrentTheme = themeName;
 
             // SettingsService에 테마 설정 저장
             _settingsService.Set(ThemeSettingsKey, themeName);
-
-            // 테마 변경 이벤트 발생
-            ThemeChanged?.Invoke(themeName);
 
             _logger.Information("테마 변경됨: {Theme}", themeName);
         }
@@ -140,51 +179,25 @@ public sealed class ThemeService : IThemeService
         return null;
     }
 
-    /// <summary>
-    ///     기본 테마들을 등록합니다.
-    /// </summary>
-    private void RegisterDefaultThemes()
-    {
-        // Light 테마
-        var lightTheme = new ResourceDictionary();
-        // 기본 색상 정의 (예시)
-        lightTheme["PrimaryColor"] = System.Windows.Media.Colors.Blue;
-        lightTheme["BackgroundColor"] = System.Windows.Media.Colors.White;
-        lightTheme["ForegroundColor"] = System.Windows.Media.Colors.Black;
-        RegisterTheme("Light", lightTheme);
+    #endregion
 
-        // Dark 테마
-        var darkTheme = new ResourceDictionary();
-        darkTheme["PrimaryColor"] = System.Windows.Media.Colors.DodgerBlue;
-        darkTheme["BackgroundColor"] = System.Windows.Media.Colors.Black;
-        darkTheme["ForegroundColor"] = System.Windows.Media.Colors.White;
-        RegisterTheme("Dark", darkTheme);
-
-        _logger.Information("기본 테마 등록 완료");
-    }
+    #region Private Methods
 
     /// <summary>
-    ///     저장된 테마를 불러옵니다.
+    ///     현재 테마 리소스를 MergedDictionaries에서 제거합니다.
     /// </summary>
-    private void LoadTheme()
+    private void RemoveCurrentThemeFromMergedDictionaries(System.Windows.Application app)
     {
-        var savedTheme = _settingsService.Get(ThemeSettingsKey, DefaultTheme);
-        if (_registeredThemes.ContainsKey(savedTheme))
+        // 등록된 테마 리소스만 제거 (다른 리소스는 유지)
+        var themesToRemove = app.Resources.MergedDictionaries
+            .Where(rd => _registeredThemes.Values.Contains(rd))
+            .ToList();
+
+        foreach (var theme in themesToRemove)
         {
-            SetTheme(savedTheme);
-        }
-        else
-        {
-            _logger.Warning("저장된 테마를 찾을 수 없음: {Theme}, 기본 테마 사용", savedTheme);
-            SetTheme(DefaultTheme);
+            app.Resources.MergedDictionaries.Remove(theme);
         }
     }
 
-    /// <summary>
-    ///     저장된 테마 설정을 적용합니다.
-    /// </summary>
-    public void ApplySavedTheme()
-    {
-        LoadTheme();
-    }
+    #endregion
 }
