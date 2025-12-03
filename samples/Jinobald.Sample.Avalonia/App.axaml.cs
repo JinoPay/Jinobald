@@ -1,5 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
+using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Sample.Avalonia.Settings;
@@ -49,5 +52,16 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
     {
         // Region에 기본 View 등록
         regionManager.RegisterViewWithRegion<HomeView>("MainContentRegion");
+    }
+
+    public override Task OnInitializeAsync(IProgress<InitializationProgress> progress)
+    {
+        progress.Report(new("초기화 중...", 50));
+
+        // Avalonia는 테마가 ThemeVariant로 자동 처리됨 (별도 등록 불필요)
+
+        progress.Report(new("완료!", 100));
+
+        return Task.CompletedTask;
     }
 }

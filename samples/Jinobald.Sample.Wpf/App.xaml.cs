@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Core.Services.Theme;
@@ -43,8 +44,10 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         containerRegistry.RegisterForNavigation<GreenItemView>();
     }
 
-    public override Task OnInitializeAsync()
+    public override Task OnInitializeAsync(IProgress<InitializationProgress> progress)
     {
+        progress.Report(new("테마 로딩 중...", 30));
+
         // 테마 서비스 가져오기
         var themeService = Container!.Resolve<IThemeService>();
 
@@ -59,8 +62,12 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
             Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
         });
 
+        progress.Report(new("테마 적용 중...", 70));
+
         // 저장된 테마 적용 (또는 기본 테마)
         themeService.ApplySavedTheme();
+
+        progress.Report(new("완료!", 100));
 
         return Task.CompletedTask;
     }

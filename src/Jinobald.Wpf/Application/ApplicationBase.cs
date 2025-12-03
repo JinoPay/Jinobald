@@ -18,9 +18,14 @@ namespace Jinobald.Wpf.Application;
 /// <code>
 /// public partial class App : ApplicationBase&lt;MainWindow&gt;
 /// {
-///     protected override void RegisterTypes(IContainerRegistry containerRegistry)
+///     public override void RegisterTypes(IContainerRegistry containerRegistry)
 ///     {
 ///         containerRegistry.RegisterForNavigation&lt;HomeView&gt;();
+///     }
+///
+///     public override async Task OnInitializeAsync()
+///     {
+///         // 테마 설정 등 초기화 로직
 ///     }
 /// }
 /// </code>
@@ -135,9 +140,9 @@ public abstract class ApplicationBase<TMainWindow> : System.Windows.Application,
     }
 
     /// <summary>
-    ///     애플리케이션별 초기화 로직 (Progress 버전 - 스플래시 있는 버전에서 사용)
+    ///     IApplicationLifecycle 인터페이스 구현 (스플래시 없는 버전에서는 무시)
     /// </summary>
-    public virtual Task OnInitializeAsync(IProgress<InitializationProgress> progress)
+    Task IApplicationLifecycle.OnInitializeAsync(IProgress<InitializationProgress> progress)
     {
         return OnInitializeAsync();
     }
@@ -239,17 +244,18 @@ public abstract class ApplicationBase<TMainWindow> : System.Windows.Application,
 /// <code>
 /// public partial class App : ApplicationBase&lt;MainWindow, SplashScreenWindow&gt;
 /// {
-///     protected override void RegisterTypes(IContainerRegistry containerRegistry)
+///     public override void RegisterTypes(IContainerRegistry containerRegistry)
 ///     {
 ///         containerRegistry.RegisterForNavigation&lt;HomeView&gt;();
 ///     }
 ///
-///     protected override Task OnInitializeAsync(IProgress&lt;InitializationProgress&gt; progress)
+///     public override async Task OnInitializeAsync(IProgress&lt;InitializationProgress&gt; progress)
 ///     {
-///         progress.Report(new("테마 로딩 중...", 50));
-///         // 초기화 로직
-///         progress.Report(new("완료!", 100));
-///         return Task.CompletedTask;
+///         progress.Report(new("테마 로딩 중...", 30));
+///         await LoadThemesAsync();
+///
+///         progress.Report(new("데이터 로딩 중...", 70));
+///         await LoadDataAsync();
 ///     }
 /// }
 /// </code>
@@ -302,10 +308,10 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
             // 1. 로거 설정
             ConfigureLogging();
 
-            // 2. 스플래시 화면 생성 및 표시
+            // 2. 스플래시 화면 생성 및 표시 (내부 초기화 중에는 indeterminate)
             SplashScreen = CreateSplashScreen();
             SplashScreen.Show();
-            SplashScreen.UpdateProgress("서비스 초기화 중...", null);
+            SplashScreen.UpdateProgress("초기화 중...", null);
 
             // 3. DI 컨테이너 생성 및 설정
             var services = new ServiceCollection();
@@ -315,13 +321,10 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
             // 4. 컨테이너 빌드
             Container = services.AsContainerExtension();
             RegisterTypes(Container);
-            SplashScreen.UpdateProgress("서비스 등록 중...", 30);
-
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
-            SplashScreen.UpdateProgress("서비스 구성 완료", 50);
 
-            // 5. 애플리케이션별 초기화 (Progress 콜백 전달)
+            // 5. 애플리케이션별 초기화 (사용자가 Progress 제어)
             var progress = new Progress<InitializationProgress>(p =>
             {
                 SplashScreen.UpdateProgress(p.Message, p.Percent);
@@ -329,7 +332,7 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
             await OnInitializeAsync(progress);
 
             // 6. 메인 윈도우 생성 및 표시
-            SplashScreen.UpdateProgress("메인 화면 로드 중...", 90);
+            SplashScreen.UpdateProgress("시작 중...", null);
             await CreateAndShowMainWindowAsync();
 
             // 7. Region 기본 View 설정
@@ -379,33 +382,31 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
     }
 
     /// <summary>
-    ///     애플리케이션별 초기화 로직 (스플래시 없는 버전과 호환)
+    ///     IApplicationLifecycle 인터페이스 구현 (스플래시 버전에서는 Progress 버전 호출)
     /// </summary>
-    public virtual Task OnInitializeAsync()
+    Task IApplicationLifecycle.OnInitializeAsync()
     {
         return Task.CompletedTask;
     }
 
     /// <summary>
-    ///     애플리케이션별 초기화 로직 (Progress 콜백으로 스플래시 진행률 업데이트)
+    ///     애플리케이션별 초기화 로직 (반드시 구현해야 함)
+    ///     Progress 콜백을 통해 스플래시 화면의 진행률을 업데이트합니다.
     /// </summary>
     /// <param name="progress">진행률 보고 콜백</param>
     /// <example>
     /// <code>
-    /// protected override async Task OnInitializeAsync(IProgress&lt;InitializationProgress&gt; progress)
+    /// public override async Task OnInitializeAsync(IProgress&lt;InitializationProgress&gt; progress)
     /// {
-    ///     progress.Report(new("테마 로딩 중...", 60));
+    ///     progress.Report(new("테마 로딩 중...", 30));
     ///     await LoadThemesAsync();
     ///
-    ///     progress.Report(new("데이터 로딩 중...", 80));
+    ///     progress.Report(new("데이터 로딩 중...", 70));
     ///     await LoadDataAsync();
     /// }
     /// </code>
     /// </example>
-    public virtual Task OnInitializeAsync(IProgress<InitializationProgress> progress)
-    {
-        return OnInitializeAsync();
-    }
+    public abstract Task OnInitializeAsync(IProgress<InitializationProgress> progress);
 
     /// <summary>
     ///     스플래시 화면을 생성합니다.
