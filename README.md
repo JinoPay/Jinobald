@@ -7,13 +7,14 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 ## ✨ 핵심 기능
 
 - **🎯 View-First Region Navigation** - Prism 스타일의 리전 기반 View-First 네비게이션 (Back/Forward, KeepAlive 지원)
-- **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템
-- **🔄 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신
-- **🎨 Theme Management** - 동적 테마 전환 및 스타일 관리
-- **💾 Settings Service** - 타입 안전한 설정 저장/로드 시스템
+- **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템 (중첩 지원)
+- **📡 Event Aggregation** - Pub/Sub 패턴 기반 약결합 이벤트 통신 (Thread-safe)
+- **🎨 Theme Management** - 동적 테마 전환 및 스타일 관리 (Light/Dark/System)
+- **💾 Strongly-Typed Settings** - 컴파일 타임 타입 안전성과 IntelliSense 지원하는 설정 시스템
 - **🚀 Application Bootstrap** - 스플래시 스크린과 함께하는 자동 초기화
 - **📝 Comprehensive Logging** - Serilog 기반 구조화된 로깅
 - **🏗️ Dependency Injection** - Microsoft.Extensions.DependencyInjection 통합
+- **🔗 ViewModelLocator** - View-ViewModel 자동 매핑 (컨벤션 기반)
 
 ## 📦 프로젝트 구조
 
@@ -27,7 +28,7 @@ Jinobald/
 │   │   │   ├── Dialog/          # IDialogService, IDialogAware
 │   │   │   ├── Regions/         # IRegionManager, IRegion, IRegionNavigationService
 │   │   │   ├── Theme/           # IThemeService
-│   │   │   └── Settings/        # ISettingsService
+│   │   │   └── Settings/        # ITypedSettingsService (Strongly-Typed)
 │   │   └── Ioc/                 # DI 컨테이너 추상화
 │   ├── Jinobald.Wpf/           # WPF 플랫폼 구현체
 │   └── Jinobald.Avalonia/      # Avalonia 플랫폼 구현체
@@ -64,11 +65,18 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // Navigation용 View/ViewModel 등록
-        containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
-        containerRegistry.RegisterForNavigation<SettingsView, SettingsViewModel>();
+        // Strongly-Typed 설정 서비스 등록
+        containerRegistry.RegisterSettings<AppSettings>();
 
-        // Dialog 등록 (View만 등록 - ViewModel은 자동 매핑)
+        // MainWindow ViewModel 등록 (Window는 자동 네비게이션이 아니므로 명시적 등록 필요)
+        containerRegistry.RegisterSingleton<MainWindowViewModel>();
+
+        // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        containerRegistry.RegisterForNavigation<HomeView>();
+        containerRegistry.RegisterForNavigation<SettingsView>();
+        containerRegistry.RegisterForNavigation<EventDemoView>();
+
+        // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterDialog<ConfirmDialogView>();
         containerRegistry.RegisterDialog<MessageDialogView>();
 
@@ -89,15 +97,41 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
 {
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // Navigation용 View/ViewModel 등록
-        containerRegistry.RegisterForNavigation<MainView, MainViewModel>();
-        containerRegistry.RegisterForNavigation<DetailView, DetailViewModel>();
+        // Strongly-Typed 설정 서비스 등록
+        containerRegistry.RegisterSettings<AppSettings>();
 
-        // Dialog 등록 (View만 등록)
+        // MainWindow ViewModel 등록 (Window는 자동 네비게이션이 아니므로 명시적 등록 필요)
+        containerRegistry.RegisterSingleton<MainWindowViewModel>();
+
+        // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        containerRegistry.RegisterForNavigation<HomeView>();
+        containerRegistry.RegisterForNavigation<DetailView>();
+        containerRegistry.RegisterForNavigation<EventDemoView>();
+
+        // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterDialog<ConfirmDialogView>();
+    }
+
+    protected override Task OnInitializeAsync()
+    {
+        // WPF 테마 ResourceDictionary 등록 (Avalonia는 자동)
+        var themeService = Container!.Resolve<IThemeService>();
+        themeService.RegisterTheme("Light", new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/Themes/LightTheme.xaml")
+        });
+        themeService.RegisterTheme("Dark", new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
+        });
+        themeService.ApplySavedTheme();
+
+        return Task.CompletedTask;
     }
 }
 ```
+
+> **Note**: `MainWindow`처럼 `ViewModelLocator.AutoWireViewModel="True"`를 사용하지만 네비게이션으로 생성되지 않는 Window의 ViewModel은 명시적으로 등록해야 합니다.
 
 ### 2️⃣ ViewModel 작성
 
@@ -152,6 +186,27 @@ public partial class MainViewModel : ViewModelBase, INavigationAware
         return Task.CompletedTask;
     }
 }
+```
+
+## 🎮 샘플 애플리케이션
+
+WPF와 Avalonia 샘플 앱은 프레임워크의 모든 주요 기능을 데모합니다:
+
+| 데모 | 기능 | 주요 서비스 |
+|------|------|-------------|
+| **Home** | 프레임워크 개요 | - |
+| **Navigation** | Region 기반 View-First 네비게이션, Back/Forward | `IRegionManager` |
+| **Dialogs** | 오버레이 다이얼로그, 중첩 다이얼로그, ButtonResult | `IDialogService` |
+| **Themes** | 동적 테마 전환 (Light/Dark), 설정 저장 | `IThemeService`, `ITypedSettingsService` |
+| **Regions** | 다중 리전, KeepAlive, NavigationMode | `IRegionManager` |
+| **Events** | Pub/Sub 이벤트, ThreadOption, 구독/발행 | `IEventAggregator` |
+
+```bash
+# Avalonia 샘플 실행
+dotnet run --project samples/Jinobald.Sample.Avalonia
+
+# WPF 샘플 실행 (Windows 전용)
+dotnet run --project samples/Jinobald.Sample.Wpf
 ```
 
 ## 📚 주요 기능 가이드
@@ -290,18 +345,31 @@ ViewModelLocator는 다음 패턴으로 자동 매칭합니다:
 - `Views.HomeView` → `ViewModels.HomeViewModel`
 - `Views.Settings.ProfileView` → `ViewModels.Settings.ProfileViewModel`
 - `ShellWindow` → `ShellViewModel`
+- `MainWindow` → `MainWindowViewModel`
 
 ```csharp
 // ViewModelLocator는 ContainerLocator를 통해 ViewModel을 resolve합니다
-// 따라서 ViewModel을 DI 컨테이너에 등록해야 합니다
+// RegisterForNavigation<View>()는 View와 ViewModel 모두 자동 등록합니다
 
 protected override void RegisterTypes(IContainerRegistry containerRegistry)
 {
-    // Navigation 등록 시 View와 ViewModel 함께 등록됨
-    containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
-    containerRegistry.RegisterForNavigation<SettingsView, SettingsViewModel>();
+    // View만 지정하면 ViewModel은 자동으로 매핑됨 (권장)
+    containerRegistry.RegisterForNavigation<HomeView>();
+    containerRegistry.RegisterForNavigation<SettingsView>();
+    containerRegistry.RegisterForNavigation<EventDemoView>();
+
+    // View와 ViewModel을 명시적으로 지정할 수도 있음
+    // containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
+
+    // 다이얼로그도 View만 등록
+    containerRegistry.RegisterDialog<ConfirmDialogView>();
+
+    // MainWindow ViewModel은 명시적 등록 필요 (네비게이션으로 생성되지 않음)
+    containerRegistry.RegisterSingleton<MainWindowViewModel>();
 }
 ```
+
+> **중요**: `RegisterForNavigation<View>()`는 View와 매칭되는 ViewModel을 자동으로 DI 컨테이너에 등록합니다. 하지만 `MainWindow`처럼 네비게이션으로 생성되지 않는 Window의 ViewModel은 `RegisterSingleton<T>()`로 명시적 등록이 필요합니다.
 
 ### 💬 Dialog Service
 
@@ -567,7 +635,7 @@ using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 - ✅ Dark/Light 모드 기본 지원
 - ✅ Avalonia의 FluentTheme 및 WPF ResourceDictionary 통합
 - ✅ 런타임 테마 전환
-- ✅ SettingsService를 통한 테마 설정 자동 저장/로드
+- ✅ ITypedSettingsService를 통한 테마 설정 자동 저장/로드
 
 #### WPF 테마 설정
 
