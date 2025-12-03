@@ -293,8 +293,8 @@ public class RegionNavigationService : IRegionNavigationService
     private async Task<(object View, object? ViewModel)> PrepareViewAsync(Type viewType,
         CancellationToken cancellationToken)
     {
-        // Keep-Alive가 활성화되어 있고 캐시에 있으면 재사용
-        if (KeepAlive && _viewCache.TryGetValue(viewType, out var cached))
+        // 캐시에 있으면 재사용 (IRegionMemberLifetime 또는 Region KeepAlive로 캐시된 경우)
+        if (_viewCache.TryGetValue(viewType, out var cached))
         {
             return cached;
         }
@@ -319,13 +319,31 @@ public class RegionNavigationService : IRegionNavigationService
         if (viewModel is IInitializableAsync initializable)
             await initializable.InitializeAsync(cancellationToken);
 
-        // Keep-Alive 캐시에 추가
-        if (KeepAlive)
+        // Keep-Alive 캐시에 추가 (IRegionMemberLifetime 또는 Region 설정에 따라)
+        if (ShouldKeepAlive(view, viewModel))
         {
             _viewCache[viewType] = (view, viewModel);
         }
 
         return (view, viewModel);
+    }
+
+    /// <summary>
+    ///     View/ViewModel이 캐시되어야 하는지 결정
+    ///     IRegionMemberLifetime이 구현되어 있으면 해당 설정을 우선 사용
+    /// </summary>
+    private bool ShouldKeepAlive(object view, object? viewModel)
+    {
+        // 1. ViewModel에서 IRegionMemberLifetime 확인 (우선순위 높음)
+        if (viewModel is IRegionMemberLifetime viewModelLifetime)
+            return viewModelLifetime.KeepAlive;
+
+        // 2. View에서 IRegionMemberLifetime 확인
+        if (view is IRegionMemberLifetime viewLifetime)
+            return viewLifetime.KeepAlive;
+
+        // 3. Region의 전역 KeepAlive 설정 사용
+        return KeepAlive;
     }
 
     /// <summary>
@@ -395,10 +413,16 @@ public class RegionNavigationService : IRegionNavigationService
         // 리전에서 비활성화 및 제거
         Region.Deactivate(_currentEntry.View);
 
-        // Keep-Alive가 아니면 제거 및 리소스 정리
-        if (!KeepAlive || NavigationMode == RegionNavigationMode.Replace)
+        // Keep-Alive 여부 확인 (IRegionMemberLifetime 또는 Region 설정)
+        var shouldKeepAlive = ShouldKeepAlive(_currentEntry.View, _currentEntry.ViewModel);
+
+        // Keep-Alive가 아니거나 Replace 모드이면 제거 및 리소스 정리
+        if (!shouldKeepAlive || NavigationMode == RegionNavigationMode.Replace)
         {
             Region.Remove(_currentEntry.View);
+
+            // 캐시에서도 제거
+            _viewCache.Remove(_currentEntry.ViewType);
 
             if (_currentEntry.ViewModel is IDestructible destructible)
                 destructible.Destroy();
