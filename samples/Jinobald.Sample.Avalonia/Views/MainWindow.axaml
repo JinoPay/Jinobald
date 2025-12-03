@@ -69,6 +69,13 @@
                         HorizontalContentAlignment="Left"
                         Command="{Binding NavigateToRegionDemoCommand}"
                         Content="📦 Regions" />
+
+                    <Button
+                        Margin="0,0,0,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding NavigateToEventDemoCommand}"
+                        Content="📡 Events" />
                 </StackPanel>
             </Border>
 

@@ -44,4 +44,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         await _regionManager.NavigateAsync<RegionDemoView>("MainContentRegion");
     }
+
+    [RelayCommand]
+    private async Task NavigateToEventDemo()
+    {
+        await _regionManager.NavigateAsync<EventDemoView>("MainContentRegion");
+    }
 }

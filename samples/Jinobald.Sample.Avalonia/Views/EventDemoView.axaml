@@ -1,0 +1,205 @@
+<UserControl
+    x:Class="Jinobald.Sample.Avalonia.Views.EventDemoView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="16">
+            <TextBlock
+                FontSize="24"
+                FontWeight="Bold"
+                Text="Event Aggregator Demo" />
+
+            <TextBlock Text="Pub/Sub loosely-coupled messaging between components." TextWrapping="Wrap" />
+
+            <!--  메시지 이벤트 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="MessageSentEvent" />
+
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="메시지를 발행하고 수신합니다. 같은 ViewModel 내에서도 이벤트 기반 통신을 확인할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox
+                            Grid.Column="0"
+                            Margin="0,0,8,0"
+                            Text="{Binding MessageToSend}"
+                            Watermark="메시지를 입력하세요..." />
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding SendMessageCommand}"
+                            Content="Send" />
+                    </Grid>
+
+                    <!--  수신된 메시지  -->
+                    <Border
+                        Padding="12"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <StackPanel Spacing="4">
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="Last Received:" />
+                            <TextBlock Text="{Binding LastReceivedMessage, FallbackValue='(no message)'}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!--  카운터 이벤트 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="CounterChangedEvent" />
+
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="카운터 값 변경을 이벤트로 전파합니다. 여러 컴포넌트가 동일한 상태를 구독할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
+                        <Button
+                            Width="50"
+                            Command="{Binding DecrementCounterCommand}"
+                            Content="-"
+                            FontSize="20" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="32"
+                            FontWeight="Bold"
+                            Text="{Binding Counter}" />
+                        <Button
+                            Width="50"
+                            Command="{Binding IncrementCounterCommand}"
+                            Content="+"
+                            FontSize="20" />
+                    </StackPanel>
+
+                    <Button
+                        HorizontalAlignment="Center"
+                        Command="{Binding ResetCounterCommand}"
+                        Content="Reset to 0" />
+                </StackPanel>
+            </Border>
+
+            <!--  상태 이벤트 섹션  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="StatusUpdatedEvent" />
+
+                    <TextBlock
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        Text="상태 변경 시 자동으로 이벤트가 발행됩니다. PropertyChanged와 결합하여 사용할 수 있습니다."
+                        TextWrapping="Wrap" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ToggleSwitch IsChecked="{Binding IsOnline}" OffContent="Offline" OnContent="Online" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!--  이벤트 로그  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock
+                            Grid.Column="0"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="Event Log" />
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding ClearLogCommand}"
+                            Content="Clear" />
+                    </Grid>
+
+                    <ListBox
+                        Height="200"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        ItemsSource="{Binding EventLog}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    FontFamily="Consolas, Menlo, Monaco, monospace"
+                                    FontSize="11"
+                                    Text="{Binding}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!--  사용 예제  -->
+            <Border
+                Margin="0,8,0,0"
+                Padding="16"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Spacing="8">
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="Usage Example" />
+
+                    <TextBlock
+                        xml:space="preserve"
+                        FontFamily="Consolas, Menlo, Monaco, monospace"
+                        FontSize="11"
+                        TextWrapping="Wrap">// 1. Define Event
+public class UserLoggedInEvent : PubSubEvent
+{
+    public string UserName { get; set; }
+}
+
+// 2. Subscribe (UI Thread)
+_eventAggregator.GetEvent&lt;UserLoggedInEvent&gt;()
+    .Subscribe(OnUserLoggedIn, ThreadOption.UIThread);
+
+// 3. Publish
+_eventAggregator.GetEvent&lt;UserLoggedInEvent&gt;()
+    .Publish(new UserLoggedInEvent { UserName = "John" });</TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

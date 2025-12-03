@@ -3,9 +3,6 @@ using Jinobald.Avalonia.Application;
 using Jinobald.Core.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Sample.Avalonia.Settings;
-using Jinobald.Sample.Avalonia.ViewModels;
-using Jinobald.Sample.Avalonia.ViewModels.Dialogs;
-using Jinobald.Sample.Avalonia.ViewModels.Regions;
 using Jinobald.Sample.Avalonia.Views;
 using Jinobald.Sample.Avalonia.Views.Dialogs;
 using Jinobald.Sample.Avalonia.Views.Regions;
@@ -24,25 +21,23 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
 
-        // MainWindow ViewModel 등록
-        containerRegistry.RegisterSingleton<MainWindowViewModel>();
+        // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        containerRegistry.RegisterForNavigation<HomeView>();
+        containerRegistry.RegisterForNavigation<NavigationDemoView>();
+        containerRegistry.RegisterForNavigation<DialogDemoView>();
+        containerRegistry.RegisterForNavigation<ThemeDemoView>();
+        containerRegistry.RegisterForNavigation<RegionDemoView>();
+        containerRegistry.RegisterForNavigation<EventDemoView>();
 
-        // 네비게이션용 View/ViewModel 등록
-        containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
-        containerRegistry.RegisterForNavigation<NavigationDemoView, NavigationDemoViewModel>();
-        containerRegistry.RegisterForNavigation<DialogDemoView, DialogDemoViewModel>();
-        containerRegistry.RegisterForNavigation<ThemeDemoView, ThemeDemoViewModel>();
-        containerRegistry.RegisterForNavigation<RegionDemoView, RegionDemoViewModel>();
-
-        // 다이얼로그 등록 (View만 등록 - ViewModel은 ViewModelLocator가 자동 매핑)
+        // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterDialog<MessageDialogView>();
         containerRegistry.RegisterDialog<ConfirmDialogView>();
         containerRegistry.RegisterDialog<NestedTestDialogView>();
 
-        // Region Item View/ViewModel 등록
-        containerRegistry.RegisterForNavigation<RedItemView, RedItemViewModel>();
-        containerRegistry.RegisterForNavigation<BlueItemView, BlueItemViewModel>();
-        containerRegistry.RegisterForNavigation<GreenItemView, GreenItemViewModel>();
+        // Region Item View 등록
+        containerRegistry.RegisterForNavigation<RedItemView>();
+        containerRegistry.RegisterForNavigation<BlueItemView>();
+        containerRegistry.RegisterForNavigation<GreenItemView>();
     }
 
     protected override void ConfigureRegions(IRegionManager regionManager)
