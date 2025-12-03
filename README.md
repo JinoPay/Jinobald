@@ -23,7 +23,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 - **♻️ Resource Management** - `IDisposable` 자동 정리, `IRegionMemberLifetime`
 
 ### Infrastructure
-- **🚀 Application Bootstrap** - 스플래시 스크린과 함께하는 자동 초기화
+- **🚀 Application Bootstrap** - 스플래시 스크린 지원 (선택적), `IProgress<InitializationProgress>` 기반 진행률 보고
 - **📝 Comprehensive Logging** - Serilog 기반 구조화된 로깅
 - **🏗️ Dependency Injection** - Microsoft.Extensions.DependencyInjection 통합
 
@@ -62,21 +62,26 @@ Jinobald/
 
 ### 1️⃣ 애플리케이션 설정
 
-#### Avalonia 애플리케이션
+Jinobald는 두 가지 ApplicationBase를 제공합니다:
+- `ApplicationBase<TMainWindow>` - 스플래시 없음, `OnInitializeAsync()` 선택적 오버라이드
+- `ApplicationBase<TMainWindow, TSplashWindow>` - 스플래시 포함, `OnInitializeAsync(IProgress<InitializationProgress>)` **필수 구현**
+
+#### Avalonia 애플리케이션 (스플래시 포함)
 
 ```csharp
 // App.axaml.cs
 using Jinobald.Avalonia.Application;
+using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
 
-public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindow>
+public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    public override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
@@ -87,47 +92,56 @@ public partial class App : AvaloniaApplicationBase<MainWindow, SplashScreenWindo
         // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
         containerRegistry.RegisterForNavigation<HomeView>();
         containerRegistry.RegisterForNavigation<SettingsView>();
-        containerRegistry.RegisterForNavigation<EventDemoView>();
 
-        // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        // 다이얼로그 등록
         containerRegistry.RegisterDialog<ConfirmDialogView>();
-        containerRegistry.RegisterDialog<MessageDialogView>();
+    }
 
-        // 애플리케이션 서비스 등록
-        containerRegistry.RegisterSingleton<IDataService, DataService>();
+    // 스플래시 버전에서는 반드시 구현해야 함
+    public override async Task OnInitializeAsync(IProgress<InitializationProgress> progress)
+    {
+        progress.Report(new("초기화 중...", 50));
+
+        // Avalonia는 테마가 ThemeVariant로 자동 처리됨 (별도 등록 불필요)
+        await Task.Delay(500); // 예시용
+
+        progress.Report(new("완료!", 100));
     }
 }
 ```
 
-#### WPF 애플리케이션
+#### WPF 애플리케이션 (스플래시 포함)
 
 ```csharp
 // App.xaml.cs
 using Jinobald.Wpf.Application;
+using Jinobald.Core.Application;
 using Jinobald.Core.Ioc;
 
-public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
+public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
-    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    public override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
 
-        // MainWindow ViewModel 등록 (Window는 자동 네비게이션이 아니므로 명시적 등록 필요)
+        // MainWindow ViewModel 등록
         containerRegistry.RegisterSingleton<MainWindowViewModel>();
 
-        // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        // 네비게이션용 View 등록
         containerRegistry.RegisterForNavigation<HomeView>();
         containerRegistry.RegisterForNavigation<DetailView>();
-        containerRegistry.RegisterForNavigation<EventDemoView>();
 
-        // 다이얼로그 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
+        // 다이얼로그 등록
         containerRegistry.RegisterDialog<ConfirmDialogView>();
     }
 
-    protected override Task OnInitializeAsync()
+    // 스플래시 버전에서는 반드시 구현해야 함
+    public override async Task OnInitializeAsync(IProgress<InitializationProgress> progress)
     {
-        // WPF 테마 ResourceDictionary 등록 (Avalonia는 자동)
+        progress.Report(new("테마 로딩 중...", 30));
+
+        // WPF 테마 ResourceDictionary 등록
         var themeService = Container!.Resolve<IThemeService>();
         themeService.RegisterTheme("Light", new ResourceDictionary
         {
@@ -137,8 +151,30 @@ public partial class App : WpfApplicationBase<MainWindow, SplashScreenWindow>
         {
             Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
         });
+
+        progress.Report(new("테마 적용 중...", 70));
         themeService.ApplySavedTheme();
 
+        progress.Report(new("완료!", 100));
+    }
+}
+```
+
+#### 스플래시 없는 간단한 앱
+
+```csharp
+// 스플래시 없이 간단하게 시작
+public partial class App : ApplicationBase<MainWindow>
+{
+    public override void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterForNavigation<HomeView>();
+    }
+
+    // 선택적 - 오버라이드하지 않아도 됨
+    public override Task OnInitializeAsync()
+    {
+        // 초기화 로직
         return Task.CompletedTask;
     }
 }
@@ -656,9 +692,11 @@ using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 WPF에서는 테마 ResourceDictionary를 직접 등록해야 합니다:
 
 ```csharp
-// App.xaml.cs
-protected override Task OnInitializeAsync()
+// App.xaml.cs (스플래시 버전)
+public override async Task OnInitializeAsync(IProgress<InitializationProgress> progress)
 {
+    progress.Report(new("테마 로딩 중...", 30));
+
     var themeService = Container!.Resolve<IThemeService>();
 
     // 테마 ResourceDictionary 등록
@@ -671,23 +709,26 @@ protected override Task OnInitializeAsync()
         Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
     });
 
+    progress.Report(new("테마 적용 중...", 70));
+
     // 저장된 테마 적용
     themeService.ApplySavedTheme();
 
-    return Task.CompletedTask;
+    progress.Report(new("완료!", 100));
 }
 ```
 
 #### Avalonia 테마 설정
 
-Avalonia는 기본 테마(Light, Dark, System)가 자동 등록됩니다:
+Avalonia는 기본 테마(Light, Dark, System)가 자동 등록됩니다 (ThemeVariant 사용):
 
 ```csharp
-// App.axaml.cs
-protected override Task OnInitializeAsync()
+// App.axaml.cs (스플래시 버전)
+public override Task OnInitializeAsync(IProgress<InitializationProgress> progress)
 {
-    var themeService = Container!.Resolve<IThemeService>();
-    themeService.ApplySavedTheme();
+    progress.Report(new("초기화 중...", 50));
+    // Avalonia는 별도 테마 등록 불필요
+    progress.Report(new("완료!", 100));
     return Task.CompletedTask;
 }
 ```
