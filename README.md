@@ -213,6 +213,7 @@ WPF와 Avalonia 샘플 앱은 프레임워크의 모든 주요 기능을 데모�
 | **Themes** | 동적 테마 전환 (Light/Dark), 설정 저장 | `IThemeService`, `ITypedSettingsService` |
 | **Regions** | 다중 리전, KeepAlive, NavigationMode | `IRegionManager` |
 | **Events** | Pub/Sub 이벤트, ThreadOption, 구독/발행 | `IEventAggregator` |
+| **Advanced** | ValidatableViewModelBase, CompositeCommand, Event Filter/Weak, IConfirmNavigationRequest, IRegionMemberLifetime, IDisposable | 복합 |
 
 ```bash
 # Avalonia 샘플 실행
@@ -1061,9 +1062,13 @@ public class DashboardViewModel : ViewModelBase
     public DashboardViewModel(IEventAggregator eventAggregator)
     {
         // Weak 구독 - GC에 의해 자동 정리됨
-        eventAggregator.SubscribeWeak<DataChangedEvent>(OnDataChanged);
+        eventAggregator.Subscribe<DataChangedEvent>(
+            handler: OnDataChanged,
+            threadOption: ThreadOption.UIThread,
+            keepSubscriberReferenceAlive: false  // Weak Reference!
+        );
 
-        // 일반 구독 (수동 해제 필요)
+        // 일반 구독 (수동 해제 필요, 기본값)
         // eventAggregator.Subscribe<DataChangedEvent>(OnDataChanged);
     }
 
@@ -1167,14 +1172,14 @@ public class EditViewModel : ViewModelBase, IConfirmNavigationRequestAsync
 }
 ```
 
-## 💬 Generic Dialog Result
+## 💬 Typed Dialog Result
 
-강타입 데이터를 반환하는 다이얼로그입니다.
+DialogParameters를 통해 강타입 데이터를 반환하는 다이얼로그입니다.
 
 ### ViewModel 정의
 
 ```csharp
-public partial class UserSelectDialogViewModel : DialogViewModelBase, IDialogAware<User>
+public partial class UserSelectDialogViewModel : DialogViewModelBase
 {
     [ObservableProperty]
     private ObservableCollection<User> _users = new();
@@ -1182,22 +1187,28 @@ public partial class UserSelectDialogViewModel : DialogViewModelBase, IDialogAwa
     [ObservableProperty]
     private User? _selectedUser;
 
-    // 강타입 RequestClose 이벤트
-    public new event Action<IDialogResult<User>>? RequestClose;
+    public override void OnDialogOpened(IDialogParameters parameters)
+    {
+        // 사용자 목록 로드
+        Users = new ObservableCollection<User>(LoadUsers());
+    }
 
     [RelayCommand]
     private void Confirm()
     {
         if (SelectedUser != null)
         {
-            RequestClose?.Invoke(DialogResult<User>.Ok(SelectedUser));
+            // Parameters를 통해 선택된 데이터 전달
+            var parameters = new DialogParameters();
+            parameters.Add("SelectedUser", SelectedUser);
+            CloseWithParameters(ButtonResult.OK, parameters);
         }
     }
 
     [RelayCommand]
     private void Cancel()
     {
-        RequestClose?.Invoke(DialogResult<User>.Cancel());
+        CloseWithButtonResult(ButtonResult.Cancel);
     }
 }
 ```
@@ -1214,45 +1225,38 @@ public class MainViewModel : ViewModelBase
 
         if (result != null)
         {
-            // 확장 메서드로 쉽게 확인
-            if (result.IsSuccess())
+            if (result.Result == ButtonResult.OK)
             {
-                var user = result.GetData<User>();
-                // 또는 기본값과 함께
-                var userOrDefault = result.GetDataOrDefault<User>(defaultUser);
+                // Parameters에서 강타입 데이터 가져오기
+                var user = result.Parameters.GetValue<User>("SelectedUser");
+                if (user != null)
+                {
+                    SelectedUserName = user.Name;
+                }
             }
-
-            if (result.IsCancelled())
+            else if (result.Result == ButtonResult.Cancel)
             {
                 // 취소됨
-            }
-
-            // 강타입 캐스팅
-            var typedResult = result.AsTyped<User>();
-            if (typedResult != null)
-            {
-                var selectedUser = typedResult.Data;
             }
         }
     }
 }
 ```
 
-### DialogResult Factory Methods
+### DialogViewModelBase Helper Methods
 
 ```csharp
-// 기본 DialogResult
-DialogResult.Ok();
-DialogResult.Cancel();
-DialogResult.Yes();
-DialogResult.No();
+// 단순 결과만 반환
+CloseWithButtonResult(ButtonResult.OK);
+CloseWithButtonResult(ButtonResult.Cancel);
+CloseWithButtonResult(ButtonResult.Yes);
+CloseWithButtonResult(ButtonResult.No);
 
-// 강타입 DialogResult<T>
-DialogResult<User>.Ok(selectedUser);
-DialogResult<int>.Ok(42);
-DialogResult<string>.Cancel();  // Data는 default(string) = null
-DialogResult<bool>.Yes(true);
-DialogResult<bool>.No();        // Data는 default(bool) = false
+// 결과와 함께 데이터 반환
+var parameters = new DialogParameters();
+parameters.Add("SelectedItem", item);
+parameters.Add("Count", 42);
+CloseWithParameters(ButtonResult.OK, parameters);
 ```
 
 ## 🔄 Service Scopes
@@ -1515,7 +1519,7 @@ dotnet test tests/Jinobald.Avalonia.Tests
 dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 ```
 
-**테스트 커버리지:** 259+ 유닛 테스트
+**테스트 커버리지:** 299개 유닛 테스트
 - Core Services (Events, Dialog, Regions, Settings)
 - MVVM (ViewModelBase, ValidatableViewModelBase, Navigation)
 - Commands (CompositeCommand, IActiveAware)
