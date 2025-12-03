@@ -15,42 +15,40 @@
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
 
-                        <!--  다이얼로그 오버레이 스택  -->
-                        <ItemsControl
-                            x:Name="PART_DialogStack"
-                            VerticalAlignment="Center"
-                            ItemsSource="{TemplateBinding DialogStack}">
-                            <ItemsControl.Style>
-                                <Style TargetType="ItemsControl">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasDialogs, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ItemsControl.Style>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Grid />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <!--  반투명 배경  -->
-                                        <Border Background="#80000000" Opacity="0.5" />
+                        <!--  다이얼로그 오버레이 (HasDialogs가 true일 때만 표시)  -->
+                        <Grid x:Name="PART_DialogOverlay" Visibility="Collapsed">
+                            <!--  반투명 배경  -->
+                            <Border Background="#80000000" />
 
-                                        <!--  다이얼로그 콘텐츠  -->
+                            <!--  다이얼로그 콘텐츠 스택  -->
+                            <ItemsControl
+                                x:Name="PART_DialogStack"
+                                VerticalAlignment="Center"
+                                ItemsSource="{TemplateBinding DialogStack}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Grid />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!--  다이얼로그를 중앙에 배치  -->
                                         <ContentControl
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Content="{Binding}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </Grid>
+
+                    <!--  HasDialogs Trigger  -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasDialogs" Value="True">
+                            <Setter TargetName="PART_DialogOverlay" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
