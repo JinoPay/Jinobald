@@ -31,9 +31,18 @@ Jinobald/
 │   │   └── Ioc/                 # DI 컨테이너 추상화
 │   ├── Jinobald.Wpf/           # WPF 플랫폼 구현체
 │   └── Jinobald.Avalonia/      # Avalonia 플랫폼 구현체
-└── samples/
-    └── Jinobald.Sample.Avalonia/
+├── samples/
+│   ├── Jinobald.Sample.Avalonia/  # Avalonia 샘플 애플리케이션
+│   └── Jinobald.Sample.Wpf/       # WPF 샘플 애플리케이션
+└── tests/
+    ├── Jinobald.Core.Tests/       # Core 유닛 테스트
+    ├── Jinobald.Wpf.Tests/        # WPF 유닛 테스트
+    └── Jinobald.Avalonia.Tests/   # Avalonia 유닛 테스트
 ```
+
+### 솔루션 파일
+- `Jinobald.slnx` - 전체 솔루션 (Windows)
+- `Jinobald.Mac.slnx` - macOS/Linux용 (WPF 제외)
 
 ## 🚀 빠른 시작
 
@@ -286,11 +295,11 @@ ViewModelLocator는 다음 패턴으로 자동 매칭합니다:
 // ViewModelLocator는 ContainerLocator를 통해 ViewModel을 resolve합니다
 // 따라서 ViewModel을 DI 컨테이너에 등록해야 합니다
 
-protected override void ConfigureServices(IServiceCollection services)
+protected override void RegisterTypes(IContainerRegistry containerRegistry)
 {
-    // ViewModel 등록
-    services.AddTransient<HomeViewModel>();
-    services.AddTransient<SettingsViewModel>();
+    // Navigation 등록 시 View와 ViewModel 함께 등록됨
+    containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
+    containerRegistry.RegisterForNavigation<SettingsView, SettingsViewModel>();
 }
 ```
 
@@ -336,13 +345,31 @@ Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 **3. 코드비하인드에서 DialogService 등록:**
 
 ```csharp
+// Avalonia
 public partial class MainWindow : Window
 {
-    public MainWindow(IDialogService dialogService)
+    public MainWindow()
     {
         InitializeComponent();
 
         // DialogHost를 DialogService에 등록
+        var dialogService = ContainerLocator.Current.Resolve<IDialogService>();
+        dialogService.RegisterHost(DialogHost);
+    }
+}
+
+// WPF
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var dialogService = ContainerLocator.Current.Resolve<IDialogService>();
         dialogService.RegisterHost(DialogHost);
     }
 }
@@ -538,9 +565,52 @@ using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 
 **주요 기능:**
 - ✅ Dark/Light 모드 기본 지원
-- ✅ Avalonia의 FluentTheme 및 WPF 테마와 통합
+- ✅ Avalonia의 FluentTheme 및 WPF ResourceDictionary 통합
 - ✅ 런타임 테마 전환
-- ✅ 테마 변경 이벤트 구독
+- ✅ SettingsService를 통한 테마 설정 자동 저장/로드
+
+#### WPF 테마 설정
+
+WPF에서는 테마 ResourceDictionary를 직접 등록해야 합니다:
+
+```csharp
+// App.xaml.cs
+protected override Task OnInitializeAsync()
+{
+    var themeService = Container!.Resolve<IThemeService>();
+
+    // 테마 ResourceDictionary 등록
+    themeService.RegisterTheme("Light", new ResourceDictionary
+    {
+        Source = new Uri("pack://application:,,,/Themes/LightTheme.xaml")
+    });
+    themeService.RegisterTheme("Dark", new ResourceDictionary
+    {
+        Source = new Uri("pack://application:,,,/Themes/DarkTheme.xaml")
+    });
+
+    // 저장된 테마 적용
+    themeService.ApplySavedTheme();
+
+    return Task.CompletedTask;
+}
+```
+
+#### Avalonia 테마 설정
+
+Avalonia는 기본 테마(Light, Dark, System)가 자동 등록됩니다:
+
+```csharp
+// App.axaml.cs
+protected override Task OnInitializeAsync()
+{
+    var themeService = Container!.Resolve<IThemeService>();
+    themeService.ApplySavedTheme();
+    return Task.CompletedTask;
+}
+```
+
+#### ViewModel에서 테마 사용
 
 ```csharp
 public partial class SettingsViewModel : ViewModelBase
@@ -581,10 +651,29 @@ public partial class SettingsViewModel : ViewModelBase
 
 ```xml
 <!-- Good: 테마에 따라 자동으로 변경됨 -->
-<Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+<Border Background="{DynamicResource BackgroundBrush}" />
+<TextBlock Foreground="{DynamicResource ForegroundBrush}" />
+<Border BorderBrush="{DynamicResource PrimaryBrush}" />
 
 <!-- Bad: 하드코딩된 색상은 테마 전환 시 변경되지 않음 -->
 <Border Background="#FFFFFF" />
+```
+
+#### 테마 리소스 예제 (WPF)
+
+```xml
+<!-- Themes/LightTheme.xaml -->
+<ResourceDictionary>
+    <Color x:Key="PrimaryColor">#0078D4</Color>
+    <Color x:Key="BackgroundColor">#FFFFFF</Color>
+    <Color x:Key="ForegroundColor">#1A1A1A</Color>
+    <Color x:Key="SurfaceColor">#F5F5F5</Color>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+</ResourceDictionary>
 ```
 
 ### 💾 Settings Service
@@ -758,21 +847,43 @@ public class ConnectionViewModel : ViewModelBase, IDestructible
 
 ```bash
 # 전체 솔루션 빌드 (Windows)
-dotnet build
+dotnet build Jinobald.slnx
 
-# Core + Avalonia만 빌드 (macOS/Linux)
-dotnet build src/Jinobald.Core
-dotnet build src/Jinobald.Avalonia
+# macOS/Linux 빌드 (WPF 제외)
+dotnet build Jinobald.Mac.slnx
 
 # 샘플 앱 실행
-dotnet run --project samples/Jinobald.Sample.Avalonia
+dotnet run --project samples/Jinobald.Sample.Avalonia  # Avalonia
+dotnet run --project samples/Jinobald.Sample.Wpf      # WPF (Windows 전용)
+```
+
+### 테스트
+
+```bash
+# 전체 테스트 실행 (Windows)
+dotnet test Jinobald.slnx
+
+# macOS/Linux 테스트
+dotnet test Jinobald.Mac.slnx
+
+# 개별 테스트 프로젝트
+dotnet test tests/Jinobald.Core.Tests
+dotnet test tests/Jinobald.Avalonia.Tests
+dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 ```
 
 ## 🔧 핵심 의존성
 
+### 런타임
 - **CommunityToolkit.Mvvm** 8.3.2 - MVVM 헬퍼 (ObservableProperty, RelayCommand 등)
 - **Microsoft.Extensions.DependencyInjection** 9.0.0 - DI 컨테이너
 - **Serilog** 4.1.0 - 구조화된 로깅
+- **Avalonia** 11.2.2 - 크로스 플랫폼 UI (Avalonia 프로젝트용)
+
+### 테스트
+- **xUnit** 2.9.2 - 테스트 프레임워크
+- **NSubstitute** 5.3.0 - 모킹 라이브러리
+- **Avalonia.Headless.XUnit** 11.2.2 - Avalonia UI 테스트 지원
 
 ## 📄 라이선스
 
