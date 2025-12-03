@@ -12,7 +12,7 @@
             <ControlTemplate>
                 <Panel>
                     <!-- 토스트 컨테이너 -->
-                    <ItemsControl Items="{TemplateBinding Toasts}"
+                    <ItemsControl ItemsSource="{TemplateBinding Toasts}"
                                   Margin="16">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
