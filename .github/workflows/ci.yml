@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # WPF 빌드를 위해 Windows runner 사용
 
     steps:
     - name: Checkout code
@@ -20,13 +20,13 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore Jinobald.WithoutWpf.slnx
+      run: dotnet restore Jinobald.slnx
 
     - name: Build
-      run: dotnet build Jinobald.WithoutWpf.slnx --configuration Release --no-restore
+      run: dotnet build Jinobald.slnx --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test Jinobald.WithoutWpf.slnx --configuration Release --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
+      run: dotnet test Jinobald.slnx --configuration Release --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

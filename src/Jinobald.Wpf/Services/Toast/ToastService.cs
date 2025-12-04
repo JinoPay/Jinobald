@@ -92,7 +92,7 @@ public class ToastService : IToastService
         _logger.Debug("토스트 표시: {Type} - {Message}", toast.Type, toast.Message);
 
         // UI 쓰레드에서 토스트 추가
-        Application.Current.Dispatcher.Invoke(() =>
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
             // 최대 토스트 개수 체크
             lock (_lock)
@@ -140,7 +140,7 @@ public class ToastService : IToastService
             _toastTimers.Clear();
 
             // UI 쓰레드에서 토스트 제거
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 _toastHost.Toasts.Clear();
             });
@@ -191,7 +191,7 @@ public class ToastService : IToastService
             }
 
             // UI 쓰레드에서 토스트 제거
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 _toastHost.Toasts.Remove(toast);
             });

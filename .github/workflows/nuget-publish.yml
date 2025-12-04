@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # WPF 빌드를 위해 Windows runner 사용
 
     steps:
     - name: Checkout code
@@ -23,31 +23,35 @@ jobs:
 
     - name: Extract version from tag
       id: get_version
+      shell: pwsh
       run: |
-        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION}"
-        else
-          VERSION="1.0.0-preview.${GITHUB_RUN_NUMBER}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Preview Version: ${VERSION}"
-        fi
+        if ($env:GITHUB_REF -match 'refs/tags/(.*)') {
+          $VERSION = $env:GITHUB_REF -replace 'refs/tags/v', ''
+          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $VERSION"
+        } else {
+          $VERSION = "1.0.0-preview.$env:GITHUB_RUN_NUMBER"
+          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
+          Write-Host "Preview Version: $VERSION"
+        }
 
     - name: Restore dependencies
-      run: dotnet restore Jinobald.WithoutWpf.slnx
+      run: dotnet restore Jinobald.slnx
 
     - name: Build
-      run: dotnet build Jinobald.WithoutWpf.slnx --configuration Release --no-restore /p:Version=${{ steps.get_version.outputs.version }}
+      run: dotnet build Jinobald.slnx --configuration Release --no-restore /p:Version=${{ steps.get_version.outputs.version }}
 
     - name: Run tests
-      run: dotnet test Jinobald.WithoutWpf.slnx --configuration Release --no-build --verbosity normal
+      run: dotnet test Jinobald.slnx --configuration Release --no-build --verbosity normal
 
     - name: Pack Jinobald.Core
       run: dotnet pack src/Jinobald.Core/Jinobald.Core.csproj --configuration Release --no-build --output ./nupkgs /p:Version=${{ steps.get_version.outputs.version }}
 
     - name: Pack Jinobald.Avalonia
       run: dotnet pack src/Jinobald.Avalonia/Jinobald.Avalonia.csproj --configuration Release --no-build --output ./nupkgs /p:Version=${{ steps.get_version.outputs.version }}
+
+    - name: Pack Jinobald.Wpf
+      run: dotnet pack src/Jinobald.Wpf/Jinobald.Wpf.csproj --configuration Release --no-build --output ./nupkgs /p:Version=${{ steps.get_version.outputs.version }}
 
     - name: Publish to NuGet
       run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

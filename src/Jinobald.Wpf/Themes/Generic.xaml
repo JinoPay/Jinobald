@@ -93,10 +93,10 @@
 
                                             <!--  콘텐츠  -->
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Text="{Binding Title}"
+                                                <TextBlock x:Name="TitleTextBlock"
+                                                           Text="{Binding Title}"
                                                            FontWeight="SemiBold"
-                                                           FontSize="14"
-                                                           Visibility="{Binding Title, Converter={StaticResource NullToVisibilityConverter}}" />
+                                                           FontSize="14" />
                                                 <TextBlock Text="{Binding Message}"
                                                            FontSize="13"
                                                            TextWrapping="Wrap"
@@ -184,9 +184,7 @@
         </Setter>
     </Style>
 
-    <!--  NullToVisibilityConverter  -->
-    <Style.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    </Style.Resources>
+    <!--  Converters  -->
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
 </ResourceDictionary>
