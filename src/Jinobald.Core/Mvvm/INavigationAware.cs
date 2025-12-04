@@ -81,22 +81,6 @@ public class NavigationContext
     {
         return Parameter is T value ? value : default;
     }
-
-    #region 레거시 호환성
-
-    /// <summary>
-    ///     [레거시] 이전 ViewModel 타입 (호환성)
-    /// </summary>
-    [Obsolete("Use SourceViewModelType instead")]
-    public Type? SourceType => SourceViewModelType;
-
-    /// <summary>
-    ///     [레거시] 대상 ViewModel 타입 (호환성)
-    /// </summary>
-    [Obsolete("Use TargetViewModelType instead")]
-    public Type? TargetType => TargetViewModelType;
-
-    #endregion
 }
 
 /// <summary>

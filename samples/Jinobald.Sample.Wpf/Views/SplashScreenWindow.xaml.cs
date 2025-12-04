@@ -31,7 +31,7 @@ public partial class SplashScreenWindow : Window, ISplashScreen
     bool ISplashScreen.IsVisible => base.IsVisible;
 
     /// <summary>
-    ///     진행 상태 업데이트 (새 API)
+    ///     진행 상태 업데이트
     /// </summary>
     public void UpdateProgress(string message, int? percent)
     {
@@ -53,14 +53,5 @@ public partial class SplashScreenWindow : Window, ISplashScreen
                 }
             }
         });
-    }
-
-    /// <summary>
-    ///     진행 상태 업데이트 (기존 API 호환)
-    /// </summary>
-    [Obsolete("Use UpdateProgress(string, int?) instead")]
-    public void UpdateProgress(string message, double? progress)
-    {
-        UpdateProgress(message, progress.HasValue ? (int)(progress.Value * 100) : null);
     }
 }

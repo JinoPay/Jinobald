@@ -24,14 +24,6 @@ public interface ISplashScreen
     void UpdateProgress(string message, int? percent);
 
     /// <summary>
-    ///     스플래시 화면의 진행 상태를 업데이트합니다. (기존 API 호환)
-    /// </summary>
-    /// <param name="message">표시할 메시지</param>
-    /// <param name="progress">진행률 (0.0 ~ 1.0), null이면 진행률 표시 안 함</param>
-    [Obsolete("Use UpdateProgress(string, int) instead")]
-    void UpdateProgress(string message, double? progress);
-
-    /// <summary>
     ///     스플래시 화면이 현재 표시 중인지 여부
     /// </summary>
     bool IsVisible { get; }

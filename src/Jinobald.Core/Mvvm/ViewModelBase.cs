@@ -140,14 +140,6 @@ public abstract class ViewModelBase : ObservableObject,
         // 예: _subscription?.Dispose(); _timer?.Dispose();
     }
 
-    /// <summary>
-    ///     파생 클래스에서 정리 로직을 구현합니다. (하위 호환성 유지)
-    /// </summary>
-    [Obsolete("Use OnDestroy(bool disposing) instead for proper dispose pattern")]
-    protected virtual void OnDestroy()
-    {
-    }
-
     #endregion
 
     #region IDisposable 구현
@@ -178,10 +170,6 @@ public abstract class ViewModelBase : ObservableObject,
         {
             // 관리되는 리소스 정리
             OnDestroy(disposing);
-
-#pragma warning disable CS0618 // Obsolete warning 억제 (하위 호환성)
-            OnDestroy();
-#pragma warning restore CS0618
 
             Logger.Debug("{ViewModelName} Disposed", GetType().Name);
         }
