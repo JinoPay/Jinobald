@@ -53,8 +53,14 @@ jobs:
     - name: Pack Jinobald.Wpf
       run: dotnet pack src/Jinobald.Wpf/Jinobald.Wpf.csproj --configuration Release --no-build --output ./nupkgs /p:Version=${{ steps.get_version.outputs.version }}
 
-    - name: Publish to NuGet
-      run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Publish Jinobald.Core to NuGet
+      run: dotnet nuget push ./nupkgs/Jinobald.Core.${{ steps.get_version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish Jinobald.Avalonia to NuGet
+      run: dotnet nuget push ./nupkgs/Jinobald.Avalonia.${{ steps.get_version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish Jinobald.Wpf to NuGet
+      run: dotnet nuget push ./nupkgs/Jinobald.Wpf.${{ steps.get_version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload NuGet packages as artifacts
       uses: actions/upload-artifact@v4
