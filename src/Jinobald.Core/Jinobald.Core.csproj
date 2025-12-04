@@ -5,6 +5,23 @@
     <LangVersion>13</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>Jinobald.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jinobald Contributors</Authors>
+    <Company>Jinobald</Company>
+    <Product>Jinobald MVVM Framework</Product>
+    <Description>Platform-agnostic core library for Jinobald MVVM framework. Provides navigation, dialog, event aggregation, and lifecycle management services for WPF and Avalonia applications.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mvvm;wpf;avalonia;framework;navigation;dialog;prism</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +37,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Jinobald.Avalonia" />
     <InternalsVisibleTo Include="Jinobald.Wpf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

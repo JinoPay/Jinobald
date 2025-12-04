@@ -6,6 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>Jinobald.Wpf</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jinobald Contributors</Authors>
+    <Company>Jinobald</Company>
+    <Product>Jinobald MVVM Framework</Product>
+    <Description>WPF implementation of Jinobald MVVM framework. Provides platform-specific services and controls for WPF applications including DialogHost, ToastHost, and Region adapters.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mvvm;wpf;framework;navigation;dialog;regions;toast</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +32,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
