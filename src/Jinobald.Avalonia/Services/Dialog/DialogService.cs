@@ -100,27 +100,38 @@ public class DialogService : IDialogService
         _dialogStack.Push(context);
         _logger.Debug("다이얼로그 스택 깊이: {Depth}", _dialogStack.Count);
 
-        // ViewModel에 이벤트 연결
-        viewModel.RequestClose += OnRequestClose;
-
-        // ViewModel의 OnDialogOpened 호출
-        viewModel.OnDialogOpened(parameters ?? new DialogParameters());
-
-        // UI 쓰레드에서 다이얼로그 표시
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        try
         {
-            if (view is Control control)
+            // ViewModel에 이벤트 연결
+            viewModel.RequestClose += OnRequestClose;
+
+            // ViewModel의 OnDialogOpened 호출
+            viewModel.OnDialogOpened(parameters ?? new DialogParameters());
+
+            // UI 쓰레드에서 다이얼로그 표시
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                control.DataContext = viewModel;
-            }
+                if (view is Control control)
+                {
+                    control.DataContext = viewModel;
+                }
 
-            // DialogHost의 스택에 추가 (가장 최근 다이얼로그가 맨 위에 표시됨)
-            _dialogHost.DialogStack.Add(view);
-        });
+                // DialogHost의 스택에 추가 (가장 최근 다이얼로그가 맨 위에 표시됨)
+                _dialogHost.DialogStack.Add(view);
+            });
 
-        // 다이얼로그가 닫힐 때까지 대기
-        var result = await context.TaskCompletionSource.Task;
-        return result;
+            // 다이얼로그가 닫힐 때까지 대기
+            var result = await context.TaskCompletionSource.Task;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            // 예외 발생 시 이벤트 핸들러 정리
+            _logger.Error(ex, "다이얼로그 표시 중 오류 발생");
+            viewModel.RequestClose -= OnRequestClose;
+            _dialogStack.Pop();
+            throw;
+        }
     }
 
     private void OnRequestClose(IDialogResult result)

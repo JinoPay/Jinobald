@@ -63,12 +63,18 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
         _logger = Log.ForContext<JsonTypedSettingsService<TSettings>>();
         _settings = new TSettings();
 
+        // Timer 초기화 (재사용)
+        _saveTimer = new System.Timers.Timer(500);
+        _saveTimer.AutoReset = false;
+        _saveTimer.Elapsed += OnTimerElapsed;
+
         LoadSettingsSync();
     }
 
     /// <inheritdoc />
     public void Update(Action<TSettings> updateAction)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(updateAction);
 
         _lock.Wait();
@@ -89,6 +95,7 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
     /// <inheritdoc />
     public async Task UpdateAsync(Func<TSettings, Task> updateAction)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(updateAction);
 
         await _lock.WaitAsync();
@@ -109,6 +116,7 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
     /// <inheritdoc />
     public async Task SaveAsync()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         await _lock.WaitAsync();
         try
         {
@@ -123,6 +131,7 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
     /// <inheritdoc />
     public async Task ReloadAsync()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         await _lock.WaitAsync();
         try
         {
@@ -139,6 +148,7 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
     /// <inheritdoc />
     public void Reset()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         _lock.Wait();
         try
         {
@@ -180,26 +190,30 @@ public class JsonTypedSettingsService<TSettings> : ITypedSettingsService<TSettin
         }
     }
 
+    private async void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        await _lock.WaitAsync();
+        try
+        {
+            await SaveInternalAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "자동 저장 실패");
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
     private void ScheduleSave()
     {
-        _saveTimer?.Stop();
-        _saveTimer?.Dispose();
+        if (_disposed) return;
 
-        _saveTimer = new System.Timers.Timer(500);
-        _saveTimer.AutoReset = false;
-        _saveTimer.Elapsed += async (_, _) =>
-        {
-            await _lock.WaitAsync();
-            try
-            {
-                await SaveInternalAsync();
-            }
-            finally
-            {
-                _lock.Release();
-            }
-        };
-        _saveTimer.Start();
+        // 기존 타이머 재시작
+        _saveTimer?.Stop();
+        _saveTimer?.Start();
     }
 
     private void LoadSettingsSync()
