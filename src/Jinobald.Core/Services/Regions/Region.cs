@@ -6,8 +6,8 @@ namespace Jinobald.Core.Services.Regions;
 /// </summary>
 public class Region : IRegion
 {
-    private readonly List<object> _activeViews = new();
-    private readonly List<object> _views = new();
+    private readonly List<object> _viewsOrder = new(); // 순서 유지
+    private readonly HashSet<object> _activeViews = new(); // O(1) 조회
 
     public Region(string name)
     {
@@ -21,9 +21,9 @@ public class Region : IRegion
 
     public object? RegionTarget { get; set; }
 
-    public IEnumerable<object> Views => _views.AsReadOnly();
+    public IEnumerable<object> Views => _viewsOrder;
 
-    public IEnumerable<object> ActiveViews => _activeViews.AsReadOnly();
+    public IEnumerable<object> ActiveViews => _activeViews;
 
     public ViewSortHint SortHint { get; set; } = ViewSortHint.Default;
 
@@ -37,13 +37,13 @@ public class Region : IRegion
         if (view == null)
             throw new ArgumentNullException(nameof(view));
 
-        if (_views.Contains(view))
+        if (_viewsOrder.Contains(view))
             return view;
 
         if (SortHint == ViewSortHint.Reverse)
-            _views.Insert(0, view);
+            _viewsOrder.Insert(0, view);
         else
-            _views.Add(view);
+            _viewsOrder.Add(view);
 
         ViewAdded?.Invoke(this, view);
 
@@ -55,19 +55,19 @@ public class Region : IRegion
         if (view == null)
             throw new ArgumentNullException(nameof(view));
 
-        if (!_views.Contains(view))
+        if (!_viewsOrder.Contains(view))
             return;
 
         if (_activeViews.Contains(view))
             Deactivate(view);
 
-        _views.Remove(view);
+        _viewsOrder.Remove(view);
         ViewRemoved?.Invoke(this, view);
     }
 
     public void RemoveAll()
     {
-        var viewsToRemove = _views.ToList();
+        var viewsToRemove = _viewsOrder.ToList();
         foreach (var view in viewsToRemove) Remove(view);
     }
 
@@ -76,13 +76,12 @@ public class Region : IRegion
         if (view == null)
             throw new ArgumentNullException(nameof(view));
 
-        if (!_views.Contains(view))
+        if (!_viewsOrder.Contains(view))
             throw new InvalidOperationException("Cannot activate a view that is not in the region.");
 
-        if (_activeViews.Contains(view))
-            return;
+        if (!_activeViews.Add(view))
+            return; // 이미 활성화된 경우
 
-        _activeViews.Add(view);
         ViewActivated?.Invoke(this, view);
     }
 
@@ -91,15 +90,14 @@ public class Region : IRegion
         if (view == null)
             throw new ArgumentNullException(nameof(view));
 
-        if (!_activeViews.Contains(view))
-            return;
+        if (!_activeViews.Remove(view))
+            return; // 활성화되지 않은 경우
 
-        _activeViews.Remove(view);
         ViewDeactivated?.Invoke(this, view);
     }
 
     public bool Contains(object view)
     {
-        return _views.Contains(view);
+        return _viewsOrder.Contains(view);
     }
 }

@@ -1712,6 +1712,35 @@ dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 - **NSubstitute** 5.3.0 - 모킹 라이브러리
 - **Avalonia.Headless.XUnit** 11.2.2 - Avalonia UI 테스트 지원
 
+## 🔍 최근 코드 품질 개선 사항
+
+### 2025-12-06 주요 개선
+
+#### 1. 리소스 관리 개선
+- **JsonSettingsService**: IDisposable 패턴 구현, SemaphoreSlim 및 Timer 자동 정리
+- **JsonTypedSettingsService**: ObjectDisposedException 처리 강화
+- **Timer 최적화**: 매번 재생성하던 Timer를 재사용하도록 개선하여 GC 압박 감소
+
+#### 2. 동기 블로킹 제거
+- **JsonSettingsService**: `SemaphoreSlim.Wait()` 호출을 제거하여 UI 스레드 데드락 위험 제거
+- 모든 동기 메서드에서 비동기 락 대기 패턴 적용
+
+#### 3. 예외 처리 강화
+- **DialogService (Avalonia & WPF)**: try-finally 블록으로 예외 발생 시에도 이벤트 핸들러 정리 보장
+- 메모리 누수 방지를 위한 안전한 리소스 정리 로직 추가
+
+#### 4. 성능 최적화
+- **Region 컬렉션**: List + List 구조를 List + HashSet으로 변경하여 조회 성능 향상
+  - `Contains()`, `Activate()`, `Deactivate()` 메서드의 시간 복잡도 O(n) → O(1)
+  - 순서 유지와 빠른 조회를 동시에 지원
+
+#### 5. 코드 품질
+- 모든 메서드에 ObjectDisposedException 체크 추가
+- Timer 이벤트 핸들러에 예외 처리 및 로깅 추가
+- 리소스 해제 순서 최적화
+
+이러한 개선 사항들은 프레임워크의 안정성, 성능, 유지보수성을 향상시킵니다.
+
 ## 📄 라이선스
 
 MIT License

@@ -6,7 +6,7 @@ namespace Jinobald.Core.Services.Settings;
 /// <summary>
 ///     JSON 파일 기반 설정 서비스 구현
 /// </summary>
-public class JsonSettingsService : ISettingsService
+public class JsonSettingsService : ISettingsService, IDisposable
 {
     private readonly string _settingsFilePath;
     private readonly Dictionary<string, object?> _settings = new();
@@ -14,6 +14,7 @@ public class JsonSettingsService : ISettingsService
     private readonly ILogger _logger;
     private System.Timers.Timer? _saveTimer;
     private bool _isDirty;
+    private bool _disposed;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -35,6 +36,11 @@ public class JsonSettingsService : ISettingsService
 
         _logger = Log.ForContext<JsonSettingsService>();
 
+        // Timer 초기화 (재사용)
+        _saveTimer = new System.Timers.Timer(500);
+        _saveTimer.AutoReset = false;
+        _saveTimer.Elapsed += OnTimerElapsed;
+
         // 설정 파일 동기 로드 (생성자에서 async fire-and-forget 사용 시 race condition 발생)
         LoadSettingsSync();
     }
@@ -44,6 +50,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public T Get<T>(string key, T defaultValue = default!)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("설정 키는 비어있을 수 없습니다.", nameof(key));
 
@@ -89,6 +96,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public void Set<T>(string key, T value)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("설정 키는 비어있을 수 없습니다.", nameof(key));
 
@@ -119,6 +127,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public bool Contains(string key)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (string.IsNullOrWhiteSpace(key))
             return false;
 
@@ -138,6 +147,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public bool Remove(string key)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (string.IsNullOrWhiteSpace(key))
             return false;
 
@@ -165,6 +175,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public void Clear()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         _lock.Wait();
         try
         {
@@ -183,6 +194,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public IEnumerable<string> GetAllKeys()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         _lock.Wait();
         try
         {
@@ -200,6 +212,7 @@ public class JsonSettingsService : ISettingsService
     /// </summary>
     public async Task SaveAsync()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         await _lock.WaitAsync();
         try
         {
@@ -230,22 +243,30 @@ public class JsonSettingsService : ISettingsService
     }
 
     /// <summary>
+    ///     Timer 이벤트 핸들러
+    /// </summary>
+    private async void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        try
+        {
+            await SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "자동 저장 실패");
+        }
+    }
+
+    /// <summary>
     ///     지연된 저장을 예약합니다 (Debouncing)
     /// </summary>
     private void ScheduleSave()
     {
-        // 기존 타이머 중지
-        _saveTimer?.Stop();
-        _saveTimer?.Dispose();
+        if (_disposed) return;
 
-        // 500ms 후 저장
-        _saveTimer = new System.Timers.Timer(500);
-        _saveTimer.AutoReset = false;
-        _saveTimer.Elapsed += async (s, e) =>
-        {
-            await SaveAsync();
-        };
-        _saveTimer.Start();
+        // 기존 타이머 재시작
+        _saveTimer?.Stop();
+        _saveTimer?.Start();
     }
 
     /// <summary>
@@ -310,5 +331,21 @@ public class JsonSettingsService : ISettingsService
         {
             _logger.Error(ex, "설정 파일 로드 실패: {FilePath}", _settingsFilePath);
         }
+    }
+
+    /// <summary>
+    ///     리소스를 해제합니다.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _saveTimer?.Stop();
+        _saveTimer?.Dispose();
+        _lock.Dispose();
+
+        _disposed = true;
+        GC.SuppressFinalize(this);
     }
 }
