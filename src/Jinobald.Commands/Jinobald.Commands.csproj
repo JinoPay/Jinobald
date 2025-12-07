@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>Jinobald.Commands</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jinobald Contributors</Authors>
+    <Company>Jinobald</Company>
+    <Product>Jinobald MVVM Framework</Product>
+    <Description>복합 명령(CompositeCommand) 구현. 여러 명령을 하나로 조합합니다.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mvvm;commands;composite-command;icommand</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
