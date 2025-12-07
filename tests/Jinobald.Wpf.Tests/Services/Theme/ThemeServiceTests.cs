@@ -1,5 +1,5 @@
 using System.Windows;
-using Jinobald.Core.Services.Settings;
+using Jinobald.Settings;
 using Jinobald.Wpf.Services.Theme;
 
 namespace Jinobald.Wpf.Tests.Services.Theme;

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 
 namespace Jinobald.Sample.Wpf.ViewModels.Dialogs;
 

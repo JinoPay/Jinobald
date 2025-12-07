@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 using Jinobald.Sample.Wpf.Views.Dialogs;
 
 namespace Jinobald.Sample.Wpf.ViewModels;
