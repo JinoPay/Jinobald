@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj" />
     <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj" />
     <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj" />
+    <ProjectReference Include="..\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
 
 namespace Jinobald.Sample.Avalonia.ViewModels;
 

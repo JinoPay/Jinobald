@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Events;
+using Jinobald.Events;
 using Jinobald.Sample.Avalonia.Events;
 
 namespace Jinobald.Sample.Avalonia.ViewModels;

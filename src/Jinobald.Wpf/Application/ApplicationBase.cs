@@ -4,6 +4,7 @@ using Jinobald.Core.Application;
 using Jinobald.Abstractions.Ioc;
 using Jinobald.Dialogs;
 using Jinobald.Core.Services.Regions;
+using Jinobald.Ioc.Microsoft;
 using Jinobald.Toast;
 using Jinobald.Wpf.Controls;
 using Jinobald.Wpf.Hosting;
@@ -96,7 +97,7 @@ public abstract class ApplicationBase<TMainWindow> : System.Windows.Application,
             services.AddTransient<TMainWindow>();
 
             // 3. 컨테이너 빌드
-            Container = services.AsContainerExtension();
+            Container = new MicrosoftDependencyInjectionExtension(services);
             RegisterTypes(Container);
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
@@ -415,7 +416,7 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : System.Windo
             services.AddTransient<TMainWindow>();
 
             // 4. 컨테이너 빌드
-            Container = services.AsContainerExtension();
+            Container = new MicrosoftDependencyInjectionExtension(services);
             RegisterTypes(Container);
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);

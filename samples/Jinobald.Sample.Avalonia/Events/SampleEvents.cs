@@ -1,5 +1,5 @@
 using System;
-using Jinobald.Core.Services.Events;
+using Jinobald.Events;
 
 namespace Jinobald.Sample.Avalonia.Events;
 

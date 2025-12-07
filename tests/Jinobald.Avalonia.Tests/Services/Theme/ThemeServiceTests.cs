@@ -1,6 +1,6 @@
 using Avalonia.Styling;
 using Jinobald.Avalonia.Services.Theme;
-using Jinobald.Core.Services.Settings;
+using Jinobald.Settings;
 
 namespace Jinobald.Avalonia.Tests.Services.Theme;
 

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Sample.Avalonia.Settings;
 using Jinobald.Sample.Avalonia.Views;

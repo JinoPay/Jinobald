@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Settings;
-using Jinobald.Core.Services.Theme;
+using Jinobald.Settings;
+using Jinobald.Theme;
 using Jinobald.Sample.Avalonia.Settings;
 
 namespace Jinobald.Sample.Avalonia.ViewModels;

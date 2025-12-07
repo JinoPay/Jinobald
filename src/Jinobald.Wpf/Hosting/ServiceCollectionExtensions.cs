@@ -31,9 +31,10 @@ public static class ServiceCollectionExtensions
     {
         // 핵심 서비스 등록
         services.AddSingleton<IEventAggregator, EventAggregator>();
-        services.AddSingleton<ISettingsService>(sp => new JsonSettingsService(settingsFilePath));
-        services.AddSingleton<IThemeService>(sp =>
-            new ThemeService(sp.GetRequiredService<ISettingsService>()));
+        // TODO: JsonSettingsService 구현 필요
+        // services.AddSingleton<ISettingsService>(sp => new JsonSettingsService(settingsFilePath));
+        // services.AddSingleton<IThemeService>(sp =>
+        //     new ThemeService(sp.GetRequiredService<ISettingsService>()));
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IToastService, ToastService>();
 
