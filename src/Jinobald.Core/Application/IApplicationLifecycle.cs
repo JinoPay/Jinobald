@@ -1,4 +1,4 @@
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 
 namespace Jinobald.Core.Application;

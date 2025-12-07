@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using Avalonia.Threading;
-using Jinobald.Core.Services.Events;
+using Jinobald.Events;
 
 namespace Jinobald.Avalonia.Services.Events;
 

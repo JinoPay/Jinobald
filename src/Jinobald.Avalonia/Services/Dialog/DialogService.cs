@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Jinobald.Avalonia.Mvvm;
-using Jinobald.Core.Ioc;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Abstractions.Ioc;
+using Jinobald.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

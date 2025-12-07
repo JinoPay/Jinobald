@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 
 namespace Jinobald.Avalonia.Controls;
 

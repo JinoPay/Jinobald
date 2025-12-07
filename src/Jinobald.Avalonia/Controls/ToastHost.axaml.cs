@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
 
 namespace Jinobald.Avalonia.Controls;
 

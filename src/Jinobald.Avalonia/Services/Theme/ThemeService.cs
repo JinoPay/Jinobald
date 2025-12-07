@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
-using Jinobald.Core.Services.Settings;
-using Jinobald.Core.Services.Theme;
+using Jinobald.Settings;
+using Jinobald.Theme;
 using Serilog;
 
 namespace Jinobald.Avalonia.Services.Theme;

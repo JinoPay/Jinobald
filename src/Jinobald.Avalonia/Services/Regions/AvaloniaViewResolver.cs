@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Jinobald.Avalonia.Mvvm;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 using Microsoft.Extensions.DependencyInjection;
 

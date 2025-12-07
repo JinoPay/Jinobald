@@ -3,12 +3,12 @@ using Jinobald.Avalonia.Services.Events;
 using Jinobald.Avalonia.Services.Regions;
 using Jinobald.Avalonia.Services.Theme;
 using Jinobald.Avalonia.Services.Toast;
-using Jinobald.Core.Services.Dialog;
-using Jinobald.Core.Services.Events;
+using Jinobald.Dialogs;
+using Jinobald.Events;
 using Jinobald.Core.Services.Regions;
-using Jinobald.Core.Services.Settings;
-using Jinobald.Core.Services.Theme;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Settings;
+using Jinobald.Theme;
+using Jinobald.Toast;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

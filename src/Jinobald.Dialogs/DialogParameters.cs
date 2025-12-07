@@ -1,7 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 
-namespace Jinobald.Core.Services.Dialog;
+namespace Jinobald.Dialogs;
 
 /// <summary>
 ///     다이얼로그 파라미터 구현
@@ -49,4 +48,3 @@ public class DialogParameters : IDialogParameters, IEnumerable
         return _parameters.GetEnumerator();
     }
 }
-

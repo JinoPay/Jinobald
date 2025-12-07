@@ -198,7 +198,7 @@ public static class Region
             {
                 try
                 {
-                    regionManager = Core.Ioc.ContainerLocator.Current.Resolve<IRegionManager>();
+                    regionManager = ContainerLocator.Current.Resolve<IRegionManager>();
                 }
                 catch
                 {
@@ -269,7 +269,7 @@ public static class Region
             {
                 try
                 {
-                    regionManager = Core.Ioc.ContainerLocator.Current.Resolve<IRegionManager>();
+                    regionManager = ContainerLocator.Current.Resolve<IRegionManager>();
                 }
                 catch
                 {

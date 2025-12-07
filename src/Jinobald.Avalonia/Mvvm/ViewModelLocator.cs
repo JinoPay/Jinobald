@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 namespace Jinobald.Avalonia.Mvvm;
 
