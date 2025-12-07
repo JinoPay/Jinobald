@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>Jinobald.Dialogs</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jinobald Contributors</Authors>
+    <Company>Jinobald</Company>
+    <Product>Jinobald MVVM Framework</Product>
+    <Description>다이얼로그 서비스. 오버레이 기반의 in-window 다이얼로그를 표시합니다.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mvvm;dialog;modal;popup</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
