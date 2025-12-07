@@ -1,5 +1,5 @@
 using System.Windows;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Wpf.Mvvm;
 using Microsoft.Extensions.DependencyInjection;

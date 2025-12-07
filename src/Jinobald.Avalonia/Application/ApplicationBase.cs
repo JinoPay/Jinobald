@@ -8,10 +8,11 @@ using Avalonia.VisualTree;
 using Jinobald.Avalonia.Controls;
 using Jinobald.Avalonia.Hosting;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Abstractions.Ioc;
+using Jinobald.Dialogs;
 using Jinobald.Core.Services.Regions;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
+using Jinobald.Ioc.Microsoft;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using AvaloniaRegion = Jinobald.Avalonia.Services.Regions.Region;
@@ -106,7 +107,7 @@ public abstract class ApplicationBase<TMainWindow> : global::Avalonia.Applicatio
             services.AddTransient<TMainWindow>();
 
             // 3. 컨테이너 빌드
-            Container = services.AsContainerExtension();
+            Container = new MicrosoftDependencyInjectionExtension(services);
             RegisterTypes(Container);
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
@@ -425,7 +426,7 @@ public abstract class ApplicationBase<TMainWindow, TSplashWindow> : global::Aval
             services.AddTransient<TMainWindow>();
 
             // 4. 컨테이너 빌드
-            Container = services.AsContainerExtension();
+            Container = new MicrosoftDependencyInjectionExtension(services);
             RegisterTypes(Container);
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);

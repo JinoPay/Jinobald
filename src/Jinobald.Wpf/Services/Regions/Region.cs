@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 
 namespace Jinobald.Wpf.Services.Regions;

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Windows.Threading;
-using Jinobald.Core.Services.Events;
+using Jinobald.Events;
 
 namespace Jinobald.Wpf.Services.Events;
 

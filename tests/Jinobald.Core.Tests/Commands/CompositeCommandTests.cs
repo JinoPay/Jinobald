@@ -1,5 +1,5 @@
 using System.Windows.Input;
-using Jinobald.Core.Commands;
+using Jinobald.Commands;
 using Xunit;
 
 namespace Jinobald.Core.Tests.Commands;

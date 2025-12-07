@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
 
 namespace Jinobald.Wpf.Controls;
 

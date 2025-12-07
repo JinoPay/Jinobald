@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using Jinobald.Avalonia.Application;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 using Jinobald.Sample.Avalonia.Settings;
 using Jinobald.Sample.Avalonia.Views;
@@ -21,8 +21,9 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 
     public override void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // TODO: ITypedSettingsService 구현 후 활성화 필요
         // Strongly-Typed 설정 서비스 등록
-        containerRegistry.RegisterSettings<AppSettings>();
+        // containerRegistry.RegisterSettings<AppSettings>();
 
         // MainWindow ViewModel 등록 (Window는 네비게이션이 아니므로 명시적 등록 필요)
         containerRegistry.RegisterSingleton<ViewModels.MainWindowViewModel>();

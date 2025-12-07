@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Jinobald.Core.Services.Dialog;
+namespace Jinobald.Dialogs;
 
 /// <summary>
 ///     다이얼로그 표시 서비스

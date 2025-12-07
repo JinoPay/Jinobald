@@ -1,4 +1,4 @@
-namespace Jinobald.Core.Services.Dialog;
+namespace Jinobald.Dialogs;
 
 /// <summary>
 ///     다이얼로그 결과 구현

@@ -1,5 +1,5 @@
 using System.Windows;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 namespace Jinobald.Wpf.Mvvm;
 

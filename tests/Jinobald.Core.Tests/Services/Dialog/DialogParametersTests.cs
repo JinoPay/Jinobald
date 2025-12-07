@@ -1,4 +1,4 @@
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 
 namespace Jinobald.Core.Tests.Services.Dialog;
 

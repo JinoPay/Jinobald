@@ -1,4 +1,4 @@
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Mvvm;
 using Jinobald.Core.Services.Regions;
 using NSubstitute;

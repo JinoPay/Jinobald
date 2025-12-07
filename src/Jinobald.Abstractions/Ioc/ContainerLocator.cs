@@ -9,6 +9,11 @@ public static class ContainerLocator
     private static IContainerExtension? _current;
 
     /// <summary>
+    ///     컨테이너가 설정되었는지 여부
+    /// </summary>
+    public static bool IsSet => _current != null;
+
+    /// <summary>
     ///     현재 컨테이너 인스턴스
     /// </summary>
     /// <exception cref="InvalidOperationException">컨테이너가 설정되지 않은 경우</exception>

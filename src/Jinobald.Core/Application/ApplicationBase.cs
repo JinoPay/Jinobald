@@ -1,6 +1,5 @@
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Modularity;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace Jinobald.Core.Application;
@@ -64,12 +63,10 @@ public abstract class ApplicationBase
             SplashScreen.UpdateProgress("서비스 초기화 중...", null);
 
             // 3. DI 컨테이너 생성 및 설정
-            var services = new ServiceCollection();
-            ConfigureServices(services);
+            Container = CreateContainer();
             SplashScreen.UpdateProgress("서비스 등록 중...", 30);
 
             // 4. 컨테이너 빌드
-            Container = services.AsContainerExtension();
             Container.FinalizeExtension();
             ContainerLocator.SetContainerExtension(Container);
             SplashScreen.UpdateProgress("서비스 구성 완료", 40);
@@ -123,11 +120,12 @@ public abstract class ApplicationBase
     }
 
     /// <summary>
-    ///     DI 컨테이너에 서비스를 등록합니다.
+    ///     DI 컨테이너를 생성하고 서비스를 등록합니다.
     ///     파생 클래스에서 반드시 구현해야 합니다.
+    ///     예: new MicrosoftDependencyInjectionExtension(services) 또는 new DryIocContainerExtension()
     /// </summary>
-    /// <param name="services">서비스 컬렉션</param>
-    protected abstract void ConfigureServices(IServiceCollection services);
+    /// <returns>설정된 컨테이너 Extension</returns>
+    protected abstract IContainerExtension CreateContainer();
 
     /// <summary>
     ///     스플래시 화면을 생성합니다.

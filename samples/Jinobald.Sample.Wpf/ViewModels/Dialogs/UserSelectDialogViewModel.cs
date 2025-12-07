@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jinobald.Core.Mvvm;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 using Jinobald.Sample.Wpf.ViewModels;
 
 namespace Jinobald.Sample.Wpf.ViewModels.Dialogs;

@@ -1,4 +1,4 @@
-using Jinobald.Core.Services.Events;
+using Jinobald.Events;
 
 namespace Jinobald.Core.Tests.Services.Events;
 

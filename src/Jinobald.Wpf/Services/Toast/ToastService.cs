@@ -1,5 +1,5 @@
 using System.Windows;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
 using Serilog;
 
 namespace Jinobald.Wpf.Services.Toast;

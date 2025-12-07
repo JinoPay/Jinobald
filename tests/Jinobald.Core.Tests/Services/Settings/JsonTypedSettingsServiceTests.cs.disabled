@@ -1,4 +1,4 @@
-using Jinobald.Core.Services.Settings;
+using Jinobald.Settings;
 
 namespace Jinobald.Core.Tests.Services.Settings;
 

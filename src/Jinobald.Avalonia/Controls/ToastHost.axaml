@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Jinobald.Avalonia.Controls"
-        xmlns:toast="using:Jinobald.Core.Services.Toast">
+        xmlns:toast="using:Jinobald.Toast">
 
     <Design.PreviewWith>
         <controls:ToastHost Width="400" Height="300" />
