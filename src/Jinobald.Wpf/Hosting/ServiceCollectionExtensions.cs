@@ -1,9 +1,9 @@
-using Jinobald.Core.Services.Dialog;
-using Jinobald.Core.Services.Events;
+using Jinobald.Dialogs;
+using Jinobald.Events;
 using Jinobald.Core.Services.Regions;
-using Jinobald.Core.Services.Settings;
-using Jinobald.Core.Services.Theme;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Settings;
+using Jinobald.Theme;
+using Jinobald.Toast;
 using Jinobald.Wpf.Services.Dialog;
 using Jinobald.Wpf.Services.Events;
 using Jinobald.Wpf.Services.Regions;

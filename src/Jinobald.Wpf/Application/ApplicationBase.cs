@@ -1,10 +1,10 @@
 using System.Windows;
 using System.Windows.Media;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Abstractions.Ioc;
+using Jinobald.Dialogs;
 using Jinobald.Core.Services.Regions;
-using Jinobald.Core.Services.Toast;
+using Jinobald.Toast;
 using Jinobald.Wpf.Controls;
 using Jinobald.Wpf.Hosting;
 using Microsoft.Extensions.DependencyInjection;

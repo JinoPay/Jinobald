@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Dialogs;
 
 namespace Jinobald.Wpf.Controls;
 

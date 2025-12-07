@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Services.Regions;
 
 namespace Jinobald.Avalonia.Services.Regions;

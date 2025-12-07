@@ -1,6 +1,6 @@
 using System.Windows;
-using Jinobald.Core.Ioc;
-using Jinobald.Core.Services.Dialog;
+using Jinobald.Abstractions.Ioc;
+using Jinobald.Dialogs;
 using Jinobald.Wpf.Mvvm;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

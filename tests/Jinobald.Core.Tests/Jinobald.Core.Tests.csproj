@@ -18,6 +18,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Jinobald.Core\Jinobald.Core.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Commands\Jinobald.Commands.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Dialogs\Jinobald.Dialogs.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Events\Jinobald.Events.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Settings\Jinobald.Settings.csproj" />
+    <ProjectReference Include="..\..\src\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj" />
   </ItemGroup>
 
   <ItemGroup>

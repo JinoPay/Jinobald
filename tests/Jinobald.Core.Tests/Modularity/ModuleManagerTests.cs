@@ -1,5 +1,6 @@
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 using Jinobald.Core.Modularity;
+using Jinobald.Ioc.Microsoft;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -70,7 +71,7 @@ public class ModuleManagerTests
     private static (IModuleManager, IModuleCatalog) CreateModuleManager()
     {
         var services = new ServiceCollection();
-        var container = services.AsContainerExtension();
+        var container = new MicrosoftDependencyInjectionExtension(services);
         container.FinalizeExtension();
 
         var catalog = new ModuleCatalog();

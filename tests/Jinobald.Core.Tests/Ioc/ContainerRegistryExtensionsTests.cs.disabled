@@ -1,5 +1,5 @@
-using Jinobald.Core.Ioc;
-using Jinobald.Core.Services.Settings;
+using Jinobald.Abstractions.Ioc;
+using Jinobald.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jinobald.Core.Tests.Ioc;

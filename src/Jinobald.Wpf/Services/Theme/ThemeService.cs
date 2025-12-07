@@ -1,6 +1,6 @@
 using System.Windows;
-using Jinobald.Core.Services.Settings;
-using Jinobald.Core.Services.Theme;
+using Jinobald.Settings;
+using Jinobald.Theme;
 using Serilog;
 
 namespace Jinobald.Wpf.Services.Theme;

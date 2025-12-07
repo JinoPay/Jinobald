@@ -31,7 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
     <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj" />
+    <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj" />
+    <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj" />
   </ItemGroup>
 
   <ItemGroup>
