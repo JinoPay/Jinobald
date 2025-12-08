@@ -33,7 +33,9 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 ```
 Jinobald/
 ├── src/
-│   ├── Jinobald.Core/          # 플랫폼 독립적 추상화 계층
+│   ├── Jinobald.Abstractions/   # DI 컨테이너 추상화 계층
+│   │   └── Ioc/                 # IContainerRegistry, IContainerProvider, IScopeAccessor
+│   ├── Jinobald.Core/           # 플랫폼 독립적 핵심 계층
 │   │   ├── Mvvm/                # ViewModelBase, ValidatableViewModelBase, INavigationAware
 │   │   ├── Commands/            # CompositeCommand, IActiveAware
 │   │   ├── Modularity/          # IModule, ModuleCatalog, ModuleManager
@@ -43,9 +45,9 @@ Jinobald/
 │   │   │   ├── Regions/         # IRegionManager, IRegion, IConfirmNavigationRequest
 │   │   │   ├── Theme/           # IThemeService
 │   │   │   └── Settings/        # ITypedSettingsService (Strongly-Typed)
-│   │   └── Ioc/                 # DI 컨테이너 추상화, IScopeAccessor
-│   ├── Jinobald.Wpf/           # WPF 플랫폼 구현체
-│   └── Jinobald.Avalonia/      # Avalonia 플랫폼 구현체
+│   │   └── Ioc/                 # DI 컨테이너 구현체, ContainerLocator
+│   ├── Jinobald.Wpf/            # WPF 플랫폼 구현체
+│   └── Jinobald.Avalonia/       # Avalonia 플랫폼 구현체
 ├── samples/
 │   ├── Jinobald.Sample.Avalonia/  # Avalonia 샘플 애플리케이션
 │   └── Jinobald.Sample.Wpf/       # WPF 샘플 애플리케이션
@@ -73,7 +75,7 @@ Jinobald는 두 가지 ApplicationBase를 제공합니다:
 // App.axaml.cs
 using Jinobald.Avalonia.Application;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
@@ -87,7 +89,7 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
         // Strongly-Typed 설정 서비스 등록
         containerRegistry.RegisterSettings<AppSettings>();
 
-        // MainWindow ViewModel 등록 (Window는 자동 네비게이션이 아니므로 명시적 등록 필요)
+        // MainWindow ViewModel 등록 (Window는 네비게이션이 아니므로 명시적 등록 필요)
         containerRegistry.RegisterSingleton<MainWindowViewModel>();
 
         // 네비게이션용 View 등록 (ViewModel은 ViewModelLocator가 자동 매핑)
@@ -117,7 +119,7 @@ public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 // App.xaml.cs
 using Jinobald.Wpf.Application;
 using Jinobald.Core.Application;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 public partial class App : ApplicationBase<MainWindow, SplashScreenWindow>
 {
@@ -1047,7 +1049,7 @@ Prism 스타일의 모듈 시스템으로 대규모 애플리케이션을 모듈
 
 ```csharp
 using Jinobald.Core.Modularity;
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 // 기본 모듈
 public class ProductModule : IModule
@@ -1547,7 +1549,7 @@ public class TransientViewModel : ViewModelBase, IRegionMemberLifetime
 ContainerLocator를 통해 어디서든 서비스를 해결할 수 있습니다.
 
 ```csharp
-using Jinobald.Core.Ioc;
+using Jinobald.Abstractions.Ioc;
 
 // 서비스 해결
 var regionManager = ContainerLocator.Current.Resolve<IRegionManager>();
