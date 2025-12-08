@@ -1,16 +1,26 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src\Jinobald.Core\Jinobald.Core.csproj" />
+    <Project Path="src/Jinobald.Abstractions/Jinobald.Abstractions.csproj" />
+    <Project Path="src/Jinobald.Commands/Jinobald.Commands.csproj" />
+    <Project Path="src/Jinobald.Core/Jinobald.Core.csproj" />
+    <Project Path="src/Jinobald.Dialogs/Jinobald.Dialogs.csproj" />
+    <Project Path="src/Jinobald.Events/Jinobald.Events.csproj" />
+    <Project Path="src/Jinobald.Ioc.DryIoc/Jinobald.Ioc.DryIoc.csproj" />
+    <Project Path="src/Jinobald.Ioc.Microsoft/Jinobald.Ioc.Microsoft.csproj" />
+    <Project Path="src/Jinobald.Regions/Jinobald.Regions.csproj" />
+    <Project Path="src/Jinobald.Settings/Jinobald.Settings.csproj" />
+    <Project Path="src/Jinobald.Theme/Jinobald.Theme.csproj" />
+    <Project Path="src/Jinobald.Toast/Jinobald.Toast.csproj" />
     <Project Path="src/Jinobald.Wpf/Jinobald.Wpf.csproj" />
-    <Project Path="src\Jinobald.Avalonia\Jinobald.Avalonia.csproj" />
+    <Project Path="src/Jinobald.Avalonia/Jinobald.Avalonia.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Jinobald.Sample.Wpf/Jinobald.Sample.Wpf.csproj" />
-    <Project Path="samples\Jinobald.Sample.Avalonia\Jinobald.Sample.Avalonia.csproj" />
+    <Project Path="samples/Jinobald.Sample.Avalonia/Jinobald.Sample.Avalonia.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests\Jinobald.Core.Tests\Jinobald.Core.Tests.csproj" />
-    <Project Path="tests\Jinobald.Wpf.Tests\Jinobald.Wpf.Tests.csproj" />
-    <Project Path="tests\Jinobald.Avalonia.Tests\Jinobald.Avalonia.Tests.csproj" />
+    <Project Path="tests/Jinobald.Core.Tests/Jinobald.Core.Tests.csproj" />
+    <Project Path="tests/Jinobald.Wpf.Tests/Jinobald.Wpf.Tests.csproj" />
+    <Project Path="tests/Jinobald.Avalonia.Tests/Jinobald.Avalonia.Tests.csproj" />
   </Folder>
 </Solution>
