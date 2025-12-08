@@ -122,23 +122,4 @@ public static class ContainerRegistryExtensions
     }
 
     #endregion
-
-    #region RegisterSettings
-
-    // TODO: ITypedSettingsService와 JsonTypedSettingsService 구현 후 활성화 필요
-    // /// <summary>
-    // ///     Strongly-Typed 설정 서비스를 싱글톤으로 등록합니다.
-    // ///     기본 경로(%AppData%/Jinobald/{typename}.json)에 저장됩니다.
-    // /// </summary>
-    // /// <typeparam name="TSettings">설정 POCO 클래스 타입</typeparam>
-    // /// <param name="containerRegistry">컨테이너 레지스트리</param>
-    // /// <returns>현재 레지스트리</returns>
-    // public static IContainerRegistry RegisterSettings<TSettings>(this IContainerRegistry containerRegistry)
-    //     where TSettings : class, new()
-    // {
-    //     containerRegistry.RegisterSingleton<ITypedSettingsService<TSettings>, JsonTypedSettingsService<TSettings>>();
-    //     return containerRegistry;
-    // }
-
-    #endregion
 }
