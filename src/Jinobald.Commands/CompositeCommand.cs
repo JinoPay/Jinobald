@@ -13,7 +13,7 @@ namespace Jinobald.Commands;
 /// </remarks>
 public class CompositeCommand : ICommand
 {
-    private readonly List<ICommand> _registeredCommands = new();
+    private readonly List<ICommand> _registeredCommands = [];
     private readonly object _lock = new();
     private readonly bool _monitorCommandActivity;
 

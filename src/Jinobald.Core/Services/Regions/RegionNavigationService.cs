@@ -16,11 +16,11 @@ public class RegionNavigationService : IRegionNavigationService
     private readonly SemaphoreSlim _navigationLock = new(1, 1);
 
     // 히스토리 스택
-    private readonly Stack<NavigationEntry> _backStack = new();
-    private readonly Stack<NavigationEntry> _forwardStack = new();
+    private readonly Stack<NavigationEntry> _backStack = [];
+    private readonly Stack<NavigationEntry> _forwardStack = [];
 
     // Keep-Alive 캐시
-    private readonly Dictionary<Type, (object View, object? ViewModel)> _viewCache = new();
+    private readonly Dictionary<Type, (object View, object? ViewModel)> _viewCache = [];
 
     // 현재 네비게이션 엔트리
     private NavigationEntry? _currentEntry;

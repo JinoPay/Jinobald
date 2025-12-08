@@ -7,7 +7,7 @@ namespace Jinobald.Dialogs;
 /// </summary>
 public class DialogParameters : IDialogParameters, IEnumerable
 {
-    private readonly Dictionary<string, object> _parameters = new();
+    private readonly Dictionary<string, object> _parameters = [];
 
     public DialogParameters()
     {

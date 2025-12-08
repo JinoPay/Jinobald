@@ -6,8 +6,8 @@ namespace Jinobald.Core.Services.Regions;
 /// </summary>
 public class Region : IRegion
 {
-    private readonly List<object> _viewsOrder = new(); // 순서 유지
-    private readonly HashSet<object> _activeViews = new(); // O(1) 조회
+    private readonly List<object> _viewsOrder = []; // 순서 유지
+    private readonly HashSet<object> _activeViews = []; // O(1) 조회
 
     public Region(string name)
     {
