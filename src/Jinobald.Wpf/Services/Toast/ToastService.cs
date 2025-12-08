@@ -12,7 +12,7 @@ public class ToastService : IToastService
 {
     private readonly ILogger _logger;
     private IToastHost? _toastHost;
-    private readonly Dictionary<Guid, CancellationTokenSource> _toastTimers = new();
+    private readonly Dictionary<Guid, CancellationTokenSource> _toastTimers = [];
     private readonly object _lock = new();
 
     /// <summary>

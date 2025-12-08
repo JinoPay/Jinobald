@@ -17,7 +17,7 @@ public sealed class ThemeService : IThemeService
     private const string DefaultTheme = "Light";
 
     private readonly ILogger _logger;
-    private readonly Dictionary<string, object> _registeredThemes = new();
+    private readonly Dictionary<string, object> _registeredThemes = [];
     private readonly ISettingsService _settingsService;
     private string _currentTheme = DefaultTheme;
 

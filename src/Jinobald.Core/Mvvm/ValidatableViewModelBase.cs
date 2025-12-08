@@ -42,7 +42,7 @@ public abstract class ValidatableViewModelBase : ObservableValidator,
     IDisposable
 {
     private bool _disposed;
-    private readonly Dictionary<string, List<ValidationResult>> _customErrors = new();
+    private readonly Dictionary<string, List<ValidationResult>> _customErrors = [];
 
     /// <summary>
     ///     로거 인스턴스

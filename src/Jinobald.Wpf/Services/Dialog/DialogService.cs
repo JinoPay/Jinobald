@@ -17,7 +17,7 @@ public class DialogService : IDialogService
 {
     private readonly ILogger _logger;
     private IDialogHost? _dialogHost;
-    private readonly Stack<DialogContext> _dialogStack = new();
+    private readonly Stack<DialogContext> _dialogStack = [];
 
     public DialogService()
     {

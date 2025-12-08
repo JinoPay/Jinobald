@@ -9,9 +9,9 @@ namespace Jinobald.Core.Services.Regions;
 /// </summary>
 public class RegionManager : IRegionManager
 {
-    private readonly Dictionary<string, IRegion> _regions = new();
-    private readonly Dictionary<string, IRegionNavigationService> _navigationServices = new();
-    private readonly Dictionary<string, Type> _pendingViewRegistrations = new();
+    private readonly Dictionary<string, IRegion> _regions = [];
+    private readonly Dictionary<string, IRegionNavigationService> _navigationServices = [];
+    private readonly Dictionary<string, Type> _pendingViewRegistrations = [];
     private readonly IViewResolver _viewResolver;
 
     public RegionManager(IViewResolver viewResolver)
