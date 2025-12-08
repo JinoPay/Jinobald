@@ -1,3 +1,4 @@
+// Licensed to the .NET Foundation under one or more agreements.
 // Polyfill for Index and Range types (C# 8.0)
 // This enables the use of range operators [..] and index from end [^]
 
@@ -35,12 +36,12 @@ namespace System
         /// <summary>
         /// Gets an Index that points to the first element.
         /// </summary>
-        public static Index Start => new Index(0);
+        public static Index Start => new(0);
 
         /// <summary>
         /// Gets an Index that points to the end.
         /// </summary>
-        public static Index End => new Index(~0);
+        public static Index End => new(~0);
 
         /// <summary>
         /// Gets the index value.
@@ -161,17 +162,17 @@ namespace System
         /// <summary>
         /// Creates a Range starting from the specified index to the end.
         /// </summary>
-        public static Range StartAt(Index start) => new Range(start, Index.End);
+        public static Range StartAt(Index start) => new(start, Index.End);
 
         /// <summary>
         /// Creates a Range from the start to the specified index.
         /// </summary>
-        public static Range EndAt(Index end) => new Range(Index.Start, end);
+        public static Range EndAt(Index end) => new(Index.Start, end);
 
         /// <summary>
         /// Gets a Range that represents all elements.
         /// </summary>
-        public static Range All => new Range(Index.Start, Index.End);
+        public static Range All => new(Index.Start, Index.End);
 
         /// <summary>
         /// Calculate the start offset and length of the range using the given collection length.
@@ -221,7 +222,7 @@ namespace System.Runtime.CompilerServices
             {
                 if (length == 0)
                 {
-                    return Array.Empty<T>();
+                    return [];
                 }
 
                 var dest = new T[length];

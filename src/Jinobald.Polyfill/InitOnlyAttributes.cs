@@ -1,7 +1,8 @@
-// Polyfill for init accessor support in C# 9.0+
-// This enables the use of init-only property setters in older frameworks
+// Licensed to the .NET Foundation under one or more agreements.
+// Polyfill for init accessor support (C# 9.0+)
 
 #if !NET5_0_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
+
 namespace System.Runtime.CompilerServices
 {
     using ComponentModel;
@@ -15,4 +16,5 @@ namespace System.Runtime.CompilerServices
     {
     }
 }
+
 #endif

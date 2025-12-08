@@ -1,4 +1,5 @@
-// Polyfill for various compiler attributes
+// Licensed to the .NET Foundation under one or more agreements.
+// Polyfill for compiler services attributes
 
 #if !NET5_0_OR_GREATER
 namespace System.Runtime.CompilerServices
@@ -46,16 +47,27 @@ namespace System.Runtime.CompilerServices
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal sealed class InterpolatedStringHandlerArgumentAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.
+        /// </summary>
+        /// <param name="argument">The name of the argument.</param>
         public InterpolatedStringHandlerArgumentAttribute(string argument)
         {
-            Arguments = new string[] { argument };
+            Arguments = [argument];
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.
+        /// </summary>
+        /// <param name="arguments">The names of the arguments.</param>
         public InterpolatedStringHandlerArgumentAttribute(params string[] arguments)
         {
             Arguments = arguments;
         }
 
+        /// <summary>
+        /// Gets the names of the arguments.
+        /// </summary>
         public string[] Arguments { get; }
     }
 }
