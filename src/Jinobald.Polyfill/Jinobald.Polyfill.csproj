@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
@@ -7,24 +7,20 @@
     <Nullable>enable</Nullable>
 
     <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Settings</PackageId>
+    <PackageId>Jinobald.Polyfill</PackageId>
     <Version>1.0.0</Version>
     <Authors>Jinobald Contributors</Authors>
     <Company>Jinobald</Company>
     <Product>Jinobald MVVM Framework</Product>
-    <Description>애플리케이션 설정 관리 서비스. 타입 안전성과 자동 저장을 제공합니다.</Description>
+    <Description>C# 14 기능을 이전 프레임워크에서 사용할 수 있도록 하는 Polyfill 라이브러리입니다.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
     <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>mvvm;settings;configuration;preferences</PackageTags>
+    <PackageTags>polyfill;csharp;csharp14;compatibility</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
-  </ItemGroup>
 
 </Project>
