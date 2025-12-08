@@ -1,54 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
-    <LangVersion>14</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Core</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Jinobald Contributors</Authors>
-    <Company>Jinobald</Company>
-    <Product>Jinobald MVVM Framework</Product>
-    <Description>Platform-agnostic core library for Jinobald MVVM framework. Provides navigation, dialog, event aggregation, and lifecycle management services for WPF and Avalonia applications.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>mvvm;wpf;avalonia;framework;navigation;dialog;prism</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+        <!-- NuGet Package Metadata -->
+        <PackageId>Jinobald.Core</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Jinobald Contributors</Authors>
+        <Company>Jinobald</Company>
+        <Product>Jinobald MVVM Framework</Product>
+        <Description>Platform-agnostic core library for Jinobald MVVM framework. Provides navigation, dialog, event aggregation, and lifecycle management services for WPF and Avalonia applications.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mvvm;wpf;avalonia;framework;navigation;dialog;prism</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageReference Include="Serilog" Version="4.1.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2"/>
+        <PackageReference Include="Serilog" Version="4.1.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
-    <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj" />
-    <ProjectReference Include="..\Jinobald.Dialogs\Jinobald.Dialogs.csproj" />
-    <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj" />
-    <ProjectReference Include="..\Jinobald.Theme\Jinobald.Theme.csproj" />
-    <ProjectReference Include="..\Jinobald.Settings\Jinobald.Settings.csproj" />
-    <ProjectReference Include="..\Jinobald.Commands\Jinobald.Commands.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj"/>
+        <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj"/>
+        <ProjectReference Include="..\Jinobald.Dialogs\Jinobald.Dialogs.csproj"/>
+        <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj"/>
+        <ProjectReference Include="..\Jinobald.Theme\Jinobald.Theme.csproj"/>
+        <ProjectReference Include="..\Jinobald.Settings\Jinobald.Settings.csproj"/>
+        <ProjectReference Include="..\Jinobald.Commands\Jinobald.Commands.csproj"/>
+        <ProjectReference Include="..\Jinobald.Polyfill\Jinobald.Polyfill.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Jinobald.Avalonia" />
-    <InternalsVisibleTo Include="Jinobald.Wpf" />
-  </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Jinobald.Avalonia"/>
+        <InternalsVisibleTo Include="Jinobald.Wpf"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>

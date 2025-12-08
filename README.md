@@ -7,6 +7,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 ## ✨ 핵심 기능
 
 ### Core Features
+
 - **🎯 View-First Region Navigation** - Prism 스타일의 리전 기반 View-First 네비게이션 (Back/Forward, KeepAlive 지원)
 - **💬 Advanced Dialog System** - 오버레이 기반 in-window 다이얼로그 시스템 (중첩 지원, 강타입 `IDialogResult<T>`)
 - **🔔 Toast Service** - 현대적이고 비침투적인 알림 시스템 (자동 닫힘, 위치 설정, UI 커스터마이징)
@@ -16,6 +17,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 - **🔗 ViewModelLocator** - View-ViewModel 자동 매핑 (컨벤션 기반)
 
 ### Advanced Features
+
 - **🧩 Module System** - Prism 스타일 모듈 시스템 (의존성 해결, 순환 참조 감지)
 - **⚡ CompositeCommand** - 여러 명령을 하나로 조합 (IActiveAware 지원)
 - **✅ Validation Support** - `INotifyDataErrorInfo` 기반 Data Annotations 검증
@@ -24,6 +26,7 @@ Jinobald는 현대적인 .NET 애플리케이션 개발을 위한 강력한 크�
 - **♻️ Resource Management** - `IDisposable` 자동 정리, `IRegionMemberLifetime`
 
 ### Infrastructure
+
 - **🚀 Application Bootstrap** - 스플래시 스크린 지원 (선택적), `IProgress<InitializationProgress>` 기반 진행률 보고
 - **📝 Comprehensive Logging** - Serilog 기반 구조화된 로깅
 - **🏗️ Dependency Injection** - Microsoft.Extensions.DependencyInjection 통합
@@ -56,6 +59,7 @@ Jinobald/
 ```
 
 ### 솔루션 파일
+
 - `Jinobald.slnx` - 전체 솔루션 (Windows)
 - `Jinobald.Mac.slnx` - macOS/Linux용 (WPF 제외)
 
@@ -64,8 +68,10 @@ Jinobald/
 ### 1️⃣ 애플리케이션 설정
 
 Jinobald는 두 가지 ApplicationBase를 제공합니다:
+
 - `ApplicationBase<TMainWindow>` - 스플래시 없음, `OnInitializeAsync()` 선택적 오버라이드
-- `ApplicationBase<TMainWindow, TSplashWindow>` - 스플래시 포함, `OnInitializeAsync(IProgress<InitializationProgress>)` **필수 구현**
+- `ApplicationBase<TMainWindow, TSplashWindow>` - 스플래시 포함, `OnInitializeAsync(IProgress<InitializationProgress>)` **필수
+  구현**
 
 #### Avalonia 애플리케이션 (스플래시 포함)
 
@@ -181,7 +187,8 @@ public partial class App : ApplicationBase<MainWindow>
 }
 ```
 
-> **Note**: `MainWindow`처럼 `ViewModelLocator.AutoWireViewModel="True"`를 사용하지만 네비게이션으로 생성되지 않는 Window의 ViewModel은 명시적으로 등록해야 합니다.
+> **Note**: `MainWindow`처럼 `ViewModelLocator.AutoWireViewModel="True"`를 사용하지만 네비게이션으로 생성되지 않는 Window의 ViewModel은 명시적으로
+> 등록해야 합니다.
 
 ### 2️⃣ ViewModel 작성
 
@@ -242,16 +249,16 @@ public partial class MainViewModel : ViewModelBase, INavigationAware
 
 WPF와 Avalonia 샘플 앱은 프레임워크의 모든 주요 기능을 데모합니다:
 
-| 데모 | 기능 | 주요 서비스 |
-|------|------|-------------|
-| **Home** | 프레임워크 개요 | - |
-| **Navigation** | Region 기반 View-First 네비게이션, Back/Forward | `IRegionManager` |
-| **Dialogs** | 오버레이 다이얼로그, 중첩 다이얼로그, ButtonResult | `IDialogService` |
-| **Themes** | 동적 테마 전환 (Light/Dark), 설정 저장 | `IThemeService`, `ITypedSettingsService` |
-| **Regions** | 다중 리전, KeepAlive, NavigationMode | `IRegionManager` |
-| **Events** | Pub/Sub 이벤트, ThreadOption, 구독/발행 | `IEventAggregator` |
-| **Toasts** | 비침투적 알림, 4가지 타입, 위치 설정, 자동 닫힘 | `IToastService` |
-| **Advanced** | ValidatableViewModelBase, CompositeCommand, Event Filter/Weak, IConfirmNavigationRequest, IRegionMemberLifetime, IDisposable | 복합 |
+| 데모             | 기능                                                                                                                           | 주요 서비스                                   |
+|----------------|------------------------------------------------------------------------------------------------------------------------------|------------------------------------------|
+| **Home**       | 프레임워크 개요                                                                                                                     | -                                        |
+| **Navigation** | Region 기반 View-First 네비게이션, Back/Forward                                                                                     | `IRegionManager`                         |
+| **Dialogs**    | 오버레이 다이얼로그, 중첩 다이얼로그, ButtonResult                                                                                           | `IDialogService`                         |
+| **Themes**     | 동적 테마 전환 (Light/Dark), 설정 저장                                                                                                 | `IThemeService`, `ITypedSettingsService` |
+| **Regions**    | 다중 리전, KeepAlive, NavigationMode                                                                                             | `IRegionManager`                         |
+| **Events**     | Pub/Sub 이벤트, ThreadOption, 구독/발행                                                                                             | `IEventAggregator`                       |
+| **Toasts**     | 비침투적 알림, 4가지 타입, 위치 설정, 자동 닫힘                                                                                                | `IToastService`                          |
+| **Advanced**   | ValidatableViewModelBase, CompositeCommand, Event Filter/Weak, IConfirmNavigationRequest, IRegionMemberLifetime, IDisposable | 복합                                       |
 
 ```bash
 # Avalonia 샘플 실행
@@ -270,6 +277,7 @@ Prism 스타일의 Region 시스템으로 **View-First 네비게이션**을 제�
 #### XAML에서 Region 정의
 
 **Avalonia & WPF:**
+
 ```xml
 <Window xmlns:jino="https://github.com/JinoPay/Jinobald">
     <Grid>
@@ -297,6 +305,7 @@ Prism 스타일의 Region 시스템으로 **View-First 네비게이션**을 제�
 ```
 
 **Region Attached Properties:**
+
 - `jino:Region.Name` - 리전 이름 (필수)
 - `jino:Region.DefaultView` - 리전 생성 시 자동으로 표시할 View 타입
 - `jino:Region.KeepAlive` - 네비게이션 시 뷰 캐시 여부 (기본값: false)
@@ -355,6 +364,7 @@ public partial class ShellViewModel : ViewModelBase
 ```
 
 **ViewModel은 ViewModelLocator를 통해 자동으로 생성되고 연결됩니다:**
+
 - `HomeView` → `HomeViewModel` (자동 생성 및 DataContext 바인딩)
 - `DetailView` → `DetailViewModel`
 - `TabView` → `TabViewModel`
@@ -384,6 +394,7 @@ View와 ViewModel을 컨벤션 기반으로 자동 연결하는 ViewModelLocator
 #### XAML에서 자동 바인딩
 
 **Avalonia & WPF:**
+
 ```xml
 <Window xmlns:jino="https://github.com/JinoPay/Jinobald"
         jino:ViewModelLocator.AutoWireViewModel="True">
@@ -394,6 +405,7 @@ View와 ViewModel을 컨벤션 기반으로 자동 연결하는 ViewModelLocator
 #### 컨벤션 규칙
 
 ViewModelLocator는 다음 패턴으로 자동 매칭합니다:
+
 - `Views.HomeView` → `ViewModels.HomeViewModel`
 - `Views.Settings.ProfileView` → `ViewModels.Settings.ProfileViewModel`
 - `ShellWindow` → `ShellViewModel`
@@ -421,13 +433,15 @@ protected override void RegisterTypes(IContainerRegistry containerRegistry)
 }
 ```
 
-> **중요**: `RegisterForNavigation<View>()`는 View와 매칭되는 ViewModel을 자동으로 DI 컨테이너에 등록합니다. 하지만 `MainWindow`처럼 네비게이션으로 생성되지 않는 Window의 ViewModel은 `RegisterSingleton<T>()`로 명시적 등록이 필요합니다.
+> **중요**: `RegisterForNavigation<View>()`는 View와 매칭되는 ViewModel을 자동으로 DI 컨테이너에 등록합니다. 하지만 `MainWindow`처럼 네비게이션으로 생성되지 않는
+> Window의 ViewModel은 `RegisterSingleton<T>()`로 명시적 등록이 필요합니다.
 
 ### 💬 Dialog Service
 
 Prism 스타일의 강력한 다이얼로그 시스템을 제공합니다.
 
 **주요 기능:**
+
 - ✅ In-window overlay 방식 (모달 다이얼로그)
 - ✅ 중첩 다이얼로그 지원 (다이얼로그 위에 다이얼로그)
 - ✅ Prism 스타일 ButtonResult (OK, Cancel, Yes, No 등)
@@ -578,6 +592,7 @@ public enum ButtonResult
 현대적이고 비침투적인 알림 시스템을 제공합니다.
 
 **주요 기능:**
+
 - ✅ 비침투적(non-intrusive) 알림 방식
 - ✅ 자동 닫힘 (타임아웃 설정 가능)
 - ✅ 여러 토스트 동시 표시 가능
@@ -814,6 +829,7 @@ using var subscription = _eventAggregator.Subscribe<MyEvent>(OnMyEvent);
 다크/라이트 모드를 기본 지원하며, 런타임에 테마를 동적으로 전환할 수 있습니다.
 
 **주요 기능:**
+
 - ✅ Dark/Light 모드 기본 지원
 - ✅ Avalonia의 FluentTheme 및 WPF ResourceDictionary 통합
 - ✅ 런타임 테마 전환
@@ -1030,14 +1046,13 @@ public partial class SettingsViewModel : ViewModelBase
 
 #### 키-값 vs Strongly-Typed 비교
 
-| 기능 | 키-값 방식 | Strongly-Typed |
-|------|-----------|----------------|
-| 컴파일 타임 검증 | ❌ 런타임 오류 | ✅ 컴파일 오류 |
-| IntelliSense | ❌ | ✅ |
-| 리팩토링 | ❌ 수동 검색 | ✅ 자동 |
-| 중첩 설정 | 불편함 | 자연스러움 |
-| 기본값 정의 | 코드에 분산 | 클래스에 집중 |
-
+| 기능           | 키-값 방식   | Strongly-Typed |
+|--------------|----------|----------------|
+| 컴파일 타임 검증    | ❌ 런타임 오류 | ✅ 컴파일 오류       |
+| IntelliSense | ❌        | ✅              |
+| 리팩토링         | ❌ 수동 검색  | ✅ 자동           |
+| 중첩 설정        | 불편함      | 자연스러움          |
+| 기본값 정의       | 코드에 분산   | 클래스에 집중        |
 
 ## 🧩 Module System
 
@@ -1157,6 +1172,7 @@ public class DocumentViewModel : ViewModelBase, IActiveAware
 ```
 
 **Shell에서 전체 저장:**
+
 ```xml
 <Button Command="{Binding SaveAllCommand}" Content="Save All" />
 ```
@@ -1216,6 +1232,7 @@ public partial class UserFormViewModel : ValidatableViewModelBase
 ```
 
 **XAML에서 오류 표시:**
+
 ```xml
 <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
 <TextBlock Text="{Binding (Validation.Errors)[0].ErrorContent,
@@ -1536,6 +1553,7 @@ public class TransientViewModel : ViewModelBase, IRegionMemberLifetime
 ```
 
 **XAML에서 설정:**
+
 ```xml
 <!-- Region 레벨에서 KeepAlive 설정 (기본값) -->
 <ContentControl jino:Region.Name="MainRegion"
@@ -1693,6 +1711,7 @@ dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 ```
 
 **테스트 커버리지:** 299개 유닛 테스트
+
 - Core Services (Events, Dialog, Regions, Settings)
 - MVVM (ViewModelBase, ValidatableViewModelBase, Navigation)
 - Commands (CompositeCommand, IActiveAware)
@@ -1702,44 +1721,17 @@ dotnet test tests/Jinobald.Wpf.Tests  # Windows 전용
 ## 🔧 핵심 의존성
 
 ### 런타임
+
 - **CommunityToolkit.Mvvm** 8.3.2 - MVVM 헬퍼 (ObservableProperty, RelayCommand 등)
 - **Microsoft.Extensions.DependencyInjection** 9.0.0 - DI 컨테이너
 - **Serilog** 4.1.0 - 구조화된 로깅
 - **Avalonia** 11.2.2 - 크로스 플랫폼 UI (Avalonia 프로젝트용)
 
 ### 테스트
+
 - **xUnit** 2.9.2 - 테스트 프레임워크
 - **NSubstitute** 5.3.0 - 모킹 라이브러리
 - **Avalonia.Headless.XUnit** 11.2.2 - Avalonia UI 테스트 지원
-
-## 🔍 최근 코드 품질 개선 사항
-
-### 2025-12-06 주요 개선
-
-#### 1. 리소스 관리 개선
-- **JsonSettingsService**: IDisposable 패턴 구현, SemaphoreSlim 및 Timer 자동 정리
-- **JsonTypedSettingsService**: ObjectDisposedException 처리 강화
-- **Timer 최적화**: 매번 재생성하던 Timer를 재사용하도록 개선하여 GC 압박 감소
-
-#### 2. 동기 블로킹 제거
-- **JsonSettingsService**: `SemaphoreSlim.Wait()` 호출을 제거하여 UI 스레드 데드락 위험 제거
-- 모든 동기 메서드에서 비동기 락 대기 패턴 적용
-
-#### 3. 예외 처리 강화
-- **DialogService (Avalonia & WPF)**: try-finally 블록으로 예외 발생 시에도 이벤트 핸들러 정리 보장
-- 메모리 누수 방지를 위한 안전한 리소스 정리 로직 추가
-
-#### 4. 성능 최적화
-- **Region 컬렉션**: List + List 구조를 List + HashSet으로 변경하여 조회 성능 향상
-  - `Contains()`, `Activate()`, `Deactivate()` 메서드의 시간 복잡도 O(n) → O(1)
-  - 순서 유지와 빠른 조회를 동시에 지원
-
-#### 5. 코드 품질
-- 모든 메서드에 ObjectDisposedException 체크 추가
-- Timer 이벤트 핸들러에 예외 처리 및 로깅 추가
-- 리소스 해제 순서 최적화
-
-이러한 개선 사항들은 프레임워크의 안정성, 성능, 유지보수성을 향상시킵니다.
 
 ## 📄 라이선스
 

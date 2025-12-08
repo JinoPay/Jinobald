@@ -1,34 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
-    <LangVersion>14</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Ioc.DryIoc</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Jinobald Contributors</Authors>
-    <Company>Jinobald</Company>
-    <Product>Jinobald MVVM Framework</Product>
-    <Description>DryIoc 기반 DI 컨테이너 구현. Jinobald 프레임워크에서 DryIoc을 사용하려는 경우 선택하세요.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>mvvm;di;ioc;dryioc;dependency-injection</PackageTags>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+        <!-- NuGet Package Metadata -->
+        <PackageId>Jinobald.Ioc.DryIoc</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Jinobald Contributors</Authors>
+        <Company>Jinobald</Company>
+        <Product>Jinobald MVVM Framework</Product>
+        <Description>DryIoc 기반 DI 컨테이너 구현. Jinobald 프레임워크에서 DryIoc을 사용하려는 경우 선택하세요.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mvvm;di;ioc;dryioc;dependency-injection</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DryIoc" Version="5.4.3" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="DryIoc" Version="5.4.3"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj"/>
+        <ProjectReference Include="..\Jinobald.Polyfill\Jinobald.Polyfill.csproj"/>
+    </ItemGroup>
 
 </Project>

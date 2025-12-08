@@ -1,42 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <LangVersion>14</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Avalonia</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Jinobald Contributors</Authors>
-    <Company>Jinobald</Company>
-    <Product>Jinobald MVVM Framework</Product>
-    <Description>Avalonia implementation of Jinobald MVVM framework. Provides platform-specific services and controls for Avalonia applications including DialogHost, ToastHost, and Region adapters.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>mvvm;avalonia;framework;navigation;dialog;regions;toast</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+        <!-- NuGet Package Metadata -->
+        <PackageId>Jinobald.Avalonia</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Jinobald Contributors</Authors>
+        <Company>Jinobald</Company>
+        <Product>Jinobald MVVM Framework</Product>
+        <Description>Avalonia implementation of Jinobald MVVM framework. Provides platform-specific services and controls for Avalonia applications including DialogHost, ToastHost, and Region adapters.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mvvm;avalonia;framework;navigation;dialog;regions;toast</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.2.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-    <PackageReference Include="Serilog" Version="4.1.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.2.2"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0"/>
+        <PackageReference Include="Serilog" Version="4.1.0"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj" />
-    <ProjectReference Include="..\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj"/>
+        <ProjectReference Include="..\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj"/>
+        <ProjectReference Include="..\Jinobald.Polyfill\Jinobald.Polyfill.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>

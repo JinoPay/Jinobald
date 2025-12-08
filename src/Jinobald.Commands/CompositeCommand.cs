@@ -96,7 +96,6 @@ public class CompositeCommand : ICommand
     public virtual void UnregisterCommand(ICommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
-
         bool removed;
         lock (_lock)
         {

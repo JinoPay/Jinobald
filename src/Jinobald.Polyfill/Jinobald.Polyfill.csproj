@@ -1,26 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
-    <LangVersion>14</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFrameworks>net462;net472;net48;net481;net8.0;net9.0;net10.0</TargetFrameworks>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Polyfill</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Jinobald Contributors</Authors>
-    <Company>Jinobald</Company>
-    <Product>Jinobald MVVM Framework</Product>
-    <Description>C# 14 기능을 이전 프레임워크에서 사용할 수 있도록 하는 Polyfill 라이브러리입니다.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>polyfill;csharp;csharp14;compatibility</PackageTags>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+        <!-- NuGet Package Metadata -->
+        <PackageId>Jinobald.Polyfill</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Jinobald Contributors</Authors>
+        <Company>Jinobald</Company>
+        <Product>Jinobald MVVM Framework</Product>
+        <Description>C# 14 기능을 이전 프레임워크에서 사용할 수 있도록 하는 Polyfill 라이브러리입니다.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>polyfill;csharp;csharp14;compatibility</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481'">
+        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+    </ItemGroup>
 
 </Project>

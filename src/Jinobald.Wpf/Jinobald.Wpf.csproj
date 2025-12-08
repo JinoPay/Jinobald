@@ -1,45 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net462-windows;net472-windows;net48-windows;net481-windows;net8.0-windows;net9.0-windows;net10.0-windows</TargetFrameworks>
-    <LangVersion>14</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
+    <PropertyGroup>
+        <TargetFrameworks>net462-windows;net472-windows;net48-windows;net481-windows;net8.0-windows;net9.0-windows;net10.0-windows</TargetFrameworks>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
 
-    <!-- NuGet Package Metadata -->
-    <PackageId>Jinobald.Wpf</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Jinobald Contributors</Authors>
-    <Company>Jinobald</Company>
-    <Product>Jinobald MVVM Framework</Product>
-    <Description>WPF implementation of Jinobald MVVM framework. Provides platform-specific services and controls for WPF applications including DialogHost, ToastHost, and Region adapters.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>mvvm;wpf;framework;navigation;dialog;regions;toast</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+        <!-- NuGet Package Metadata -->
+        <PackageId>Jinobald.Wpf</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Jinobald Contributors</Authors>
+        <Company>Jinobald</Company>
+        <Product>Jinobald MVVM Framework</Product>
+        <Description>WPF implementation of Jinobald MVVM framework. Provides platform-specific services and controls for WPF applications including DialogHost, ToastHost, and Region adapters.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/JinoPay/Jinobald</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/JinoPay/Jinobald</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mvvm;wpf;framework;navigation;dialog;regions;toast</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-    <PackageReference Include="Serilog" Version="4.1.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0"/>
+        <PackageReference Include="Serilog" Version="4.1.0"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj" />
-    <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj" />
-    <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj" />
-    <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj" />
-    <ProjectReference Include="..\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Jinobald.Abstractions\Jinobald.Abstractions.csproj"/>
+        <ProjectReference Include="..\Jinobald.Core\Jinobald.Core.csproj"/>
+        <ProjectReference Include="..\Jinobald.Events\Jinobald.Events.csproj"/>
+        <ProjectReference Include="..\Jinobald.Toast\Jinobald.Toast.csproj"/>
+        <ProjectReference Include="..\Jinobald.Ioc.Microsoft\Jinobald.Ioc.Microsoft.csproj"/>
+        <ProjectReference Include="..\Jinobald.Polyfill\Jinobald.Polyfill.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>
