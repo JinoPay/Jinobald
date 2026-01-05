@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
+    <LangVersion>13</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <!-- NuGet 패키지 메타데이터 -->
+    <PackageId>JinoLib.Printer</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>JinoLib Team</Authors>
+    <Company>JinoLib</Company>
+    <Product>JinoLib ESC/POS 프린터 라이브러리</Product>
+    <Description>
+Windows용 ESC/POS 프린터 라이브러리.
+USB 직접 쓰기, Windows Print Spooler, 네트워크(TCP/IP), 시리얼, 블루투스 연결을 지원합니다.
+텍스트, 이미지, 1D/2D 바코드, QR코드, 캐시드로워, 한글 지원.
+    </Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>escpos;pos;printer;thermal;receipt;barcode;qrcode;windows;usb;serial</PackageTags>
+
+    <!-- 문서 및 심볼 -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- 루트 네임스페이스 -->
+    <RootNamespace>JinoLib.Printer</RootNamespace>
+    <AssemblyName>JinoLib.Printer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
