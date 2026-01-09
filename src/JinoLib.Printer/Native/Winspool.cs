@@ -1,5 +1,9 @@
 using System.Runtime.InteropServices;
 
+#if NETFRAMEWORK
+using nint = System.IntPtr;
+#endif
+
 namespace JinoLib.Printer.Native;
 
 /// <summary>
@@ -44,6 +48,10 @@ internal static partial class Winspool
         public uint AveragePPM;
     }
 
+    public const uint PRINTER_ENUM_LOCAL = 0x00000002;
+    public const uint PRINTER_ENUM_CONNECTIONS = 0x00000004;
+
+#if NET7_0_OR_GREATER
     [LibraryImport("winspool.drv", EntryPoint = "OpenPrinterW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool OpenPrinter(
@@ -91,7 +99,53 @@ internal static partial class Winspool
         uint cbBuf,
         out uint pcbNeeded,
         out uint pcReturned);
+#else
+    [DllImport("winspool.drv", EntryPoint = "OpenPrinterW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool OpenPrinter(
+        string pPrinterName,
+        out nint phPrinter,
+        nint pDefault);
 
-    public const uint PRINTER_ENUM_LOCAL = 0x00000002;
-    public const uint PRINTER_ENUM_CONNECTIONS = 0x00000004;
+    [DllImport("winspool.drv", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ClosePrinter(nint hPrinter);
+
+    [DllImport("winspool.drv", EntryPoint = "StartDocPrinterW", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern int StartDocPrinter(
+        nint hPrinter,
+        int Level,
+        ref DOC_INFO_1 pDocInfo);
+
+    [DllImport("winspool.drv", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool EndDocPrinter(nint hPrinter);
+
+    [DllImport("winspool.drv", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool StartPagePrinter(nint hPrinter);
+
+    [DllImport("winspool.drv", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool EndPagePrinter(nint hPrinter);
+
+    [DllImport("winspool.drv", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool WritePrinter(
+        nint hPrinter,
+        byte[] pBuf,
+        int cbBuf,
+        out int pcWritten);
+
+    [DllImport("winspool.drv", EntryPoint = "EnumPrintersW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool EnumPrinters(
+        uint Flags,
+        [MarshalAs(UnmanagedType.LPWStr)] string? Name,
+        uint Level,
+        nint pPrinterEnum,
+        uint cbBuf,
+        out uint pcbNeeded,
+        out uint pcReturned);
+#endif
 }

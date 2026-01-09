@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Text;
 using JinoLib.Printer.Abstractions;
 using JinoLib.Printer.Commands;
@@ -13,7 +12,7 @@ namespace JinoLib.Printer.Builders;
 /// </summary>
 public class ReceiptBuilder : IReceiptBuilder
 {
-    private readonly List<byte> _buffer = [];
+    private readonly List<byte> _buffer = new();
     private int _printerWidth = 48; // 기본 80mm 프린터 기준 48자
     private bool _koreanMode;
 
@@ -29,7 +28,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Initialize()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.Initialize.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.Initialize);
+#endif
         _koreanMode = false;
         return this;
     }
@@ -66,7 +69,11 @@ public class ReceiptBuilder : IReceiptBuilder
     public IReceiptBuilder Line(string text)
     {
         Text(text);
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.LF.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.LF);
+#endif
         return this;
     }
 
@@ -77,7 +84,11 @@ public class ReceiptBuilder : IReceiptBuilder
     {
         for (var i = 0; i < count; i++)
         {
+#if NET5_0_OR_GREATER
+            _buffer.AddRange(EscPosCommands.LF.ToArray());
+#else
             _buffer.AddRange(EscPosCommands.LF);
+#endif
         }
         return this;
     }
@@ -101,7 +112,7 @@ public class ReceiptBuilder : IReceiptBuilder
     {
         var rightWidth = _printerWidth - leftWidth - centerWidth;
 
-        var leftPadded = left.PadRight(leftWidth)[..leftWidth];
+        var leftPadded = left.PadRight(leftWidth).Substring(0, leftWidth);
         var centerPadded = center.PadLeft(centerWidth);
         var rightPadded = right.PadLeft(rightWidth);
 
@@ -117,7 +128,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Bold()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.BoldOn.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.BoldOn);
+#endif
         return this;
     }
 
@@ -126,7 +141,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder BoldOff()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.BoldOff.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.BoldOff);
+#endif
         return this;
     }
 
@@ -135,13 +154,23 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Underline(UnderlineMode mode = UnderlineMode.Single)
     {
+#if NET5_0_OR_GREATER
         var command = mode switch
         {
-            UnderlineMode.None => EscPosCommands.UnderlineOff,
+            UnderlineMode.Off => EscPosCommands.UnderlineOff.ToArray(),
+            UnderlineMode.Single => EscPosCommands.UnderlineSingle.ToArray(),
+            UnderlineMode.Double => EscPosCommands.UnderlineDouble.ToArray(),
+            _ => EscPosCommands.UnderlineOff.ToArray()
+        };
+#else
+        var command = mode switch
+        {
+            UnderlineMode.Off => EscPosCommands.UnderlineOff,
             UnderlineMode.Single => EscPosCommands.UnderlineSingle,
             UnderlineMode.Double => EscPosCommands.UnderlineDouble,
             _ => EscPosCommands.UnderlineOff
         };
+#endif
         _buffer.AddRange(command);
         return this;
     }
@@ -151,7 +180,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Reverse()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.ReverseOn.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.ReverseOn);
+#endif
         return this;
     }
 
@@ -160,7 +193,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder ReverseOff()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.ReverseOff.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.ReverseOff);
+#endif
         return this;
     }
 
@@ -175,11 +212,7 @@ public class ReceiptBuilder : IReceiptBuilder
             Commands.Enums.FontSize.DoubleWidth => (1, 0),
             Commands.Enums.FontSize.DoubleHeight => (0, 1),
             Commands.Enums.FontSize.Double => (1, 1),
-            Commands.Enums.FontSize.TripleWidth => (2, 0),
-            Commands.Enums.FontSize.TripleHeight => (0, 2),
             Commands.Enums.FontSize.Triple => (2, 2),
-            Commands.Enums.FontSize.QuadWidth => (3, 0),
-            Commands.Enums.FontSize.QuadHeight => (0, 3),
             Commands.Enums.FontSize.Quad => (3, 3),
             _ => (0, 0)
         };
@@ -193,11 +226,19 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder ResetStyle()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.BoldOff.ToArray());
+        _buffer.AddRange(EscPosCommands.UnderlineOff.ToArray());
+        _buffer.AddRange(EscPosCommands.ReverseOff.ToArray());
+        _buffer.AddRange(EscPosCommands.CharacterSize(0, 0));
+        _buffer.AddRange(EscPosCommands.AlignLeft.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.BoldOff);
         _buffer.AddRange(EscPosCommands.UnderlineOff);
         _buffer.AddRange(EscPosCommands.ReverseOff);
         _buffer.AddRange(EscPosCommands.CharacterSize(0, 0));
         _buffer.AddRange(EscPosCommands.AlignLeft);
+#endif
         return this;
     }
 
@@ -210,6 +251,15 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Align(Alignment alignment)
     {
+#if NET5_0_OR_GREATER
+        var command = alignment switch
+        {
+            Alignment.Left => EscPosCommands.AlignLeft.ToArray(),
+            Alignment.Center => EscPosCommands.AlignCenter.ToArray(),
+            Alignment.Right => EscPosCommands.AlignRight.ToArray(),
+            _ => EscPosCommands.AlignLeft.ToArray()
+        };
+#else
         var command = alignment switch
         {
             Alignment.Left => EscPosCommands.AlignLeft,
@@ -217,6 +267,7 @@ public class ReceiptBuilder : IReceiptBuilder
             Alignment.Right => EscPosCommands.AlignRight,
             _ => EscPosCommands.AlignLeft
         };
+#endif
         _buffer.AddRange(command);
         return this;
     }
@@ -268,7 +319,11 @@ public class ReceiptBuilder : IReceiptBuilder
         {
             for (var i = 0; i < lines; i++)
             {
+#if NET5_0_OR_GREATER
+                _buffer.AddRange(EscPosCommands.LF.ToArray());
+#else
                 _buffer.AddRange(EscPosCommands.LF);
+#endif
             }
         }
         return this;
@@ -279,12 +334,21 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder Cut(CutType cutType = CutType.Full)
     {
+#if NET5_0_OR_GREATER
+        var command = cutType switch
+        {
+            CutType.Full => EscPosCommands.CutFull.ToArray(),
+            CutType.Partial => EscPosCommands.CutPartial.ToArray(),
+            _ => EscPosCommands.CutFull.ToArray()
+        };
+#else
         var command = cutType switch
         {
             CutType.Full => EscPosCommands.CutFull,
             CutType.Partial => EscPosCommands.CutPartial,
             _ => EscPosCommands.CutFull
         };
+#endif
         _buffer.AddRange(command);
         return this;
     }
@@ -333,7 +397,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder EnableKorean()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.KoreanModeOn.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.KoreanModeOn);
+#endif
         _koreanMode = true;
         return this;
     }
@@ -343,7 +411,11 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public IReceiptBuilder DisableKorean()
     {
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.KoreanModeOff.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.KoreanModeOff);
+#endif
         _koreanMode = false;
         return this;
     }
@@ -405,7 +477,11 @@ public class ReceiptBuilder : IReceiptBuilder
         _buffer.AddRange(EscPosCommands.QrCode.StoreData(qrData));
 
         // 출력
+#if NET5_0_OR_GREATER
+        _buffer.AddRange(EscPosCommands.QrCode.Print.ToArray());
+#else
         _buffer.AddRange(EscPosCommands.QrCode.Print);
+#endif
 
         return this;
     }
@@ -420,16 +496,6 @@ public class ReceiptBuilder : IReceiptBuilder
     public IReceiptBuilder Image(string imagePath, int maxWidth = ImageProcessor.DefaultPrinterWidth, bool useDithering = false)
     {
         var rasterData = ImageProcessor.ProcessImage(imagePath, maxWidth, useDithering: useDithering);
-        _buffer.AddRange(ImageProcessor.ToEscPosCommand(rasterData));
-        return this;
-    }
-
-    /// <summary>
-    /// 이미지 출력 (Image 객체)
-    /// </summary>
-    public IReceiptBuilder Image(Image image, int maxWidth = ImageProcessor.DefaultPrinterWidth, bool useDithering = false)
-    {
-        var rasterData = ImageProcessor.ProcessImage(image, maxWidth, useDithering: useDithering);
         _buffer.AddRange(ImageProcessor.ToEscPosCommand(rasterData));
         return this;
     }
@@ -475,7 +541,7 @@ public class ReceiptBuilder : IReceiptBuilder
     /// </summary>
     public byte[] Build()
     {
-        return [.. _buffer];
+        return _buffer.ToArray();
     }
 
     /// <summary>

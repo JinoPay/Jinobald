@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// 네트워크 프린터 등록 (Keyed Services - .NET 8+)
     /// </summary>
@@ -91,6 +92,7 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+#endif
 
     #endregion
 
@@ -126,6 +128,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// 시리얼 프린터 등록 (Keyed Services)
     /// </summary>
@@ -145,13 +148,15 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+#endif
 
     #endregion
 
+#if WINDOWS_BUILD
     #region 스풀러 프린터
 
     /// <summary>
-    /// 스풀러 프린터 등록 (드라이버 설치 필요)
+    /// 스풀러 프린터 등록 (드라이버 설치 필요, Windows 전용)
     /// </summary>
     public static IServiceCollection AddSpoolerPrinter(
         this IServiceCollection services,
@@ -164,7 +169,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 스풀러 프린터 등록 (옵션 사용)
+    /// 스풀러 프린터 등록 (옵션 사용, Windows 전용)
     /// </summary>
     public static IServiceCollection AddSpoolerPrinter(
         this IServiceCollection services,
@@ -178,8 +183,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
-    /// 스풀러 프린터 등록 (Keyed Services)
+    /// 스풀러 프린터 등록 (Keyed Services, Windows 전용)
     /// </summary>
     public static IServiceCollection AddKeyedSpoolerPrinter(
         this IServiceCollection services,
@@ -197,13 +203,14 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+#endif
 
     #endregion
 
     #region USB 직접 연결 프린터
 
     /// <summary>
-    /// USB 직접 연결 프린터 등록 (드라이버 없이)
+    /// USB 직접 연결 프린터 등록 (드라이버 없이, Windows 전용)
     /// </summary>
     public static IServiceCollection AddUsbDirectPrinter(
         this IServiceCollection services,
@@ -218,7 +225,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// USB 직접 연결 프린터 등록 (디바이스 경로)
+    /// USB 직접 연결 프린터 등록 (디바이스 경로, Windows 전용)
     /// </summary>
     public static IServiceCollection AddUsbDirectPrinter(
         this IServiceCollection services,
@@ -231,7 +238,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// USB 직접 연결 프린터 등록 (옵션 사용)
+    /// USB 직접 연결 프린터 등록 (옵션 사용, Windows 전용)
     /// </summary>
     public static IServiceCollection AddUsbDirectPrinter(
         this IServiceCollection services,
@@ -245,8 +252,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
-    /// USB 직접 연결 프린터 등록 (Keyed Services)
+    /// USB 직접 연결 프린터 등록 (Keyed Services, Windows 전용)
     /// </summary>
     public static IServiceCollection AddKeyedUsbDirectPrinter(
         this IServiceCollection services,
@@ -264,8 +272,10 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+#endif
 
     #endregion
+#endif
 
     #region 블루투스 프린터
 
@@ -297,6 +307,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// 블루투스 프린터 등록 (Keyed Services)
     /// </summary>
@@ -316,6 +327,7 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+#endif
 
     #endregion
 }

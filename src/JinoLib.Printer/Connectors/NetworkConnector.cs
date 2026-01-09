@@ -17,6 +17,8 @@ public class NetworkConnector : IPrinterConnector
     private bool _disposed;
 
     public bool IsConnected => _client?.Connected ?? false;
+    public string ConnectionType => "Network";
+    public bool CanRead => true;
     public string ConnectionInfo => $"TCP://{_options.IpAddress}:{_options.Port}";
 
     public NetworkConnector(NetworkConnectorOptions options, ILogger<NetworkConnector>? logger = null)
@@ -42,7 +44,16 @@ public class NetworkConnector : IPrinterConnector
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(_options.ConnectTimeoutMs);
 
+#if NET5_0_OR_GREATER
             await _client.ConnectAsync(_options.IpAddress, _options.Port, cts.Token);
+#else
+            var connectTask = _client.ConnectAsync(_options.IpAddress, _options.Port);
+            if (await Task.WhenAny(connectTask, Task.Delay(_options.ConnectTimeoutMs, cts.Token)) != connectTask)
+            {
+                throw new TimeoutException($"연결 타임아웃: {ConnectionInfo}");
+            }
+            await connectTask;
+#endif
 
             _stream = _client.GetStream();
             _stream.ReadTimeout = _options.ReadTimeoutMs;
@@ -81,7 +92,7 @@ public class NetworkConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public async Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+    public async Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _stream == null)
         {
@@ -90,28 +101,32 @@ public class NetworkConnector : IPrinterConnector
 
         _logger?.LogDebug("데이터 전송: {Length} bytes", data.Length);
 
+#if NET5_0_OR_GREATER
         await _stream.WriteAsync(data, cancellationToken);
+#else
+        await _stream.WriteAsync(data.ToArray(), 0, data.Length, cancellationToken);
+#endif
         await _stream.FlushAsync(cancellationToken);
     }
 
-    public async Task<byte[]> ReadAsync(int length, CancellationToken cancellationToken = default)
+    public async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _stream == null)
         {
             throw new InvalidOperationException("프린터가 연결되어 있지 않습니다.");
         }
 
-        var buffer = new byte[length];
-        var bytesRead = await _stream.ReadAsync(buffer.AsMemory(0, length), cancellationToken);
-
-        if (bytesRead < length)
-        {
-            Array.Resize(ref buffer, bytesRead);
-        }
+#if NET5_0_OR_GREATER
+        var bytesRead = await _stream.ReadAsync(buffer, cancellationToken);
+#else
+        var tempBuffer = new byte[buffer.Length];
+        var bytesRead = await _stream.ReadAsync(tempBuffer, 0, buffer.Length, cancellationToken);
+        tempBuffer.AsSpan(0, bytesRead).CopyTo(buffer.Span);
+#endif
 
         _logger?.LogDebug("데이터 수신: {Length} bytes", bytesRead);
 
-        return buffer;
+        return bytesRead;
     }
 
     public void Dispose()

@@ -88,6 +88,7 @@ public class PrinterFactory : IPrinterFactory
         return new EscPosPrinter(connector, _loggerFactory?.CreateLogger<EscPosPrinter>());
     }
 
+#if WINDOWS_BUILD
     /// <summary>
     /// 스풀러 프린터 생성 (드라이버 설치 필요)
     /// </summary>
@@ -148,6 +149,7 @@ public class PrinterFactory : IPrinterFactory
         var connector = new UsbDirectConnector(options, _loggerFactory?.CreateLogger<UsbDirectConnector>());
         return new EscPosPrinter(connector, _loggerFactory?.CreateLogger<EscPosPrinter>());
     }
+#endif
 
     /// <summary>
     /// Connector를 사용하여 프린터 생성

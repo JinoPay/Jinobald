@@ -16,6 +16,8 @@ public class BluetoothConnector : IPrinterConnector
     private bool _disposed;
 
     public bool IsConnected => _serialPort?.IsOpen ?? false;
+    public string ConnectionType => "Bluetooth";
+    public bool CanRead => true;
     public string ConnectionInfo => $"Bluetooth:{_options.PortName}@{_options.BaudRate}";
 
     public BluetoothConnector(BluetoothConnectorOptions options, ILogger<BluetoothConnector>? logger = null)
@@ -95,7 +97,7 @@ public class BluetoothConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+    public Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _serialPort == null)
         {
@@ -104,29 +106,28 @@ public class BluetoothConnector : IPrinterConnector
 
         _logger?.LogDebug("데이터 전송: {Length} bytes", data.Length);
 
-        _serialPort.Write(data.ToArray(), 0, data.Length);
+        // SerialPort.Write는 Span<byte>를 지원하지 않으므로 byte[] 사용
+        var buffer = data.ToArray();
+        _serialPort.Write(buffer, 0, buffer.Length);
 
         return Task.CompletedTask;
     }
 
-    public Task<byte[]> ReadAsync(int length, CancellationToken cancellationToken = default)
+    public Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _serialPort == null)
         {
             throw new InvalidOperationException("프린터가 연결되어 있지 않습니다.");
         }
 
-        var buffer = new byte[length];
-        var bytesRead = _serialPort.Read(buffer, 0, length);
-
-        if (bytesRead < length)
-        {
-            Array.Resize(ref buffer, bytesRead);
-        }
+        // SerialPort.Read는 Span<byte>를 지원하지 않으므로 byte[] 사용
+        var tempBuffer = new byte[buffer.Length];
+        var bytesRead = _serialPort.Read(tempBuffer, 0, buffer.Length);
+        tempBuffer.AsSpan(0, bytesRead).CopyTo(buffer.Span);
 
         _logger?.LogDebug("데이터 수신: {Length} bytes", bytesRead);
 
-        return Task.FromResult(buffer);
+        return Task.FromResult(bytesRead);
     }
 
     public void Dispose()

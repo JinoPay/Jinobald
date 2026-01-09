@@ -1,19 +1,57 @@
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using JinoLib.Printer.Commands.Enums;
 
 namespace JinoLib.Printer.Imaging;
 
 /// <summary>
-/// ESC/POS 프린터용 이미지 처리기 (System.Drawing 기반)
+/// 이미지 처리 팩토리 및 정적 헬퍼 메서드
+/// 플랫폼에 따라 적절한 이미지 처리기를 반환합니다.
 /// </summary>
 public static class ImageProcessor
 {
+    private static IImageProcessor? _instance;
+    private static readonly object _lock = new();
+
     /// <summary>
     /// 기본 프린터 폭 (픽셀) - 80mm 프린터 기준 576 dots
     /// </summary>
     public const int DefaultPrinterWidth = 576;
+
+    /// <summary>
+    /// 현재 플랫폼에 맞는 이미지 처리기 인스턴스
+    /// </summary>
+    public static IImageProcessor Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+#if WINDOWS_BUILD
+                        _instance = new SystemDrawingImageProcessor();
+#else
+                        _instance = new ImageSharpImageProcessor();
+#endif
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+
+    /// <summary>
+    /// 커스텀 이미지 처리기 설정
+    /// </summary>
+    /// <param name="processor">사용할 이미지 처리기</param>
+    public static void SetInstance(IImageProcessor processor)
+    {
+        lock (_lock)
+        {
+            _instance = processor ?? throw new ArgumentNullException(nameof(processor));
+        }
+    }
 
     /// <summary>
     /// 이미지를 ESC/POS 래스터 데이터로 변환
@@ -24,134 +62,36 @@ public static class ImageProcessor
     /// <param name="useDithering">Floyd-Steinberg 디더링 사용 여부</param>
     /// <returns>래스터 이미지 데이터</returns>
     public static RasterImageData ProcessImage(string imagePath, int maxWidth = DefaultPrinterWidth, byte threshold = 127, bool useDithering = false)
-    {
-        using var image = Image.FromFile(imagePath);
-        return ProcessImage(image, maxWidth, threshold, useDithering);
-    }
+        => Instance.ProcessImage(imagePath, maxWidth, threshold, useDithering);
 
     /// <summary>
     /// 이미지를 ESC/POS 래스터 데이터로 변환
     /// </summary>
-    public static RasterImageData ProcessImage(Image image, int maxWidth = DefaultPrinterWidth, byte threshold = 127, bool useDithering = false)
-    {
-        using var bitmap = ResizeAndConvertToGrayscale(image, maxWidth);
-
-        if (useDithering)
-        {
-            DitherAlgorithm.FloydSteinberg(bitmap);
-        }
-
-        return ConvertToRaster(bitmap, threshold);
-    }
-
-    /// <summary>
-    /// 이미지를 ESC/POS 래스터 데이터로 변환 (바이트 배열 입력)
-    /// </summary>
+    /// <param name="imageData">이미지 바이트 배열</param>
+    /// <param name="maxWidth">최대 폭 (픽셀)</param>
+    /// <param name="threshold">흑백 변환 임계값 (0-255)</param>
+    /// <param name="useDithering">Floyd-Steinberg 디더링 사용 여부</param>
+    /// <returns>래스터 이미지 데이터</returns>
     public static RasterImageData ProcessImage(byte[] imageData, int maxWidth = DefaultPrinterWidth, byte threshold = 127, bool useDithering = false)
-    {
-        using var stream = new MemoryStream(imageData);
-        using var image = Image.FromStream(stream);
-        return ProcessImage(image, maxWidth, threshold, useDithering);
-    }
+        => Instance.ProcessImage(imageData, maxWidth, threshold, useDithering);
 
     /// <summary>
-    /// 이미지 리사이즈 및 그레이스케일 변환
+    /// 이미지를 ESC/POS 래스터 데이터로 변환
     /// </summary>
-    private static Bitmap ResizeAndConvertToGrayscale(Image image, int maxWidth)
-    {
-        var width = Math.Min(image.Width, maxWidth);
-        var height = (int)(image.Height * ((double)width / image.Width));
-
-        // 8의 배수로 맞추기 (래스터 이미지 요구사항)
-        width = (width + 7) / 8 * 8;
-
-        var resized = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-        using (var graphics = Graphics.FromImage(resized))
-        {
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
-
-            // 그레이스케일 변환 매트릭스
-            var colorMatrix = new ColorMatrix(
-            [
-                [0.299f, 0.299f, 0.299f, 0, 0],
-                [0.587f, 0.587f, 0.587f, 0, 0],
-                [0.114f, 0.114f, 0.114f, 0, 0],
-                [0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 1]
-            ]);
-
-            using var imageAttributes = new ImageAttributes();
-            imageAttributes.SetColorMatrix(colorMatrix);
-
-            graphics.DrawImage(
-                image,
-                new Rectangle(0, 0, width, height),
-                0, 0, image.Width, image.Height,
-                GraphicsUnit.Pixel,
-                imageAttributes);
-        }
-
-        return resized;
-    }
-
-    /// <summary>
-    /// 비트맵을 ESC/POS 래스터 데이터로 변환
-    /// </summary>
-    private static RasterImageData ConvertToRaster(Bitmap bitmap, byte threshold)
-    {
-        var width = bitmap.Width;
-        var height = bitmap.Height;
-        var widthBytes = width / 8;
-
-        var data = new byte[widthBytes * height];
-
-        var bitmapData = bitmap.LockBits(
-            new Rectangle(0, 0, width, height),
-            ImageLockMode.ReadOnly,
-            PixelFormat.Format24bppRgb);
-
-        try
-        {
-            unsafe
-            {
-                var scan0 = (byte*)bitmapData.Scan0;
-                var stride = bitmapData.Stride;
-
-                for (var y = 0; y < height; y++)
-                {
-                    var row = scan0 + (y * stride);
-
-                    for (var x = 0; x < width; x++)
-                    {
-                        var pixelOffset = x * 3;
-                        var gray = row[pixelOffset]; // 이미 그레이스케일이므로 R 채널만 사용
-
-                        // 검은색 = 1, 흰색 = 0 (ESC/POS 규격)
-                        if (gray < threshold)
-                        {
-                            var byteIndex = (y * widthBytes) + (x / 8);
-                            var bitIndex = 7 - (x % 8);
-                            data[byteIndex] |= (byte)(1 << bitIndex);
-                        }
-                    }
-                }
-            }
-        }
-        finally
-        {
-            bitmap.UnlockBits(bitmapData);
-        }
-
-        return new RasterImageData(widthBytes, height, data);
-    }
+    /// <param name="imageStream">이미지 스트림</param>
+    /// <param name="maxWidth">최대 폭 (픽셀)</param>
+    /// <param name="threshold">흑백 변환 임계값 (0-255)</param>
+    /// <param name="useDithering">Floyd-Steinberg 디더링 사용 여부</param>
+    /// <returns>래스터 이미지 데이터</returns>
+    public static RasterImageData ProcessImage(Stream imageStream, int maxWidth = DefaultPrinterWidth, byte threshold = 127, bool useDithering = false)
+        => Instance.ProcessImage(imageStream, maxWidth, threshold, useDithering);
 
     /// <summary>
     /// 래스터 이미지를 GS v 0 명령으로 변환
     /// </summary>
+    /// <param name="rasterData">래스터 이미지 데이터</param>
+    /// <param name="density">이미지 밀도</param>
+    /// <returns>ESC/POS 명령 바이트 배열</returns>
     public static byte[] ToEscPosCommand(RasterImageData rasterData, ImageDensity density = ImageDensity.Normal)
     {
         var mode = density switch
@@ -159,7 +99,7 @@ public static class ImageProcessor
             ImageDensity.Normal => (byte)0,
             ImageDensity.DoubleWidth => (byte)1,
             ImageDensity.DoubleHeight => (byte)2,
-            ImageDensity.Quadruple => (byte)3,
+            ImageDensity.Double => (byte)3,
             _ => (byte)0
         };
 
