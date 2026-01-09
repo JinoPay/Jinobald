@@ -16,7 +16,7 @@ public class EscPosPrinter : IPrinter
     private bool _disposed;
 
     public bool IsConnected => _connector.IsConnected;
-    public string ConnectionInfo => _connector.ConnectionInfo;
+    public string ConnectionInfo => $"{_connector.ConnectionType}";
 
     public EscPosPrinter(IPrinterConnector connector, ILogger<EscPosPrinter>? logger = null)
     {
@@ -60,7 +60,7 @@ public class EscPosPrinter : IPrinter
 
             _logger?.LogDebug("데이터 전송: {Length} bytes", data.Length);
 
-            await _connector.WriteAsync(data, cancellationToken);
+            await _connector.SendAsync(data, cancellationToken);
 
             return PrintResult.Succeeded(data.Length, startTime);
         }
@@ -100,7 +100,11 @@ public class EscPosPrinter : IPrinter
     /// </summary>
     public async Task<PrintResult> InitializeAsync(CancellationToken cancellationToken = default)
     {
+#if NET5_0_OR_GREATER
         return await SendAsync(EscPosCommands.Initialize.ToArray(), cancellationToken);
+#else
+        return await SendAsync(EscPosCommands.Initialize, cancellationToken);
+#endif
     }
 
     /// <summary>
@@ -117,9 +121,24 @@ public class EscPosPrinter : IPrinter
                 return null;
             }
 
+            if (!_connector.CanRead)
+            {
+                _logger?.LogWarning("이 커넥터는 상태 조회를 지원하지 않습니다.");
+                return null;
+            }
+
             var response = new List<byte>();
 
             // 각 상태 조회 명령 전송 및 응답 수집
+#if NET5_0_OR_GREATER
+            var statusCommands = new[]
+            {
+                EscPosCommands.Status.TransmitPrinterStatus.ToArray(),
+                EscPosCommands.Status.TransmitOfflineStatus.ToArray(),
+                EscPosCommands.Status.TransmitErrorStatus.ToArray(),
+                EscPosCommands.Status.TransmitPaperStatus.ToArray()
+            };
+#else
             var statusCommands = new[]
             {
                 EscPosCommands.Status.TransmitPrinterStatus,
@@ -127,17 +146,19 @@ public class EscPosPrinter : IPrinter
                 EscPosCommands.Status.TransmitErrorStatus,
                 EscPosCommands.Status.TransmitPaperStatus
             };
+#endif
 
             foreach (var command in statusCommands)
             {
-                await _connector.WriteAsync(command.ToArray(), cancellationToken);
+                await _connector.SendAsync(command, cancellationToken);
 
                 try
                 {
-                    var result = await _connector.ReadAsync(1, cancellationToken);
-                    if (result.Length > 0)
+                    var buffer = new byte[1];
+                    var bytesRead = await _connector.ReceiveAsync(buffer, cancellationToken);
+                    if (bytesRead > 0)
                     {
-                        response.AddRange(result);
+                        response.Add(buffer[0]);
                     }
                 }
                 catch (TimeoutException)
@@ -152,7 +173,7 @@ public class EscPosPrinter : IPrinter
                 return null;
             }
 
-            return PrinterStatus.Parse([.. response]);
+            return PrinterStatus.Parse(response.ToArray());
         }
         catch (Exception ex)
         {
@@ -186,9 +207,15 @@ public class EscPosPrinter : IPrinter
     /// </summary>
     public async Task<PrintResult> CutAsync(Commands.Enums.CutType cutType = Commands.Enums.CutType.Full, CancellationToken cancellationToken = default)
     {
+#if NET5_0_OR_GREATER
         var command = cutType == Commands.Enums.CutType.Partial
             ? EscPosCommands.CutPartial.ToArray()
             : EscPosCommands.CutFull.ToArray();
+#else
+        var command = cutType == Commands.Enums.CutType.Partial
+            ? EscPosCommands.CutPartial
+            : EscPosCommands.CutFull;
+#endif
         return await SendAsync(command, cancellationToken);
     }
 

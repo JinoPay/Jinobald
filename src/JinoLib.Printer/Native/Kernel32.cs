@@ -1,6 +1,10 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
+#if NETFRAMEWORK
+using nint = System.IntPtr;
+#endif
+
 namespace JinoLib.Printer.Native;
 
 /// <summary>
@@ -15,6 +19,7 @@ internal static partial class Kernel32
     public const uint OPEN_EXISTING = 3;
     public const uint FILE_FLAG_OVERLAPPED = 0x40000000;
 
+#if NET7_0_OR_GREATER
     [LibraryImport("kernel32.dll", EntryPoint = "CreateFileW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     public static partial SafeFileHandle CreateFile(
         string lpFileName,
@@ -49,4 +54,40 @@ internal static partial class Kernel32
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     public static partial uint GetLastError();
+#else
+    [DllImport("kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern SafeFileHandle CreateFile(
+        string lpFileName,
+        uint dwDesiredAccess,
+        uint dwShareMode,
+        nint lpSecurityAttributes,
+        uint dwCreationDisposition,
+        uint dwFlagsAndAttributes,
+        nint hTemplateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool WriteFile(
+        SafeFileHandle hFile,
+        byte[] lpBuffer,
+        uint nNumberOfBytesToWrite,
+        out uint lpNumberOfBytesWritten,
+        nint lpOverlapped);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ReadFile(
+        SafeFileHandle hFile,
+        byte[] lpBuffer,
+        uint nNumberOfBytesToRead,
+        out uint lpNumberOfBytesRead,
+        nint lpOverlapped);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool CloseHandle(nint hObject);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    public static extern uint GetLastError();
+#endif
 }

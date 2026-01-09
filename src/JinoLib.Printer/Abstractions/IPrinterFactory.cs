@@ -13,9 +13,14 @@ public interface IPrinterFactory
     IPrinter CreateSerialPrinter(SerialConnectorOptions options);
     IPrinter CreateBluetoothPrinter(string portName);
     IPrinter CreateBluetoothPrinter(BluetoothConnectorOptions options);
+
+#if WINDOWS_BUILD
     IPrinter CreateSpoolerPrinter(string printerName);
     IPrinter CreateSpoolerPrinter(SpoolerConnectorOptions options);
-    IPrinter CreateUsbDirectPrinter(int vendorId, int productId);
+    IPrinter CreateUsbDirectPrinter(ushort vendorId, ushort productId);
+    IPrinter CreateUsbDirectPrinter(string devicePath);
     IPrinter CreateUsbDirectPrinter(UsbDirectConnectorOptions options);
-    IPrinter CreatePrinter(IPrinterConnector connector);
+#endif
+
+    IPrinter Create(IPrinterConnector connector);
 }

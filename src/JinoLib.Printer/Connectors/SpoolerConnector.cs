@@ -1,9 +1,14 @@
+#if WINDOWS_BUILD
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using JinoLib.Printer.Abstractions;
 using JinoLib.Printer.Connectors.Options;
 using JinoLib.Printer.Native;
 using Microsoft.Extensions.Logging;
+
+#if NETFRAMEWORK
+using nint = System.IntPtr;
+#endif
 
 namespace JinoLib.Printer.Connectors;
 
@@ -20,6 +25,8 @@ public class SpoolerConnector : IPrinterConnector
     private bool _disposed;
 
     public bool IsConnected => _printerHandle != nint.Zero;
+    public string ConnectionType => "Spooler";
+    public bool CanRead => false; // Windows Print Spooler는 양방향 통신을 지원하지 않음
     public string ConnectionInfo => $"Spooler:{_options.PrinterName}";
 
     public SpoolerConnector(SpoolerConnectorOptions options, ILogger<SpoolerConnector>? logger = null)
@@ -75,7 +82,7 @@ public class SpoolerConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+    public Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         if (!IsConnected)
         {
@@ -101,7 +108,7 @@ public class SpoolerConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public Task<byte[]> ReadAsync(int length, CancellationToken cancellationToken = default)
+    public Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         // Windows Print Spooler는 양방향 통신을 지원하지 않음
         throw new NotSupportedException("스풀러 연결은 읽기를 지원하지 않습니다.");
@@ -192,3 +199,4 @@ public class SpoolerConnector : IPrinterConnector
         _disposed = true;
     }
 }
+#endif

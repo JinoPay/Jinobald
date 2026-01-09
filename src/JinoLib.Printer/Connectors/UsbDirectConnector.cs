@@ -1,3 +1,4 @@
+#if WINDOWS_BUILD
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -6,6 +7,10 @@ using JinoLib.Printer.Connectors.Options;
 using JinoLib.Printer.Native;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32.SafeHandles;
+
+#if NETFRAMEWORK
+using nint = System.IntPtr;
+#endif
 
 namespace JinoLib.Printer.Connectors;
 
@@ -21,6 +26,8 @@ public partial class UsbDirectConnector : IPrinterConnector
     private bool _disposed;
 
     public bool IsConnected => _deviceHandle is { IsInvalid: false, IsClosed: false };
+    public string ConnectionType => "USB";
+    public bool CanRead => true;
     public string ConnectionInfo => _devicePath ?? $"USB:VID_{_options.VendorId:X4}&PID_{_options.ProductId:X4}";
 
     public UsbDirectConnector(UsbDirectConnectorOptions options, ILogger<UsbDirectConnector>? logger = null)
@@ -82,7 +89,7 @@ public partial class UsbDirectConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+    public Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _deviceHandle == null)
         {
@@ -106,28 +113,25 @@ public partial class UsbDirectConnector : IPrinterConnector
         return Task.CompletedTask;
     }
 
-    public Task<byte[]> ReadAsync(int length, CancellationToken cancellationToken = default)
+    public Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _deviceHandle == null)
         {
             throw new InvalidOperationException("프린터가 연결되어 있지 않습니다.");
         }
 
-        var buffer = new byte[length];
-        if (!Kernel32.ReadFile(_deviceHandle, buffer, (uint)length, out var bytesRead, nint.Zero))
+        var tempBuffer = new byte[buffer.Length];
+        if (!Kernel32.ReadFile(_deviceHandle, tempBuffer, (uint)buffer.Length, out var bytesRead, nint.Zero))
         {
             var error = Marshal.GetLastWin32Error();
             throw new Win32Exception(error, "USB 프린터에서 데이터를 읽을 수 없습니다.");
         }
 
-        if (bytesRead < length)
-        {
-            Array.Resize(ref buffer, (int)bytesRead);
-        }
+        tempBuffer.AsSpan(0, (int)bytesRead).CopyTo(buffer.Span);
 
         _logger?.LogDebug("데이터 수신: {Length} bytes", bytesRead);
 
-        return Task.FromResult(buffer);
+        return Task.FromResult((int)bytesRead);
     }
 
     private string? FindDevicePath()
@@ -338,8 +342,16 @@ public partial class UsbDirectConnector : IPrinterConnector
         return null;
     }
 
-    [GeneratedRegex(@"VID_(?<vid>[0-9A-F]{4})&PID_(?<pid>[0-9A-F]{4})")]
+#if NET7_0_OR_GREATER
+    [GeneratedRegex(@"VID_(?<vid>[0-9A-F]{4})&PID_(?<pid>[0-9A-F]{4})", RegexOptions.IgnoreCase)]
     private static partial Regex VidPidRegex();
+#else
+    private static readonly Regex _vidPidRegex = new(
+        @"VID_(?<vid>[0-9A-F]{4})&PID_(?<pid>[0-9A-F]{4})",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static Regex VidPidRegex() => _vidPidRegex;
+#endif
 
     public void Dispose()
     {
@@ -371,3 +383,4 @@ public partial class UsbDirectConnector : IPrinterConnector
 /// USB 프린터 정보
 /// </summary>
 public record UsbPrinterInfo(string DevicePath, ushort? VendorId, ushort? ProductId, string? Description);
+#endif

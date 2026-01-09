@@ -1,5 +1,9 @@
 using System.Runtime.InteropServices;
 
+#if NETFRAMEWORK
+using nint = System.IntPtr;
+#endif
+
 namespace JinoLib.Printer.Native;
 
 /// <summary>
@@ -43,6 +47,7 @@ internal static partial class SetupApi
         public string DevicePath;
     }
 
+#if NET7_0_OR_GREATER
     [LibraryImport("setupapi.dll", EntryPoint = "SetupDiGetClassDevsW", SetLastError = true)]
     public static partial nint SetupDiGetClassDevs(
         ref Guid ClassGuid,
@@ -100,4 +105,63 @@ internal static partial class SetupApi
         nint DeviceInfoSet,
         uint MemberIndex,
         ref SP_DEVINFO_DATA DeviceInfoData);
+#else
+    [DllImport("setupapi.dll", EntryPoint = "SetupDiGetClassDevsW", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern nint SetupDiGetClassDevs(
+        ref Guid ClassGuid,
+        nint Enumerator,
+        nint hwndParent,
+        int Flags);
+
+    [DllImport("setupapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiEnumDeviceInterfaces(
+        nint DeviceInfoSet,
+        nint DeviceInfoData,
+        ref Guid InterfaceClassGuid,
+        uint MemberIndex,
+        ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
+
+    [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceInterfaceDetailW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiGetDeviceInterfaceDetail(
+        nint DeviceInfoSet,
+        ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData,
+        ref SP_DEVICE_INTERFACE_DETAIL_DATA DeviceInterfaceDetailData,
+        int DeviceInterfaceDetailDataSize,
+        out int RequiredSize,
+        ref SP_DEVINFO_DATA DeviceInfoData);
+
+    [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceInterfaceDetailW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiGetDeviceInterfaceDetailSize(
+        nint DeviceInfoSet,
+        ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData,
+        nint DeviceInterfaceDetailData,
+        int DeviceInterfaceDetailDataSize,
+        out int RequiredSize,
+        nint DeviceInfoData);
+
+    [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceRegistryPropertyW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiGetDeviceRegistryProperty(
+        nint DeviceInfoSet,
+        ref SP_DEVINFO_DATA DeviceInfoData,
+        int Property,
+        out int PropertyRegDataType,
+        byte[]? PropertyBuffer,
+        int PropertyBufferSize,
+        out int RequiredSize);
+
+    [DllImport("setupapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiDestroyDeviceInfoList(nint DeviceInfoSet);
+
+    [DllImport("setupapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetupDiEnumDeviceInfo(
+        nint DeviceInfoSet,
+        uint MemberIndex,
+        ref SP_DEVINFO_DATA DeviceInfoData);
+#endif
 }

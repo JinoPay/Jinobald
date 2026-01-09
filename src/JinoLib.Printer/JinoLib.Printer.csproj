@@ -1,25 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
+    <!-- 멀티타겟 프레임워크 - 크로스플랫폼 -->
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <!-- .NET Framework 및 Windows 전용 TFM은 Windows에서만 빌드 -->
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net462;net472;net48;net481;$(TargetFrameworks);net8.0-windows;net9.0-windows</TargetFrameworks>
+
     <LangVersion>13</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- .NET Framework에서 Nullable 경고 비활성화 -->
+    <NoWarn Condition="$(TargetFramework.StartsWith('net4'))">$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625</NoWarn>
 
     <!-- NuGet 패키지 메타데이터 -->
     <PackageId>JinoLib.Printer</PackageId>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Authors>JinoLib Team</Authors>
     <Company>JinoLib</Company>
     <Product>JinoLib ESC/POS 프린터 라이브러리</Product>
     <Description>
-Windows용 ESC/POS 프린터 라이브러리.
-USB 직접 쓰기, Windows Print Spooler, 네트워크(TCP/IP), 시리얼, 블루투스 연결을 지원합니다.
+크로스플랫폼 ESC/POS 프린터 라이브러리.
+USB 직접 쓰기(Windows), Windows Print Spooler, 네트워크(TCP/IP), 시리얼, 블루투스 연결을 지원합니다.
 텍스트, 이미지, 1D/2D 바코드, QR코드, 캐시드로워, 한글 지원.
+.NET Framework 4.6.2부터 .NET 10까지 지원.
     </Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>escpos;pos;printer;thermal;receipt;barcode;qrcode;windows;usb;serial</PackageTags>
+    <PackageTags>escpos;pos;printer;thermal;receipt;barcode;qrcode;crossplatform;usb;serial</PackageTags>
 
     <!-- 문서 및 심볼 -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -31,12 +39,78 @@ USB 직접 쓰기, Windows Print Spooler, 네트워크(TCP/IP), 시리얼, 블�
     <AssemblyName>JinoLib.Printer</AssemblyName>
   </PropertyGroup>
 
+  <!-- Windows Forms (이미지 처리용) - .NET Framework 및 Windows TFM -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4')) Or $(TargetFramework.Contains('-windows'))">
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <!-- 플랫폼 상수 정의 -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4')) Or $(TargetFramework.Contains('-windows'))">
+    <DefineConstants>$(DefineConstants);WINDOWS_BUILD</DefineConstants>
+  </PropertyGroup>
+
+  <!-- .NET Framework 전용 상수 -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
+  </PropertyGroup>
+
+  <!-- 공통 의존성 -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Microsoft.Extensions - .NET Framework는 6.0.0, 나머지는 8.0.2 -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4'))">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <!-- .NET Framework용 폴리필 패키지 -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <!-- 이미지 처리: Windows/.NET Framework는 System.Drawing, 크로스플랫폼은 ImageSharp -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4')) Or $(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4')) And !$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+  </ItemGroup>
+
+  <!-- Windows 전용 파일 포함/제외 -->
+  <!-- Native/Windows 폴더는 Windows 빌드에서만 포함 -->
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4')) And !$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="Native\**\*.cs" />
+    <Compile Remove="Connectors\SpoolerConnector.cs" />
+    <Compile Remove="Connectors\UsbDirectConnector.cs" />
+    <Compile Remove="Connectors\Options\SpoolerConnectorOptions.cs" />
+    <Compile Remove="Connectors\Options\UsbDirectConnectorOptions.cs" />
+  </ItemGroup>
+
+  <!-- Polyfill 파일은 .NET Framework에서만 포함 -->
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4'))">
+    <Compile Remove="Polyfill\**\*.cs" />
+  </ItemGroup>
+
+  <!-- ImageSharp 기반 이미지 처리기는 크로스플랫폼에서만 포함 -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4')) Or $(TargetFramework.Contains('-windows'))">
+    <Compile Remove="Imaging\ImageSharpImageProcessor.cs" />
+  </ItemGroup>
+
+  <!-- System.Drawing 기반 이미지 처리기는 Windows에서만 포함 -->
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4')) And !$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="Imaging\SystemDrawingImageProcessor.cs" />
+    <Compile Remove="Imaging\DitherAlgorithm.cs" />
   </ItemGroup>
 
 </Project>
