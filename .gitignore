@@ -1,53 +1,58 @@
-# Build results
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# Visual Studio
-.vs/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
+# dependencies
+node_modules/
 
-# Rider
-.idea/
-*.sln.iml
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# NuGet
-*.nupkg
-*.snupkg
-.nuget/
-packages/
-project.lock.json
-project.fragment.lock.json
-artifacts/
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# Test results
-[Tt]est[Rr]esult*/
-*.trx
-*.Coverage
-*.coveragexml
+# Metro
+.metro-health-check*
 
-# NCrunch
-*.ncrunch*
-_NCrunch_*
-.*crunch*.local.xml
-nCrunchTemp_*
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
-# Build
-*.dll
-*.exe
-*.pdb
-*.cache
-!.gitkeep
-
-# OS
+# macOS
 .DS_Store
-Thumbs.db
+*.pem
 
-# Misc
-*.bak
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android
+
+# local env (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# OS / editor
+Thumbs.db
+.idea/
 *.swp
-*~
+
+# tooling caches
+.eas/
+*.log
+coverage/
