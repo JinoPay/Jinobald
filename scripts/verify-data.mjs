@@ -127,6 +127,42 @@ if (transfers.length === 0) {
   warnings.push('환승역이 하나도 도출되지 않았습니다 — 역명 표기를 확인하세요.');
 }
 
+// 그룹 안의 계통들이 역명을 공유해 서로 이어지는지.
+//
+// 경로 탐색은 역명이 같은 노드끼리만 계통을 넘나듭니다. 그룹을 쪼개 새 계통을
+// 추가했는데 이어지는 역이 없으면 그 계통은 그래프에서 고립되어, 오류 없이
+// "경로를 찾지 못했습니다"만 나옵니다.
+//
+// GTX-A 는 운정중앙~서울역과 수서~동탄이 아직 따로 운행해 공유역이 없습니다.
+// 다른 노선을 거쳐서는 이어지므로 그래프가 끊기지는 않습니다.
+const DISCONNECTED_GROUPS = new Set(['gtxa']);
+
+const linesByGroup = new Map();
+for (const line of lines) {
+  linesByGroup.set(line.groupId, [...(linesByGroup.get(line.groupId) ?? []), line]);
+}
+for (const [groupId, groupLines] of linesByGroup) {
+  if (groupLines.length < 2 || DISCONNECTED_GROUPS.has(groupId)) continue;
+  const namesOf = (line) =>
+    new Set(line.stations.flatMap((s) => [s.name, ...(s.aliases ?? [])].map(normalize)));
+  const sets = groupLines.map(namesOf);
+  const reached = new Set([0]);
+  const queue = [0];
+  while (queue.length > 0) {
+    const i = queue.pop();
+    for (let j = 0; j < sets.length; j += 1) {
+      if (reached.has(j)) continue;
+      if (![...sets[j]].some((name) => sets[i].has(name))) continue;
+      reached.add(j);
+      queue.push(j);
+    }
+  }
+  if (reached.size !== groupLines.length) {
+    const orphans = groupLines.filter((_, i) => !reached.has(i)).map((l) => l.name);
+    errors.push(`그룹 "${groupId}": 본선과 이어지지 않는 계통이 있습니다 (${orphans.join(', ')})`);
+  }
+}
+
 const totalStations = lines.reduce((sum, l) => sum + l.stations.length, 0);
 const withCoords = lines.reduce(
   (sum, l) => sum + l.stations.filter((s) => s.lat != null).length,

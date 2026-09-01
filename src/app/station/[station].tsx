@@ -112,16 +112,15 @@ export default function StationScreen() {
 
       <Pressable
         onPress={() =>
-          router.push({
-            pathname: '/trip/setup',
-            params: { origin: station.displayName },
-          })
+          // 알림을 걸려면 도착역까지 정해져야 경로가 나옵니다. 이 역을 출발역으로
+          // 채운 채 길찾기로 돌려보냅니다.
+          router.navigate({ pathname: '/', params: { origin: station.key } })
         }
         style={({ pressed }) => [
           styles.cta,
           { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
         ]}>
-        <Text style={styles.ctaText}>이 역에서 승차 알림 설정</Text>
+        <Text style={styles.ctaText}>이 역에서 출발하는 경로 찾기</Text>
       </Pressable>
     </ScrollView>
   );

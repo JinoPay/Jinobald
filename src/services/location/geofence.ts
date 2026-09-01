@@ -3,13 +3,20 @@ import * as Location from 'expo-location';
 import { capabilities } from './capabilities';
 import { GEOFENCE_TASK, geofenceIdentifier } from './geofence-task';
 
-import type { AlertKind } from '@/services/notifications/schedule';
+import type { AlertKind } from '@/services/notifications/kinds';
 
 /** 지오펜스 반경(m). 지하 구간에서는 GPS 가 잡히지 않으므로 넉넉하게 둡니다. */
-const RADIUS_BY_KIND: Record<AlertKind, number> = { pre: 500, arrive: 300 };
+const RADIUS_BY_KIND: Record<AlertKind, number> = {
+  pre: 500,
+  arrive: 300,
+  'transfer-pre': 500,
+  transfer: 300,
+};
 
 export interface GeofenceTarget {
   kind: AlertKind;
+  /** 어느 구간의 목표인지. 식별자에 담겨 발화 때 되돌아옵니다. */
+  legIndex: number;
   lat: number;
   lng: number;
 }
@@ -39,6 +46,9 @@ export async function requestLocationPermission(): Promise<LocationPermissionSta
  * 지오펜스를 시작합니다.
  * Expo Go 에서 호출하면 예외가 나므로 capabilities 로 먼저 걸러 냅니다.
  * 시작하지 못한 경우 false 를 돌려주며, 호출자는 ETA 알림만으로 계속 진행합니다.
+ *
+ * `startGeofencingAsync` 는 태스크의 region 을 통째로 **교체**합니다. 구간이 넘어갈
+ * 때는 그냥 다시 부르면 되고, iOS 의 앱당 20개 제한 때문에 한 번에 몇 개만 겁니다.
  */
 export async function startTripGeofence(
   tripId: string,
@@ -50,7 +60,7 @@ export async function startTripGeofence(
   if (!permission.background) return false;
 
   const regions: Location.LocationRegion[] = targets.map((target) => ({
-    identifier: geofenceIdentifier(tripId, target.kind),
+    identifier: geofenceIdentifier(tripId, target.legIndex, target.kind),
     latitude: target.lat,
     longitude: target.lng,
     radius: RADIUS_BY_KIND[target.kind],

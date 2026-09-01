@@ -1,5 +1,10 @@
 import rawLines from './lines.json';
 
+import {
+  directionBetweenIndices,
+  normalizeStationKey,
+  stationsBetweenIndices,
+} from '@/services/routing/graph';
 import type { Direction } from '@/services/subway/types';
 
 export interface Station {
@@ -45,16 +50,12 @@ export interface StationRef {
 /**
  * 역명 정규화.
  *
- * API 의 `statnNm` 과 사용자 입력, 그리고 정적 데이터의 표기가 서로 다릅니다.
- * (예: "총신대입구(이수)" vs "이수", "서울역" vs "서울") 괄호 안 부기와 후행 "역",
- * 모든 공백을 제거해 하나의 키로 맞춥니다.
+ * 구현은 `routing/graph.ts` 에 있습니다 — 경로 탐색이 같은 키 규칙 위에서 전이 간선을
+ * 만들어야 하는데, 그 파일은 Node 로 검증하기 위해 런타임 import 를 두지 않습니다.
+ * 규칙을 두 벌 유지하면 반드시 어긋나므로 여기서 감싸 쓰기만 합니다.
  */
 export function normalizeStationName(name: string): string {
-  return name
-    .replace(/\(.*?\)/g, '')
-    .replace(/\s+/g, '')
-    .replace(/역$/, '')
-    .trim();
+  return normalizeStationKey(name);
 }
 
 function buildIndex(): Map<string, StationRef[]> {
@@ -220,22 +221,12 @@ export function searchStations(query: string, limit = 30): UniqueStation[] {
  * 배열 인덱스가 커지는 쪽이 하행(순환선은 외선), 작아지는 쪽이 상행(내선)입니다.
  */
 export function directionBetween(line: Line, fromIndex: number, toIndex: number): Direction {
-  const forward = toIndex > fromIndex;
-  if (line.loop) {
-    // 순환선에서는 더 짧은 쪽으로 도는 방향을 택합니다.
-    const n = line.stations.length;
-    const forwardSteps = (toIndex - fromIndex + n) % n;
-    return forwardSteps <= n - forwardSteps ? 'outer' : 'inner';
-  }
-  return forward ? 'down' : 'up';
+  return directionBetweenIndices(line.loop, line.stations.length, fromIndex, toIndex);
 }
 
 /** from → to 사이의 정거장 수. 순환선은 진행 방향에 맞춰 감아서 셉니다. */
 export function stationsBetween(line: Line, fromIndex: number, toIndex: number): number {
-  if (!line.loop) return Math.abs(toIndex - fromIndex);
-  const n = line.stations.length;
-  const forwardSteps = (toIndex - fromIndex + n) % n;
-  return Math.min(forwardSteps, n - forwardSteps);
+  return stationsBetweenIndices(line.loop, line.stations.length, fromIndex, toIndex);
 }
 
 /**

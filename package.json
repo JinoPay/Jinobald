@@ -52,6 +52,7 @@
     "doctor": "pnpm dlx expo-doctor",
     "typecheck": "tsc --noEmit",
     "verify-data": "node scripts/verify-data.mjs",
+    "verify-routes": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-routes.mjs",
     "build-lines": "node scripts/build-lines.mjs",
     "lint": "expo lint",
     "build:dev:ios": "eas build --profile development --platform ios",

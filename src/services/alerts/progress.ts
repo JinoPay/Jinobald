@@ -1,9 +1,9 @@
-import { directionBetween, findStationRefOnLine, getLine } from '@/data/stations';
+import { getLine } from '@/data/stations';
 import { isAtStation } from '@/services/subway/mappers';
+import type { RouteTransfer } from '@/services/routing/types';
 import type { Arrival } from '@/services/subway/types';
 
-import { stationsRemaining } from './eta';
-import type { Trip } from './trip';
+import { currentLeg, isFinalLeg, nextTransfer, type Trip } from './trip';
 
 /**
  * 여정 진행 상황 계산.
@@ -11,15 +11,33 @@ import type { Trip } from './trip';
  * 정적 데이터와 순수 계산에만 의존합니다 (expo-* 런타임 import 없음). 덕분에 기기
  * 없이 노드로 바로 실행해 확인할 수 있고, 알림 예약 같은 부수효과는 TripAlertManager
  * 쪽에 남습니다.
+ *
+ * 계산 대상은 항상 **현재 구간**입니다. 정거장 수와 방향은 경로를 만들 때 이미
+ * 확정되어 `RouteLeg` 에 들어 있으므로 여기서 다시 역을 조회하지 않습니다 —
+ * 그 조회가 다른 구간의 노선에서 유효한 답을 돌려주는 것이 이 코드에서 가장
+ * 눈치채기 어려운 오답의 원인이었습니다.
  */
 export interface TripProgress {
-  /** 하차역까지 남은 정거장 수. */
+  /** 계산 대상 구간. 알림 키와 맞춰 보는 데 씁니다. */
+  legIndex: number;
+  /** 현재 구간의 목표역(하차역 또는 환승역)까지 남은 정거장 수. */
   stationsLeft: number;
-  /** 하차역 도착까지 남은 초. */
+  /** 현재 구간의 목표역 도착까지 남은 초. */
   etaSeconds: number;
+  /** 최종 하차역까지 남은 정거장 수 — 남은 구간을 모두 더한 값입니다. */
+  totalStationsLeft: number;
+  /** 최종 하차역 도착까지 남은 초 — 남은 구간과 환승 시간을 모두 더한 값입니다. */
+  totalEtaSeconds: number;
+  /** 현재 구간이 마지막인지. 알림 문구와 화면 문구가 갈립니다. */
+  isFinalLeg: boolean;
+  /** 이 구간이 끝나고 할 환승. 마지막 구간이면 null 입니다. */
+  nextTransfer: RouteTransfer | null;
   /** 승차 전 계산에 사용한 열차. 승차 후에는 null 입니다. */
   matchedArrival: Arrival | null;
-  /** 어떤 신호로 계산했는지 — UI 에 그대로 노출합니다. */
+  /**
+   * 어떤 신호로 계산했는지 — UI 에 그대로 노출합니다.
+   * **현재 구간**을 설명합니다. 남은 구간은 언제나 정적 추정입니다.
+   */
   basis: 'arrival' | 'elapsed' | 'static';
 }
 
@@ -38,65 +56,67 @@ export function computeProgress(
   arrivals: Arrival[],
   now: number = Date.now(),
 ): TripProgress | null {
-  const line = getLine(trip.lineId);
+  const leg = currentLeg(trip);
+  const line = getLine(leg.lineId);
   if (!line) return null;
 
-  const origin = findStationRefOnLine(trip.lineId, trip.originStationName);
-  const destination = findStationRefOnLine(trip.lineId, trip.destinationStationName);
-  if (!origin || !destination) return null;
-
-  const totalStations = stationsRemaining({
-    fromIndex: origin.index,
-    toIndex: destination.index,
-    totalStations: line.stations.length,
-    loop: line.loop,
-  });
+  const legIndex = trip.plan.legs.indexOf(leg);
+  const totalStations = leg.stationCount;
   const avg = line.avgSecondsPerStation;
+
+  // 남은 구간은 정적 추정만 가능합니다. 환승 시간도 cost.ts 의 추정치입니다.
+  const rest = trip.plan.legs.slice(legIndex + 1);
+  const restStations = rest.reduce((sum, next) => sum + next.stationCount, 0);
+  const restSeconds = rest.reduce(
+    (sum, next) => sum + next.seconds + (next.transferIn?.seconds ?? 0),
+    0,
+  );
+
+  const shared = {
+    legIndex,
+    isFinalLeg: isFinalLeg(trip, legIndex),
+    nextTransfer: nextTransfer(trip, legIndex),
+    matchedArrival: null as Arrival | null,
+  };
+  const withTotals = (stationsLeft: number, etaSeconds: number) => ({
+    stationsLeft,
+    etaSeconds,
+    totalStationsLeft: stationsLeft + restStations,
+    totalEtaSeconds: etaSeconds + restSeconds,
+  });
 
   if (trip.boarded && trip.boardedAt != null) {
     const elapsed = Math.max(0, (now - trip.boardedAt) / 1000);
     const travelled = Math.min(totalStations, Math.floor(elapsed / avg));
-    const left = Math.max(0, totalStations - travelled);
     return {
-      stationsLeft: left,
-      etaSeconds: Math.max(0, totalStations * avg - elapsed),
-      matchedArrival: null,
+      ...shared,
+      ...withTotals(
+        Math.max(0, totalStations - travelled),
+        Math.max(0, totalStations * avg - elapsed),
+      ),
       basis: 'elapsed',
     };
   }
 
   const matched =
-    arrivals.find((a) => a.lineId === trip.lineId && a.direction === trip.direction) ?? null;
+    arrivals.find((a) => a.lineId === leg.lineId && a.direction === leg.direction) ?? null;
   const secondsToOrigin = matched
     ? (matched.secondsUntilArrival ?? (isAtStation(matched.status) ? 0 : null))
     : null;
 
   if (secondsToOrigin !== null) {
     return {
-      stationsLeft: totalStations,
-      etaSeconds: secondsToOrigin + totalStations * avg,
+      ...shared,
+      ...withTotals(totalStations, secondsToOrigin + totalStations * avg),
       matchedArrival: matched,
       basis: 'arrival',
     };
   }
 
   return {
-    stationsLeft: totalStations,
-    etaSeconds: totalStations * avg,
+    ...shared,
+    ...withTotals(totalStations, totalStations * avg),
     matchedArrival: matched,
     basis: 'static',
   };
-}
-
-/** 승차역·하차역만으로 진행 방향을 결정합니다. */
-export function resolveDirection(
-  lineId: string,
-  originStationName: string,
-  destinationStationName: string,
-) {
-  const line = getLine(lineId);
-  const origin = findStationRefOnLine(lineId, originStationName);
-  const destination = findStationRefOnLine(lineId, destinationStationName);
-  if (!line || !origin || !destination) return null;
-  return directionBetween(line, origin.index, destination.index);
 }
