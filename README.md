@@ -11,18 +11,25 @@
 
 ## 실행
 
+패키지 매니저는 **pnpm** 을 씁니다. 버전은 `package.json` 의 `packageManager` 필드로 고정돼 있으므로,
+Node 에 기본 포함된 corepack 을 켜면 별도 설치 없이 같은 버전이 쓰입니다.
+
 ```bash
-npm install
+corepack enable             # 최초 1회 (또는 npm i -g pnpm)
+```
+
+```bash
+pnpm install
 cp .env.example .env        # 키를 넣거나, 비워 두면 모의 데이터로 동작합니다
-npx expo start              # Expo Go 로 QR 스캔
+pnpm expo start             # Expo Go 로 QR 스캔
 ```
 
 전체 기능(백그라운드 GPS 지오펜싱 포함)을 쓰려면 개발 빌드가 필요합니다.
 
 ```bash
-npx expo run:android        # 로컬 빌드 (Android SDK 필요)
+pnpm expo run:android       # 로컬 빌드 (Android SDK 필요)
 # 또는
-npx eas build --profile development --platform android
+pnpm dlx eas-cli build --profile development --platform android
 ```
 
 ## API 키
@@ -92,7 +99,7 @@ EXPO_PUBLIC_SEOUL_SUBWAY_API_KEY=발급받은_키
 데이터는 `scripts/generate-lines.py` 로 생성하고 `scripts/verify-data.mjs` 로 검증합니다.
 
 ```bash
-npm run verify-data
+pnpm verify-data
 ```
 
 ## HTTP 전용 API에 대하여
@@ -111,10 +118,10 @@ HTTP 호출이 Expo Go 에서 되더라도 릴리스 빌드에서 막힐 수 있
 ## 검증
 
 ```bash
-npm run typecheck                      # strict 타입체크
-npm run verify-data                    # 데이터셋 불변식 검사
-npx expo export --platform android     # Metro 번들 — import 그래프 전체 검증
-npx expo-doctor                        # 의존성/설정 정합성
+pnpm typecheck                          # strict 타입체크
+pnpm verify-data                        # 데이터셋 불변식 검사
+pnpm expo export --platform android     # Metro 번들 — import 그래프 전체 검증
+pnpm dlx expo-doctor                    # 의존성/설정 정합성
 ```
 
 ## 알려진 제약

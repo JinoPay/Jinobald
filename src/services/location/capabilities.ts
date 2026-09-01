@@ -19,5 +19,5 @@ export const capabilities = {
 } as const;
 
 export const capabilityNotice = isExpoGo
-  ? 'Expo Go 에서는 백그라운드 GPS 보정이 동작하지 않습니다. 도착예정 기반 알림은 정상 동작하며, GPS 보정을 쓰려면 개발 빌드(npx expo run:android)가 필요합니다.'
+  ? 'Expo Go 에서는 백그라운드 GPS 보정이 동작하지 않습니다. 도착예정 기반 알림은 정상 동작하며, GPS 보정을 쓰려면 개발 빌드(pnpm expo run:android)가 필요합니다.'
   : null;
