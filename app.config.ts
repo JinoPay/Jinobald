@@ -70,7 +70,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         locationWhenInUsePermission: '하차역 도착 알림을 위해 위치 정보를 사용합니다.',
         locationAlwaysAndWhenInUsePermission:
           '앱이 백그라운드에 있을 때도 하차역 도착을 알리기 위해 위치 정보를 사용합니다.',
+        // 백그라운드 지오펜싱은 양쪽 플랫폼에서 각각 켜 줘야 합니다.
+        // iOS: Info.plist 의 UIBackgroundModes 에 'location' 추가.
+        // Android: ACCESS_BACKGROUND_LOCATION + FOREGROUND_SERVICE_LOCATION 권한 추가.
+        isIosBackgroundLocationEnabled: true,
         isAndroidBackgroundLocationEnabled: true,
+      },
+    ],
+    [
+      // Android 알림 아이콘은 알파 채널만 사용합니다. 지정하지 않으면 앱 아이콘이
+      // 흰 사각형으로 뭉개져 표시되므로 모노크롬 실루엣을 넘겨 줍니다.
+      // iOS 는 이 설정을 쓰지 않고 앱 아이콘을 그대로 사용합니다.
+      'expo-notifications',
+      {
+        icon: './assets/images/android-icon-monochrome.png',
+        color: '#0052A4',
       },
     ],
   ],

@@ -17,17 +17,19 @@ export default function StationScreen() {
   const station = getUniqueStation(decodeURIComponent(stationKey ?? ''));
 
   const { data, error, loading, refresh } = useArrivals(station?.displayName ?? null);
-  const [elapsed, setElapsed] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
 
   // 폴링 사이에도 카운트다운이 멈춰 보이지 않도록 초 단위로 로컬 보간합니다.
+  // 경과 시간을 상태로 두지 않고 벽시계만 흘려보내면, 새 응답이 오는 순간
+  // fetchedAt 이 바뀌면서 경과 시간이 저절로 0 으로 돌아갑니다.
   useEffect(() => {
-    setElapsed(0);
     if (!data) return;
-    const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - data.fetchedAt) / 1000));
-    }, 1000);
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [data]);
+
+  // now 가 아직 이전 틱이라 응답 직후 음수가 될 수 있어 0 으로 잘라 냅니다.
+  const elapsed = data ? Math.max(0, Math.floor((now - data.fetchedAt) / 1000)) : 0;
 
   const grouped = useMemo(() => {
     const map = new Map<string, Arrival[]>();

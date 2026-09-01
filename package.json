@@ -8,6 +8,7 @@
     "expo": "~57.0.18",
     "expo-build-properties": "~57.0.15",
     "expo-constants": "~57.0.16",
+    "expo-dev-client": "~57.0.16",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.2",
     "expo-image": "~57.0.3",
@@ -32,16 +33,31 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
+    "start:go": "expo start --go",
+    "ios": "expo run:ios",
+    "ios:device": "expo run:ios --device",
+    "ios:release": "expo run:ios --configuration Release",
+    "android": "expo run:android",
+    "android:device": "expo run:android --device",
+    "android:release": "expo run:android --variant release",
     "web": "expo start --web",
+    "prebuild": "expo prebuild --clean",
+    "check:native": "node scripts/check-native-setup.mjs",
+    "doctor": "pnpm dlx expo-doctor",
     "typecheck": "tsc --noEmit",
     "verify-data": "node scripts/verify-data.mjs",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "build:dev:ios:sim": "eas build --profile development-simulator --platform ios",
+    "build:dev:android": "eas build --profile development --platform android",
+    "build:preview": "eas build --profile preview --platform all",
+    "build:production": "eas build --profile production --platform all"
   },
   "private": true
 }
