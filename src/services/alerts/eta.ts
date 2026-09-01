@@ -6,19 +6,6 @@
  * 검증할 수 있고, 알림 로직에서 가장 틀리기 쉬운 부분을 눈으로 확인할 수 있습니다.
  */
 
-/** 열차가 지금 어디 있는지에 따라 남은 정거장 수를 셉니다. */
-export function stationsRemaining(params: {
-  fromIndex: number;
-  toIndex: number;
-  totalStations: number;
-  loop: boolean;
-}): number {
-  const { fromIndex, toIndex, totalStations, loop } = params;
-  if (!loop) return Math.abs(toIndex - fromIndex);
-  const forward = (toIndex - fromIndex + totalStations) % totalStations;
-  return Math.min(forward, totalStations - forward);
-}
-
 export interface AlertTimes {
   /** "N정거장 전" 알림 시각(ms). */
   preAlertAtMs: number;

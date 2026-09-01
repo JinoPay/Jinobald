@@ -3,13 +3,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { LineBadge } from '@/components/subway/LineBadge';
-import {
-  directionBetween,
-  directionLabel,
-  downstreamStations,
-  findStationRefs,
-  getLine,
-} from '@/data/stations';
+import { directionLabel, downstreamStations, findStationRefs, getLine } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
 import {
   capabilities,
@@ -18,6 +12,7 @@ import {
 } from '@/services/location/capabilities';
 import { requestLocationPermission } from '@/services/location/geofence';
 import { requestNotificationPermission } from '@/services/notifications/setup';
+import { planFromSingleLeg } from '@/services/routing';
 import { useSettings } from '@/store/SettingsContext';
 import { useTrip } from '@/store/TripContext';
 
@@ -88,17 +83,13 @@ export default function TripSetupScreen() {
       }
       if (useGps) await requestLocationPermission();
 
-      const destinationRef = findStationRefs(destination).find((r) => r.line.id === line.id);
-      if (!destinationRef) return;
+      const plan = planFromSingleLeg(line.id, originRef.station.name, destination);
+      if (!plan) {
+        Alert.alert('경로를 만들 수 없습니다', '승차역과 하차역을 다시 선택해 주세요.');
+        return;
+      }
 
-      await start({
-        lineId: line.id,
-        direction: directionBetween(line, originRef.index, destinationRef.index),
-        originStationName: originRef.station.name,
-        destinationStationName: destinationRef.station.name,
-        alertNStationsBefore: alertN,
-        useGps,
-      });
+      await start({ plan, alertNStationsBefore: alertN, useGps });
       router.replace('/alerts');
     } finally {
       setSubmitting(false);

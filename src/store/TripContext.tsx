@@ -12,19 +12,31 @@ import {
 import { AppState } from 'react-native';
 
 import { env } from '@/config/env';
-import { findStationRefOnLine, getLine } from '@/data/stations';
+import { getLine } from '@/data/stations';
 import { haversineMeters } from '@/services/alerts/eta';
 import {
+  advanceLeg,
   computeProgress,
   finishTrip,
+  legAlertContent,
   markFired,
   syncAlerts,
   syncGeofence,
   type TripProgress,
 } from '@/services/alerts/TripAlertManager';
-import { createTrip, type Trip, type TripDraft } from '@/services/alerts/trip';
+import { migrateStoredTrip } from '@/services/alerts/trip-migrate';
+import {
+  createTrip,
+  currentLeg,
+  currentLegIndex,
+  legAlertKinds,
+  type Trip,
+  type TripDraft,
+} from '@/services/alerts/trip';
 import { capabilities } from '@/services/location/capabilities';
-import { presentTripNotification, type AlertKind } from '@/services/notifications/schedule';
+import { alertKey, isAlertKind } from '@/services/notifications/kinds';
+import { presentTripNotification } from '@/services/notifications/schedule';
+import { isPlanValid } from '@/services/routing';
 import { readJson, remove, StorageKeys, writeJson } from '@/services/storage/persist';
 import { getSubwayApi } from '@/services/subway';
 import type { Arrival } from '@/services/subway/types';
@@ -37,7 +49,9 @@ interface TripContextValue {
   cancel: () => Promise<void>;
   complete: () => Promise<void>;
   setBoarded: (boarded: boolean) => void;
-  /** 포그라운드 위치 보정. 좌표를 알고 있는 하차역에 근접하면 즉시 알립니다. */
+  /** 다음 구간으로 넘어갑니다 (환승 완료). 마지막 구간이면 아무 일도 하지 않습니다. */
+  advance: () => Promise<void>;
+  /** 포그라운드 위치 보정. 좌표를 알고 있는 목표역에 근접하면 즉시 알립니다. */
   reportPosition: (position: { lat: number; lng: number }) => void;
 }
 
@@ -51,6 +65,7 @@ const TripContext = createContext<TripContextValue>({
   cancel: async () => {},
   complete: async () => {},
   setBoarded: () => {},
+  advance: async () => {},
   reportPosition: () => {},
 });
 
@@ -74,11 +89,18 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // 앱이 종료됐다 다시 켜져도 진행 중인 여정은 복구되어야 합니다.
+  //
+  // 저장된 값은 그대로 믿지 않습니다. 이전 버전의 스키마일 수도 있고, 그사이
+  // 노선 데이터가 바뀌어 경로가 더 이상 맞지 않을 수도 있습니다. 올릴 수 없으면
+  // 지웁니다 — 낡은 값 하나로 화면이 죽는 것보다 낫습니다.
   useEffect(() => {
-    void readJson<Trip | null>(StorageKeys.activeTrip, null).then((stored) => {
-      if (stored && stored.status === 'active') {
-        tripRef.current = stored;
-        setTrip(stored);
+    void readJson<unknown>(StorageKeys.activeTrip, null).then((stored) => {
+      const migrated = migrateStoredTrip(stored);
+      if (migrated?.status === 'active') {
+        tripRef.current = migrated;
+        setTrip(migrated);
+      } else if (stored != null) {
+        void remove(StorageKeys.activeTrip);
       }
       setReady(true);
     });
@@ -86,6 +108,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
   const start = useCallback(
     async (draft: TripDraft) => {
+      // 경로가 지금의 데이터셋과 맞는지 여기서 한 번에 확인합니다. 미루면 뒤쪽 구간의
+      // 오류가 여정 중반에야 드러나고, 그때는 진행 계산이 조용히 멈추기만 합니다.
+      if (!isPlanValid(draft.plan)) throw new Error('경로가 현재 노선 데이터와 맞지 않습니다.');
       const created = createTrip(draft);
       const withGeofence = await syncGeofence(created);
       persist(withGeofence);
@@ -120,25 +145,36 @@ export function TripProvider({ children }: { children: ReactNode }) {
     [persist],
   );
 
+  const advance = useCallback(async () => {
+    const current = tripRef.current;
+    if (!current || current.status !== 'active') return;
+    const next = await advanceLeg(current);
+    if (next !== current) {
+      persist(next);
+      setProgress(null);
+    }
+  }, [persist]);
+
   const reportPosition = useCallback(
     (position: { lat: number; lng: number }) => {
       const current = tripRef.current;
       if (!current || current.status !== 'active' || !current.useGps) return;
-      if (current.firedKinds.includes('arrive')) return;
 
-      const destination = findStationRefOnLine(current.lineId, current.destinationStationName);
-      const { lat, lng } = destination?.station ?? {};
+      const legIndex = currentLegIndex(current);
+      const kind = legAlertKinds(current)[1];
+      const key = alertKey(legIndex, kind);
+      if (current.firedKeys.includes(key)) return;
+
+      const leg = currentLeg(current);
+      const { lat, lng } = getLine(leg.lineId)?.stations[leg.alightIndex] ?? {};
       if (lat == null || lng == null) return;
       if (haversineMeters(position, { lat, lng }) > ARRIVE_RADIUS_METERS) return;
 
       void (async () => {
-        await presentTripNotification(
-          `${current.destinationStationName} 도착`,
-          '하차 준비하세요.',
-          { tripId: current.id, kind: 'arrive' },
-        );
-        const marked = await markFired(current, 'arrive');
-        persist(marked);
+        const { title, body } = legAlertContent(current, legIndex, kind, 0);
+        await presentTripNotification(title, body, { tripId: current.id, legIndex, kind });
+        // 알림 수신 리스너가 이어받아 여정을 종료하거나 다음 구간으로 넘깁니다.
+        persist(await markFired(current, key));
       })();
     },
     [persist],
@@ -164,7 +200,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       let arrivals: Arrival[] = [];
       if (!current.boarded && AppState.currentState === 'active') {
         try {
-          const result = await getSubwayApi().getArrivals(current.originStationName);
+          const result = await getSubwayApi().getArrivals(currentLeg(current).boardStationName);
           arrivals = result.arrivals;
         } catch {
           // 폴링 실패는 무시합니다. 이미 예약된 알림이 안전망 역할을 합니다.
@@ -198,17 +234,26 @@ export function TripProvider({ children }: { children: ReactNode }) {
     if (!capabilities.localNotifications) return;
     const subscription = Notifications.addNotificationReceivedListener((notification) => {
       const data = notification.request.content.data as
-        | { tripId?: string; kind?: AlertKind }
+        | { tripId?: string; legIndex?: number; kind?: unknown }
         | undefined;
       const current = tripRef.current;
-      if (!data?.kind || !current || data.tripId !== current.id) return;
+      if (!current || !data || data.tripId !== current.id) return;
+      if (!isAlertKind(data.kind)) return;
+      // 지난 구간의 늦은 알림이 지금 구간의 진행을 건드리면 안 됩니다.
+      const legIndex = currentLegIndex(current);
+      if (data.legIndex !== legIndex) return;
+
+      const kind = data.kind;
       void (async () => {
-        const marked = await markFired(current, data.kind as AlertKind);
-        if (data.kind === 'arrive') {
-          const finished = await finishTrip(marked, 'completed');
+        const marked = await markFired(current, alertKey(legIndex, kind));
+        if (kind === 'arrive') {
+          await finishTrip(marked, 'completed');
           persist(null);
           setProgress(null);
-          void finished;
+        } else if (kind === 'transfer') {
+          // 환승역 도착 = 이 구간의 끝. 다음 구간의 승차 대기로 넘어갑니다.
+          persist(await advanceLeg(marked));
+          setProgress(null);
         } else {
           persist(marked);
         }
@@ -218,8 +263,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }, [persist]);
 
   const value = useMemo(
-    () => ({ trip, progress, ready, start, cancel, complete, setBoarded, reportPosition }),
-    [trip, progress, ready, start, cancel, complete, setBoarded, reportPosition],
+    () => ({ trip, progress, ready, start, cancel, complete, setBoarded, advance, reportPosition }),
+    [trip, progress, ready, start, cancel, complete, setBoarded, advance, reportPosition],
   );
 
   return <TripContext value={value}>{children}</TripContext>;
@@ -227,8 +272,4 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
 export function useTrip(): TripContextValue {
   return use(TripContext);
-}
-
-export function getLineName(lineId: string): string {
-  return getLine(lineId)?.name ?? lineId;
 }

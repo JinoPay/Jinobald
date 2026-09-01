@@ -9,13 +9,15 @@ import { groupIdOf, directionLabel, getLine } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
 import { formatCountdown } from '@/services/alerts/eta';
 import type { TripProgress } from '@/services/alerts/progress';
+import { currentLeg, tripDestinationName, tripOriginName } from '@/services/alerts/trip';
 import { capabilities } from '@/services/location/capabilities';
 import { useTrip } from '@/store/TripContext';
 
 export default function AlertsScreen() {
   const theme = useTheme();
   const { trip, progress, cancel, setBoarded, reportPosition } = useTrip();
-  const line = trip ? getLine(trip.lineId) : undefined;
+  const leg = trip ? currentLeg(trip) : null;
+  const line = leg ? getLine(leg.lineId) : undefined;
 
   // 화면이 열려 있는 동안의 포그라운드 위치 보정.
   // 백그라운드 지오펜싱과 달리 Expo Go 에서도 동작합니다.
@@ -40,7 +42,9 @@ export default function AlertsScreen() {
     };
   }, [trip, reportPosition]);
 
-  if (!trip || !line) {
+  // 노선 조회가 실패해도 진행 중인 여정을 숨기지 않습니다 —
+  // 사용자가 알림을 취소할 방법이 사라지기 때문입니다.
+  if (!trip || !leg) {
     return (
       <ScrollView contentContainerStyle={styles.center} style={{ backgroundColor: theme.background }}>
         <EmptyState
@@ -56,7 +60,9 @@ export default function AlertsScreen() {
     );
   }
 
-  const nextAlert = trip.scheduled.pre ?? trip.scheduled.arrive;
+  const nextAlert = Object.values(trip.scheduled)
+    .filter((alert) => alert != null)
+    .sort((a, b) => a.atMs - b.atMs)[0];
 
   return (
     <ScrollView
@@ -64,17 +70,19 @@ export default function AlertsScreen() {
       contentContainerStyle={styles.container}>
       <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
         <View style={styles.header}>
-          <LineBadge groupId={groupIdOf(trip.lineId)} />
-          <Text style={[styles.direction, { color: theme.textSecondary }]}>
-            {directionLabel(line, trip.direction)}
-          </Text>
+          <LineBadge groupId={groupIdOf(leg.lineId)} />
+          {line ? (
+            <Text style={[styles.direction, { color: theme.textSecondary }]}>
+              {directionLabel(line, leg.direction)}
+            </Text>
+          ) : null}
         </View>
 
         <Text style={[styles.destination, { color: theme.text }]}>
-          {trip.destinationStationName} 하차
+          {tripDestinationName(trip)} 하차
         </Text>
         <Text style={[styles.origin, { color: theme.textSecondary }]}>
-          {trip.originStationName}에서 승차
+          {tripOriginName(trip)}에서 승차
         </Text>
 
         <View style={styles.stats}>

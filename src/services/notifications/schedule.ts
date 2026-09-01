@@ -2,12 +2,16 @@ import * as Notifications from 'expo-notifications';
 
 import { capabilities } from '@/services/location/capabilities';
 
+import type { AlertKind } from './kinds';
 import { ensureChannel, TRIP_CHANNEL_ID } from './setup';
 
-export type AlertKind = 'pre' | 'arrive';
+export { ALERT_KINDS, alertKey, isAlertKind, parseAlertKey } from './kinds';
+export type { AlertKey, AlertKind } from './kinds';
 
 export interface TripNotificationPayload {
   tripId: string;
+  /** 어느 구간의 알림인지. 이게 없으면 지난 구간의 늦은 알림을 구분할 수 없습니다. */
+  legIndex: number;
   kind: AlertKind;
 }
 

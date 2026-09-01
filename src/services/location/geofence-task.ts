@@ -1,22 +1,36 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
-import { presentTripNotification, type AlertKind } from '@/services/notifications/schedule';
+import { type AlertKind } from '@/services/notifications/kinds';
+import { presentTripNotification } from '@/services/notifications/schedule';
 
 export const GEOFENCE_TASK = 'jinobald-trip-geofence';
 
-/** 지오펜스 식별자 형식: `${tripId}:${kind}` */
-export function geofenceIdentifier(tripId: string, kind: AlertKind): string {
-  return `${tripId}:${kind}`;
+/**
+ * 지오펜스 식별자 형식: `${tripId}:${legIndex}:${kind}`
+ *
+ * 구간 번호가 있어야 지난 구간에 걸어 둔 지오펜스가 늦게 발화해도 구분할 수 있습니다.
+ */
+export function geofenceIdentifier(tripId: string, legIndex: number, kind: AlertKind): string {
+  return `${tripId}:${legIndex}:${kind}`;
 }
 
-function parseIdentifier(identifier: string): { tripId: string; kind: AlertKind } | null {
-  const separator = identifier.lastIndexOf(':');
-  if (separator < 0) return null;
-  const kind = identifier.slice(separator + 1);
-  if (kind !== 'pre' && kind !== 'arrive') return null;
-  return { tripId: identifier.slice(0, separator), kind };
+const IDENTIFIER_PATTERN = /^(.+):(\d+):(pre|arrive|transfer-pre|transfer)$/;
+
+function parseIdentifier(
+  identifier: string,
+): { tripId: string; legIndex: number; kind: AlertKind } | null {
+  const matched = IDENTIFIER_PATTERN.exec(identifier);
+  if (!matched) return null;
+  return { tripId: matched[1], legIndex: Number(matched[2]), kind: matched[3] as AlertKind };
 }
+
+const GEOFENCE_MESSAGE: Record<AlertKind, { title: string; body: string }> = {
+  arrive: { title: '하차역 도착', body: '목적지에 도착했습니다. 내릴 준비를 하세요.' },
+  pre: { title: '하차 준비', body: '곧 하차역입니다.' },
+  transfer: { title: '환승역 도착', body: '내려서 갈아탈 준비를 하세요.' },
+  'transfer-pre': { title: '환승 준비', body: '곧 환승역입니다.' },
+};
 
 /**
  * 백그라운드 지오펜스 태스크.
@@ -34,11 +48,10 @@ TaskManager.defineTask<{
   const parsed = parseIdentifier(data.region.identifier ?? '');
   if (!parsed) return;
 
-  const title = parsed.kind === 'arrive' ? '하차역 도착' : '하차 준비';
-  const body =
-    parsed.kind === 'arrive'
-      ? '목적지에 도착했습니다. 내릴 준비를 하세요.'
-      : '곧 하차역입니다.';
-
-  await presentTripNotification(title, body, { tripId: parsed.tripId, kind: parsed.kind });
+  const { title, body } = GEOFENCE_MESSAGE[parsed.kind];
+  await presentTripNotification(title, body, {
+    tripId: parsed.tripId,
+    legIndex: parsed.legIndex,
+    kind: parsed.kind,
+  });
 });
