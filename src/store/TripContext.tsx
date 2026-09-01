@@ -23,6 +23,7 @@ import {
   type TripProgress,
 } from '@/services/alerts/TripAlertManager';
 import { createTrip, type Trip, type TripDraft } from '@/services/alerts/trip';
+import { capabilities } from '@/services/location/capabilities';
 import { presentTripNotification, type AlertKind } from '@/services/notifications/schedule';
 import { readJson, remove, StorageKeys, writeJson } from '@/services/storage/persist';
 import { getSubwayApi } from '@/services/subway';
@@ -193,6 +194,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
   // 알림이 실제로 발화하면 중복 방지를 위해 기록하고, 도착 알림이면 여정을 종료합니다.
   useEffect(() => {
+    // 알림을 예약할 수 없는 환경(웹)에서는 발화할 알림도 없으므로 구독하지 않습니다.
+    if (!capabilities.localNotifications) return;
     const subscription = Notifications.addNotificationReceivedListener((notification) => {
       const data = notification.request.content.data as
         | { tripId?: string; kind?: AlertKind }

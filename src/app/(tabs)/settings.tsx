@@ -4,7 +4,12 @@ import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from '
 
 import { LINES } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
-import { capabilities, capabilityNotice, isExpoGo } from '@/services/location/capabilities';
+import {
+  capabilities,
+  capabilityNotice,
+  isExpoGo,
+  notificationNotice,
+} from '@/services/location/capabilities';
 import { getLocationPermission, type LocationPermissionState } from '@/services/location/geofence';
 import {
   getNotificationPermission,
@@ -57,34 +62,42 @@ export default function SettingsScreen() {
         <Row
           label="알림 권한"
           value={
-            notification === null
-              ? '확인 중'
-              : notification.granted
-                ? '허용됨'
-                : notification.canAskAgain
-                  ? '미허용'
-                  : '거부됨 (시스템 설정 필요)'
+            !capabilities.localNotifications
+              ? '사용 불가'
+              : notification === null
+                ? '확인 중'
+                : notification.granted
+                  ? '허용됨'
+                  : notification.canAskAgain
+                    ? '미허용'
+                    : '거부됨 (시스템 설정 필요)'
           }
           theme={theme}
         />
-        {notification && !notification.isPhysicalDevice ? (
+        {notificationNotice ? (
+          <Text style={[styles.note, { color: theme.textSecondary }]}>{notificationNotice}</Text>
+        ) : null}
+        {capabilities.localNotifications && notification && !notification.isPhysicalDevice ? (
           <Text style={[styles.note, { color: theme.textSecondary }]}>
             시뮬레이터/에뮬레이터에서는 알림이 전달되지 않을 수 있습니다.
           </Text>
         ) : null}
-        <Pressable
-          onPress={() => {
-            if (notification?.canAskAgain !== false) {
-              void requestNotificationPermission().then(setNotification);
-            } else {
-              void Linking.openSettings();
-            }
-          }}
-          style={[styles.button, { borderColor: theme.border }]}>
-          <Text style={{ color: theme.accent, fontWeight: '600' }}>
-            {notification?.canAskAgain === false ? '시스템 설정 열기' : '알림 권한 요청'}
-          </Text>
-        </Pressable>
+        {/* 예약 자체가 불가능한 환경에서는 권한 요청도, 시스템 설정 열기도 의미가 없습니다. */}
+        {capabilities.localNotifications ? (
+          <Pressable
+            onPress={() => {
+              if (notification?.canAskAgain !== false) {
+                void requestNotificationPermission().then(setNotification);
+              } else {
+                void Linking.openSettings();
+              }
+            }}
+            style={[styles.button, { borderColor: theme.border }]}>
+            <Text style={{ color: theme.accent, fontWeight: '600' }}>
+              {notification?.canAskAgain === false ? '시스템 설정 열기' : '알림 권한 요청'}
+            </Text>
+          </Pressable>
+        ) : null}
       </Section>
 
       <Section title="위치 / GPS 보정" theme={theme}>

@@ -1,5 +1,7 @@
 import * as Notifications from 'expo-notifications';
 
+import { capabilities } from '@/services/location/capabilities';
+
 import { ensureChannel, TRIP_CHANNEL_ID } from './setup';
 
 export type AlertKind = 'pre' | 'arrive';
@@ -24,6 +26,10 @@ interface ScheduleParams {
  * 넘깁니다 — 이 덕분에 Expo Go 에서도 알림 기능이 온전히 동작합니다.
  *
  * 목표 시각이 이미 지났다면 예약 대신 즉시 표시합니다.
+ *
+ * 알림을 못 쓰는 환경(웹)에서는 호출 자체가 예외를 던지므로 서비스 경계에서 막습니다.
+ * geofence.ts 와 같은 패턴입니다 — UI 가 먼저 막지만, 어떤 경로로 들어와도 앱이 죽지
+ * 않도록 여기서도 방어합니다.
  */
 export async function scheduleTripNotification({
   title,
@@ -31,6 +37,7 @@ export async function scheduleTripNotification({
   atMs,
   payload,
 }: ScheduleParams): Promise<string | null> {
+  if (!capabilities.localNotifications) return null;
   await ensureChannel();
   const data = { ...payload };
 
@@ -54,6 +61,7 @@ export async function presentTripNotification(
   body: string,
   payload: TripNotificationPayload,
 ): Promise<void> {
+  if (!capabilities.localNotifications) return;
   await ensureChannel();
   await presentNow(title, body, { ...payload });
 }
@@ -74,6 +82,7 @@ async function presentNow(
 }
 
 export async function cancelNotifications(ids: (string | null | undefined)[]): Promise<void> {
+  if (!capabilities.localNotifications) return;
   await Promise.all(
     ids
       .filter((id): id is string => typeof id === 'string' && id.length > 0)

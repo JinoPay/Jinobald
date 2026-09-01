@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { groupIdOf } from '@/data/stations';
 import { formatCountdown } from '@/services/alerts/eta';
 import { isAtStation } from '@/services/subway/mappers';
 import type { Arrival } from '@/services/subway/types';
@@ -23,7 +24,7 @@ export function ArrivalCard({ arrival, elapsedSeconds }: Props) {
   return (
     <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
       <View style={styles.header}>
-        <LineBadge lineId={arrival.lineId} size="sm" />
+        <LineBadge groupId={groupIdOf(arrival.lineId)} size="sm" />
         <Text style={[styles.terminal, { color: theme.text }]} numberOfLines={1}>
           {arrival.terminalStationName || '행선지 미상'}행
         </Text>

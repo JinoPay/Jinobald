@@ -11,7 +11,11 @@ import {
   getLine,
 } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
-import { capabilities, capabilityNotice } from '@/services/location/capabilities';
+import {
+  capabilities,
+  capabilityNotice,
+  notificationNotice,
+} from '@/services/location/capabilities';
 import { requestLocationPermission } from '@/services/location/geofence';
 import { requestNotificationPermission } from '@/services/notifications/setup';
 import { useSettings } from '@/store/SettingsContext';
@@ -21,11 +25,27 @@ export default function TripSetupScreen() {
   const theme = useTheme();
   const { settings } = useSettings();
   const { start } = useTrip();
-  const { origin } = useLocalSearchParams<{ origin?: string }>();
+  const { origin, destination: presetDestination } = useLocalSearchParams<{
+    origin?: string;
+    destination?: string;
+  }>();
 
   const originRefs = useMemo(() => findStationRefs(origin ?? ''), [origin]);
-  const [lineId, setLineId] = useState(originRefs[0]?.line.id ?? '');
-  const [destination, setDestination] = useState<string | null>(null);
+
+  // 하차역을 함께 받은 경우, 두 역이 모두 놓인 계통을 기본 선택해야 방향 계산이 성립합니다.
+  const initialLineId = useMemo(() => {
+    if (presetDestination) {
+      const destinationLineIds = new Set(
+        findStationRefs(presetDestination).map((ref) => ref.line.id),
+      );
+      const shared = originRefs.find((ref) => destinationLineIds.has(ref.line.id));
+      if (shared) return shared.line.id;
+    }
+    return originRefs[0]?.line.id ?? '';
+  }, [originRefs, presetDestination]);
+
+  const [lineId, setLineId] = useState(initialLineId);
+  const [destination, setDestination] = useState<string | null>(presetDestination ?? null);
   const [alertN, setAlertN] = useState(settings.alertNStationsBefore);
   const [useGps, setUseGps] = useState(settings.useGps && capabilities.backgroundGeofencing);
   const [submitting, setSubmitting] = useState(false);
@@ -52,8 +72,10 @@ export default function TripSetupScreen() {
     );
   }
 
+  const canStart = Boolean(destination) && capabilities.localNotifications;
+
   const submit = async () => {
-    if (!destination) return;
+    if (!destination || !capabilities.localNotifications) return;
     setSubmitting(true);
     try {
       const permission = await requestNotificationPermission();
@@ -87,6 +109,12 @@ export default function TripSetupScreen() {
     <ScrollView
       style={{ backgroundColor: theme.background }}
       contentContainerStyle={styles.container}>
+      {notificationNotice ? (
+        <View style={[styles.banner, { backgroundColor: theme.backgroundElement }]}>
+          <Text style={[styles.bannerText, { color: theme.danger }]}>{notificationNotice}</Text>
+        </View>
+      ) : null}
+
       <Text style={[styles.label, { color: theme.textSecondary }]}>승차역</Text>
       <Text style={[styles.value, { color: theme.text }]}>{originRef.station.name}</Text>
 
@@ -180,19 +208,23 @@ export default function TripSetupScreen() {
       </View>
 
       <Pressable
-        disabled={!destination || submitting}
+        disabled={!canStart || submitting}
         onPress={() => void submit()}
         style={({ pressed }) => [
           styles.cta,
           {
-            backgroundColor: destination ? theme.accent : theme.backgroundElement,
+            backgroundColor: canStart ? theme.accent : theme.backgroundElement,
             opacity: pressed ? 0.85 : 1,
           },
         ]}>
         <View style={styles.ctaInner}>
-          <LineBadge lineId={line.id} size="sm" />
-          <Text style={[styles.ctaText, { color: destination ? '#fff' : theme.textSecondary }]}>
-            {destination ? `${destination} 하차 알림 시작` : '하차역을 선택하세요'}
+          <LineBadge groupId={line.groupId} size="sm" />
+          <Text style={[styles.ctaText, { color: canStart ? '#fff' : theme.textSecondary }]}>
+            {!capabilities.localNotifications
+              ? '이 환경에서는 알림을 예약할 수 없습니다'
+              : destination
+                ? `${destination} 하차 알림 시작`
+                : '하차역을 선택하세요'}
           </Text>
         </View>
       </Pressable>
@@ -202,6 +234,8 @@ export default function TripSetupScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 8, paddingBottom: 48 },
+  banner: { borderRadius: 10, padding: 12 },
+  bannerText: { fontSize: 13, lineHeight: 18 },
   label: { fontSize: 13, fontWeight: '600', marginTop: 16 },
   value: { fontSize: 17, fontWeight: '600' },
   hint: { fontSize: 12, lineHeight: 16 },
