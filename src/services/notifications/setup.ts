@@ -2,6 +2,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { capabilities } from '@/services/location/capabilities';
+
 export const TRIP_CHANNEL_ID = 'trip-alerts';
 
 /**
@@ -42,7 +44,20 @@ export interface NotificationPermissionState {
   isPhysicalDevice: boolean;
 }
 
+/**
+ * 예약할 수 없는 환경에서는 권한을 물어봐야 의미가 없습니다.
+ *
+ * 웹 브라우저는 Notification API 로 권한 자체는 내주지만 예약 발화가 안 됩니다.
+ * granted 로 보고하면 UI 가 "알림 설정 완료"라고 오해하게 되므로 여기서 끊습니다.
+ */
+const UNAVAILABLE: NotificationPermissionState = {
+  granted: false,
+  canAskAgain: false,
+  isPhysicalDevice: Device.isDevice,
+};
+
 export async function getNotificationPermission(): Promise<NotificationPermissionState> {
+  if (!capabilities.localNotifications) return UNAVAILABLE;
   const { status, canAskAgain } = await Notifications.getPermissionsAsync();
   return {
     granted: status === 'granted',
@@ -52,6 +67,7 @@ export async function getNotificationPermission(): Promise<NotificationPermissio
 }
 
 export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
+  if (!capabilities.localNotifications) return UNAVAILABLE;
   await ensureChannel();
   const { status, canAskAgain } = await Notifications.requestPermissionsAsync();
   return {

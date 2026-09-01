@@ -1,4 +1,5 @@
 import { findStationRefOnLine, getLine } from '@/data/stations';
+import { capabilities } from '@/services/location/capabilities';
 import { startTripGeofence, stopTripGeofence, type GeofenceTarget } from '@/services/location/geofence';
 import {
   cancelNotifications,
@@ -35,6 +36,9 @@ function alertContent(trip: Trip, kind: AlertKind, stationsLeft: number) {
 export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Trip> {
   const line = getLine(trip.lineId);
   if (!line || trip.status !== 'active') return trip;
+  // 알림을 못 쓰는 환경에서는 예약을 시도하지 않습니다. scheduleTripNotification 이
+  // null 을 돌려주면 "이미 발화함"으로 기록되어 여정 상태가 잘못되기 때문입니다.
+  if (!capabilities.localNotifications) return trip;
 
   const times = computeAlertTimes({
     nowMs: Date.now(),

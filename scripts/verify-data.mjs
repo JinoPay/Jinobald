@@ -17,8 +17,9 @@ const warnings = [];
 const seenSubwayIds = new Set();
 const seenLineIds = new Set();
 
-// 서울 및 수도권 대략 범위. 좌표 오타를 잡기 위한 검사입니다.
-const BOUNDS = { minLat: 37.1, maxLat: 37.9, minLng: 126.4, maxLng: 127.4 };
+// 수도권 전철 실제 운행 범위. 좌표 오타를 잡기 위한 검사입니다.
+// 남쪽 끝은 1호선 신창(36.77), 동쪽 끝은 경춘선 춘천(127.72)입니다.
+const BOUNDS = { minLat: 36.6, maxLat: 38.0, minLng: 126.3, maxLng: 127.9 };
 
 for (const line of lines) {
   const where = `${line.name ?? line.id}`;
@@ -26,12 +27,23 @@ for (const line of lines) {
   if (seenLineIds.has(line.id)) errors.push(`${where}: 중복된 노선 id "${line.id}"`);
   seenLineIds.add(line.id);
 
-  if (seenSubwayIds.has(line.subwayId)) errors.push(`${where}: 중복된 subwayId "${line.subwayId}"`);
-  seenSubwayIds.add(line.subwayId);
-
-  if (!/^\d{4}$/.test(line.subwayId ?? '')) {
-    errors.push(`${where}: subwayId 는 4자리 숫자여야 합니다 (현재 "${line.subwayId}")`);
+  // subwayId 는 그룹의 본선에만 있습니다. 지선과 실시간 미지원 노선은 null 입니다.
+  if (line.subwayId !== null) {
+    if (seenSubwayIds.has(line.subwayId)) {
+      errors.push(`${where}: 중복된 subwayId "${line.subwayId}"`);
+    }
+    seenSubwayIds.add(line.subwayId);
+    if (!/^\d{4}$/.test(line.subwayId)) {
+      errors.push(`${where}: subwayId 는 4자리 숫자여야 합니다 (현재 "${line.subwayId}")`);
+    }
+    if (!line.realtime) {
+      errors.push(`${where}: realtime 이 false 인데 subwayId 가 있습니다 — 도착정보가 조용히 사라집니다`);
+    }
   }
+
+  if (typeof line.realtime !== 'boolean') errors.push(`${where}: realtime 은 boolean 이어야 합니다`);
+  if (!line.groupId) errors.push(`${where}: groupId 가 없습니다`);
+  if (!line.badge) errors.push(`${where}: badge 가 없습니다`);
   if (!/^#[0-9A-F]{6}$/i.test(line.color ?? '')) {
     errors.push(`${where}: color 형식 오류 ("${line.color}")`);
   }
@@ -76,6 +88,23 @@ for (const line of lines) {
   }
 }
 
+// 그룹 일관성 — 지선은 본선과 색·배지를 공유하고, subwayId 는 그룹당 최대 하나입니다.
+const groups = new Map();
+for (const line of lines) {
+  const g = groups.get(line.groupId) ?? { color: new Set(), badge: new Set(), subwayIds: [] };
+  g.color.add(line.color);
+  g.badge.add(line.badge);
+  if (line.subwayId) g.subwayIds.push(line.subwayId);
+  groups.set(line.groupId, g);
+}
+for (const [id, g] of groups) {
+  if (g.color.size > 1) errors.push(`그룹 "${id}": 색이 여러 개입니다 (${[...g.color].join(', ')})`);
+  if (g.badge.size > 1) errors.push(`그룹 "${id}": 배지가 여러 개입니다 (${[...g.badge].join(', ')})`);
+  if (g.subwayIds.length > 1) {
+    errors.push(`그룹 "${id}": subwayId 가 둘 이상입니다 (${g.subwayIds.join(', ')})`);
+  }
+}
+
 // 환승역 파생 확인 — 두 개 이상의 노선에 등장하는 이름.
 const normalize = (name) =>
   name.replace(/\(.*?\)/g, '').replace(/\s+/g, '').replace(/역$/, '').trim();
@@ -87,7 +116,8 @@ for (const line of lines) {
       const n = normalize(key);
       if (!n) continue;
       const set = byName.get(n) ?? new Set();
-      set.add(line.id);
+      // 계통이 아니라 그룹으로 세야 본선/지선 분기역이 환승역으로 잡히지 않습니다.
+      set.add(line.groupId);
       byName.set(n, set);
     }
   }
@@ -114,6 +144,7 @@ console.log('');
 console.log(`총 역 항목      : ${totalStations}`);
 console.log(`고유 역명       : ${byName.size}`);
 console.log(`환승역          : ${transfers.length}`);
+console.log(`노선 그룹       : ${groups.size}`);
 console.log(`좌표 보유       : ${withCoords} (${((withCoords / totalStations) * 100).toFixed(1)}%)`);
 console.log('');
 

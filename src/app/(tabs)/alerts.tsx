@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '@/components/common/EmptyState';
 import { LineBadge } from '@/components/subway/LineBadge';
-import { directionLabel, getLine } from '@/data/stations';
+import { groupIdOf, directionLabel, getLine } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
 import { formatCountdown } from '@/services/alerts/eta';
 import type { TripProgress } from '@/services/alerts/progress';
@@ -64,7 +64,7 @@ export default function AlertsScreen() {
       contentContainerStyle={styles.container}>
       <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
         <View style={styles.header}>
-          <LineBadge lineId={trip.lineId} />
+          <LineBadge groupId={groupIdOf(trip.lineId)} />
           <Text style={[styles.direction, { color: theme.textSecondary }]}>
             {directionLabel(line, trip.direction)}
           </Text>

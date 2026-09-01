@@ -16,7 +16,16 @@ export default function StationScreen() {
   const { station: stationKey } = useLocalSearchParams<{ station: string }>();
   const station = getUniqueStation(decodeURIComponent(stationKey ?? ''));
 
-  const { data, error, loading, refresh } = useArrivals(station?.displayName ?? null);
+  // 이 역을 지나는 노선 중 하나라도 실시간 도착 API 범위 안이어야 조회할 값이 있습니다.
+  // (인천1·2호선, 경전철, GTX 등은 서울 열린데이터광장이 다루지 않습니다.)
+  const hasRealtime = useMemo(
+    () => (station?.lineIds ?? []).some((id) => getLine(id)?.realtime === true),
+    [station],
+  );
+
+  const { data, error, loading, refresh } = useArrivals(
+    station && hasRealtime ? station.displayName : null,
+  );
   const [now, setNow] = useState(() => Date.now());
 
   // 폴링 사이에도 카운트다운이 멈춰 보이지 않도록 초 단위로 로컬 보간합니다.
@@ -49,7 +58,7 @@ export default function StationScreen() {
     return (
       <EmptyState
         title="역을 찾을 수 없습니다"
-        description="현재 데이터셋은 서울 1~9호선 본선만 포함합니다."
+        description="수도권 전철 1~9호선과 광역철도를 다룹니다."
       />
     );
   }
@@ -62,8 +71,8 @@ export default function StationScreen() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>{station.displayName}</Text>
         <View style={styles.badges}>
-          {station.lineIds.map((id) => (
-            <LineBadge key={id} lineId={id} />
+          {station.groupIds.map((id) => (
+            <LineBadge key={id} groupId={id} />
           ))}
         </View>
       </View>
@@ -77,7 +86,12 @@ export default function StationScreen() {
         </View>
       ) : null}
 
-      {grouped.length === 0 && !loading ? (
+      {!hasRealtime ? (
+        <EmptyState
+          title="실시간 도착 정보를 제공하지 않는 노선입니다"
+          description="서울 열린데이터광장 도착정보 API 가 이 노선을 다루지 않습니다. 노선도와 승하차 알림은 그대로 쓸 수 있습니다."
+        />
+      ) : grouped.length === 0 && !loading ? (
         <EmptyState title="도착 예정 열차가 없습니다" description="잠시 후 다시 시도해 주세요." />
       ) : null}
 

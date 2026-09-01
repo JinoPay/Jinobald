@@ -1,28 +1,41 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { getLine } from '@/data/stations';
+import { getLineGroup } from '@/data/stations';
 
 interface Props {
-  lineId: string;
+  /** 노선 그룹 id ("1", "gyeongui" …). */
+  groupId: string;
   size?: 'sm' | 'md';
 }
 
-/** 노선 번호를 노선 색 원형 배지로 표시합니다. */
-export function LineBadge({ lineId, size = 'md' }: Props) {
-  const line = getLine(lineId);
-  const dimension = size === 'sm' ? 20 : 26;
+/**
+ * 노선을 노선 색 배지로 표시합니다.
+ *
+ * 라벨이 한 글자면 원, 두 글자 이상이면 알약 모양입니다. 광역철도는 번호가 없어
+ * "경의", "수인" 같은 축약 라벨을 쓰기 때문입니다.
+ */
+export function LineBadge({ groupId, size = 'md' }: Props) {
+  const group = getLineGroup(groupId);
+  const label = group?.badge ?? '?';
+  const height = size === 'sm' ? 20 : 26;
+  const fontSize = size === 'sm' ? 11 : 13;
+  const wide = label.length > 1;
+
   return (
     <View
       style={[
         styles.badge,
         {
-          width: dimension,
-          height: dimension,
-          borderRadius: dimension / 2,
-          backgroundColor: line?.color ?? '#888',
+          height,
+          minWidth: height,
+          borderRadius: height / 2,
+          paddingHorizontal: wide ? height * 0.3 : 0,
+          backgroundColor: group?.color ?? '#888',
         },
       ]}>
-      <Text style={[styles.text, { fontSize: size === 'sm' ? 11 : 13 }]}>{lineId}</Text>
+      <Text style={[styles.text, { fontSize }]} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }

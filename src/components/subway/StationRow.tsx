@@ -6,12 +6,13 @@ import { LineBadge } from './LineBadge';
 
 interface Props {
   name: string;
-  lineIds: string[];
+  /** 이 역을 지나는 노선 그룹 id. */
+  groupIds: string[];
   subtitle?: string;
   onPress?: () => void;
 }
 
-export function StationRow({ name, lineIds, subtitle, onPress }: Props) {
+export function StationRow({ name, groupIds, subtitle, onPress }: Props) {
   const theme = useTheme();
   return (
     <Pressable
@@ -28,8 +29,8 @@ export function StationRow({ name, lineIds, subtitle, onPress }: Props) {
         ) : null}
       </View>
       <View style={styles.badges}>
-        {lineIds.map((id) => (
-          <LineBadge key={id} lineId={id} size="sm" />
+        {groupIds.map((id) => (
+          <LineBadge key={id} groupId={id} size="sm" />
         ))}
       </View>
     </Pressable>

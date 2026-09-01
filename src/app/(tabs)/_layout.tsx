@@ -18,7 +18,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '노선도',
+          title: '길찾기',
           tabBarIcon: ({ color }) => <TrainIcon color={color} />,
         }}
       />
