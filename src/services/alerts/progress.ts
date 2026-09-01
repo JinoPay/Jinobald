@@ -1,8 +1,9 @@
 import { getLine } from '@/data/stations';
 import { isAtStation } from '@/services/subway/mappers';
+import type { RouteTransfer } from '@/services/routing/types';
 import type { Arrival } from '@/services/subway/types';
 
-import { currentLeg, type Trip } from './trip';
+import { currentLeg, isFinalLeg, nextTransfer, type Trip } from './trip';
 
 /**
  * 여정 진행 상황 계산.
@@ -23,9 +24,20 @@ export interface TripProgress {
   stationsLeft: number;
   /** 현재 구간의 목표역 도착까지 남은 초. */
   etaSeconds: number;
+  /** 최종 하차역까지 남은 정거장 수 — 남은 구간을 모두 더한 값입니다. */
+  totalStationsLeft: number;
+  /** 최종 하차역 도착까지 남은 초 — 남은 구간과 환승 시간을 모두 더한 값입니다. */
+  totalEtaSeconds: number;
+  /** 현재 구간이 마지막인지. 알림 문구와 화면 문구가 갈립니다. */
+  isFinalLeg: boolean;
+  /** 이 구간이 끝나고 할 환승. 마지막 구간이면 null 입니다. */
+  nextTransfer: RouteTransfer | null;
   /** 승차 전 계산에 사용한 열차. 승차 후에는 null 입니다. */
   matchedArrival: Arrival | null;
-  /** 어떤 신호로 계산했는지 — UI 에 그대로 노출합니다. */
+  /**
+   * 어떤 신호로 계산했는지 — UI 에 그대로 노출합니다.
+   * **현재 구간**을 설명합니다. 남은 구간은 언제나 정적 추정입니다.
+   */
   basis: 'arrival' | 'elapsed' | 'static';
 }
 
@@ -52,14 +64,36 @@ export function computeProgress(
   const totalStations = leg.stationCount;
   const avg = line.avgSecondsPerStation;
 
+  // 남은 구간은 정적 추정만 가능합니다. 환승 시간도 cost.ts 의 추정치입니다.
+  const rest = trip.plan.legs.slice(legIndex + 1);
+  const restStations = rest.reduce((sum, next) => sum + next.stationCount, 0);
+  const restSeconds = rest.reduce(
+    (sum, next) => sum + next.seconds + (next.transferIn?.seconds ?? 0),
+    0,
+  );
+
+  const shared = {
+    legIndex,
+    isFinalLeg: isFinalLeg(trip, legIndex),
+    nextTransfer: nextTransfer(trip, legIndex),
+    matchedArrival: null as Arrival | null,
+  };
+  const withTotals = (stationsLeft: number, etaSeconds: number) => ({
+    stationsLeft,
+    etaSeconds,
+    totalStationsLeft: stationsLeft + restStations,
+    totalEtaSeconds: etaSeconds + restSeconds,
+  });
+
   if (trip.boarded && trip.boardedAt != null) {
     const elapsed = Math.max(0, (now - trip.boardedAt) / 1000);
     const travelled = Math.min(totalStations, Math.floor(elapsed / avg));
     return {
-      legIndex,
-      stationsLeft: Math.max(0, totalStations - travelled),
-      etaSeconds: Math.max(0, totalStations * avg - elapsed),
-      matchedArrival: null,
+      ...shared,
+      ...withTotals(
+        Math.max(0, totalStations - travelled),
+        Math.max(0, totalStations * avg - elapsed),
+      ),
       basis: 'elapsed',
     };
   }
@@ -72,18 +106,16 @@ export function computeProgress(
 
   if (secondsToOrigin !== null) {
     return {
-      legIndex,
-      stationsLeft: totalStations,
-      etaSeconds: secondsToOrigin + totalStations * avg,
+      ...shared,
+      ...withTotals(totalStations, secondsToOrigin + totalStations * avg),
       matchedArrival: matched,
       basis: 'arrival',
     };
   }
 
   return {
-    legIndex,
-    stationsLeft: totalStations,
-    etaSeconds: totalStations * avg,
+    ...shared,
+    ...withTotals(totalStations, totalStations * avg),
     matchedArrival: matched,
     basis: 'static',
   };
