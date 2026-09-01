@@ -32,7 +32,7 @@ export default function RootLayout() {
               <Stack.Screen name="station/[station]" options={{ title: '실시간 도착' }} />
               <Stack.Screen
                 name="trip/setup"
-                options={{ title: '승하차 알림 설정', presentation: 'modal' }}
+                options={{ title: '경로 확인 · 알림 설정', presentation: 'modal' }}
               />
             </Stack>
           </TripProvider>

@@ -58,6 +58,15 @@ export function haversineMeters(
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/** "32분", "1시간 5분" — 경로 카드처럼 분 단위로 보여 줄 때 씁니다. */
+export function formatDuration(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds / 60));
+  if (total < 60) return `${total}분`;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  return rest === 0 ? `${hours}시간` : `${hours}시간 ${rest}분`;
+}
+
 export function formatCountdown(seconds: number): string {
   const safe = Math.max(0, Math.round(seconds));
   const m = Math.floor(safe / 60);
