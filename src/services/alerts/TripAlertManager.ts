@@ -144,7 +144,7 @@ export async function syncGeofence(trip: Trip): Promise<Trip> {
 
   const leg = currentLeg(trip);
   const line = getLine(leg.lineId);
-  if (!line) return { ...trip, geofenceActive: false };
+  if (!line) return clearGeofence(trip);
 
   const legIndex = currentLegIndex(trip);
   const [preKind, arriveKind] = legAlertKinds(trip);
@@ -159,9 +159,20 @@ export async function syncGeofence(trip: Trip): Promise<Trip> {
     targets.push({ kind, legIndex, lat, lng });
   }
 
-  if (targets.length === 0) return { ...trip, geofenceActive: false };
+  if (targets.length === 0) return clearGeofence(trip);
   const started = await startTripGeofence(trip.id, targets);
   return { ...trip, geofenceActive: started };
+}
+
+/**
+ * 걸어 둔 지오펜스를 거둡니다.
+ *
+ * 구간이 넘어갔는데 새 목표역의 좌표를 모르면 새로 걸 것이 없습니다. 그렇다고
+ * 그냥 두면 이전 구간의 region 이 그대로 살아 있어 엉뚱한 곳에서 발화합니다.
+ */
+async function clearGeofence(trip: Trip): Promise<Trip> {
+  if (trip.geofenceActive) await stopTripGeofence();
+  return { ...trip, geofenceActive: false };
 }
 
 /** ETA 경로와 GPS 경로 중 먼저 도달한 쪽이 알림을 소비하고 나머지를 취소합니다. */
