@@ -29,6 +29,22 @@ pnpm start:go               # Expo Go 로 QR 스캔 — iOS/Android 공통
 
 전체 기능을 쓰려면 개발 빌드가 필요합니다. 아래 [네이티브 빌드](#네이티브-빌드-ios--android)를 보세요.
 
+### 웹 (데스크톱에서 UI 만 빠르게 볼 때)
+
+`react-native-web` 으로 브라우저에서도 그대로 뜹니다. 시뮬레이터를 띄우는 것보다 훨씬 빨라서
+노선도·레이아웃·화면 전환을 만질 때 편합니다.
+
+```bash
+pnpm web
+```
+
+다만 **웹은 이 앱의 절반짜리 환경입니다.** 알림 예약과 지오펜싱은 브라우저에 대응물이 없어
+설정 화면에 "웹에서는 사용 불가"로 표시됩니다. 알림·위치 로직을 검증하려면 시뮬레이터나 실기기를 쓰세요.
+
+> Electron 같은 데스크톱 셸은 두지 않았습니다. 개발 중 얻는 것이 브라우저와 같고
+> (같은 `react-native-web` 번들을 창 하나에 띄우는 것뿐입니다),
+> 정작 이 앱의 핵심인 알림·백그라운드 위치는 데스크톱에 존재하지 않아 유지 비용만 늘기 때문입니다.
+
 ## 네이티브 빌드 (iOS / Android)
 
 `ios/`, `android/` 디렉터리는 저장소에 두지 않습니다([CNG](https://docs.expo.dev/workflow/continuous-native-generation/)).
@@ -82,6 +98,47 @@ pnpm android:device         # 연결된 Android 기기
   기기의 설정 > 개인정보 보호 및 보안 > 개발자 모드도 켜야 합니다(iOS 16+).
 - **Android**: 기기에서 개발자 옵션 > USB 디버깅을 켜고 연결한 뒤 `adb devices` 로 잡히는지 확인합니다.
 
+### 2-1. Apple 개발자 계정 없이 내 iPhone 에 설치하기
+
+**연 99 USD 유료 멤버십 없이도 이 앱의 모든 기능을 본인 기기에서 쓸 수 있습니다.**
+무료 Apple ID 만으로 서명하는 "Personal Team" 방식이면 충분합니다.
+
+이 앱이 유료 계정을 요구하는 기능을 쓰지 않기 때문입니다.
+
+| 이 앱이 쓰는 것 | 필요한 것 | 무료 계정 |
+|---|---|---|
+| 예약 로컬 알림 | 없음 (권한만) | 가능 |
+| 백그라운드 위치·지오펜싱 | `UIBackgroundModes` — Info.plist 키 | 가능 |
+| 원격 푸시(APNs) | `aps-environment` 엔타이틀먼트 | **이 앱은 쓰지 않음** |
+
+핵심은 백그라운드 모드가 *엔타이틀먼트가 아니라 Info.plist 키*라는 점입니다.
+엔타이틀먼트가 필요한 기능(원격 푸시, App Groups, iCloud, HealthKit, Associated Domains 등)만
+유료 멤버십을 요구하는데, 이 앱은 그중 아무것도 쓰지 않습니다.
+
+**절차**
+
+1. Xcode > Settings > Accounts 에서 본인 Apple ID 로 로그인합니다. 팀 이름이 `이름 (Personal Team)` 으로 잡힙니다.
+2. iPhone 에서 설정 > 개인정보 보호 및 보안 > **개발자 모드**를 켜고 재시동합니다 (iOS 16+).
+3. 케이블로 연결하고 기기에서 이 Mac 을 "신뢰"합니다.
+4. `pnpm prebuild` 후 `ios/jinobald.xcworkspace` 를 열어 타깃의 Signing & Capabilities 에서 팀을 Personal Team 으로 지정합니다.
+5. `pnpm ios:device` 로 빌드·설치합니다.
+6. 첫 실행 시 기기에서 설정 > 일반 > VPN 및 기기 관리 > 해당 개발자를 "신뢰"합니다.
+
+**무료 계정의 제약**
+
+- **서명이 7일 뒤 만료됩니다.** 앱이 실행되지 않으면 `pnpm ios:device` 를 다시 돌리면 됩니다. 데이터는 유지됩니다.
+- 한 기기에 무료 서명으로 동시에 설치 가능한 앱은 3개까지입니다.
+- 7일당 App ID 10개 제한이 있으니 `bundleIdentifier` 를 자주 바꾸지 마세요.
+- TestFlight·App Store 배포, 타인 기기 설치는 불가합니다.
+- **EAS 클라우드 iOS *실기기* 빌드도 불가합니다** — 기기 등록과 프로비저닝 프로필 발급에 유료 멤버십이 필요합니다.
+  대신 `pnpm build:dev:ios:sim`(시뮬레이터 빌드)은 Apple 계정 자체가 필요 없습니다.
+
+즉 무료 계정이라면 **iOS 실기기는 로컬 빌드(`pnpm ios:device`), Android 는 아무 제약 없음**이 기본 경로입니다.
+유료 멤버십은 남에게 배포하거나 스토어에 올릴 때 사면 됩니다.
+
+> 백그라운드 지오펜싱이 필요 없는 작업이라면 서명 없이 **Expo Go**(`pnpm start:go`)로 QR 만 찍는 게 제일 빠릅니다.
+> 지오펜싱을 만질 때만 개발 빌드를 쓰세요.
+
 ### 3. 릴리스 구성으로 확인
 
 `app.config.ts` 의 ATS / cleartext 예외는 **디버그 빌드에서는 티가 나지 않다가 릴리스에서 문제가 되는** 종류의 설정입니다.
@@ -107,12 +164,16 @@ pnpm build:preview          # 내부 배포용 릴리스 빌드 (양 플랫폼)
 pnpm build:production       # 스토어 제출용 (iOS .ipa / Android .aab)
 ```
 
-| 프로필 | 개발 클라이언트 | 배포 | Android | iOS |
-|---|---|---|---|---|
-| `development` | 있음 | internal | apk | 실기기 |
-| `development-simulator` | 있음 | internal | apk | 시뮬레이터 |
-| `preview` | 없음 | internal | apk | 실기기 |
-| `production` | 없음 | store | aab | 실기기 |
+| 프로필 | 개발 클라이언트 | 배포 | Android | iOS | Apple 유료 계정 |
+|---|---|---|---|---|---|
+| `development` | 있음 | internal | apk | 실기기 | iOS 만 필요 |
+| `development-simulator` | 있음 | internal | apk | 시뮬레이터 | 불필요 |
+| `preview` | 없음 | internal | apk | 실기기 | iOS 만 필요 |
+| `production` | 없음 | store | aab | 실기기 | iOS 만 필요 |
+
+Android 는 어느 프로필이든 Apple 계정과 무관합니다.
+iOS 실기기 클라우드 빌드만 유료 멤버십을 요구하며, 그 경우에도 로컬 `pnpm ios:device` 는
+무료 계정으로 됩니다([위 항목](#2-1-apple-개발자-계정-없이-내-iphone-에-설치하기) 참고).
 
 개발 빌드를 설치한 뒤에는 `pnpm start` 로 Metro 를 띄우면 그 빌드가 붙습니다(`--dev-client`).
 

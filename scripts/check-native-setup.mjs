@@ -133,6 +133,23 @@ if (!isMac) {
     );
   }
 
+  // 코드 서명 신원. 무료 Apple ID(Personal Team)로도 하나 만들어지므로,
+  // 유료 개발자 계정 여부와는 무관하게 "하나라도 있는지"만 봅니다.
+  const identities = run('security', ['find-identity', '-v', '-p', 'codesigning']);
+  const identityCount = identities
+    ? (identities.match(/Apple Development|iPhone Developer/g) ?? []).length
+    : 0;
+  if (identityCount > 0) {
+    ok('코드 서명 신원', `${identityCount}개 (실기기 빌드 가능)`);
+  } else {
+    warn(
+      '코드 서명 신원',
+      '없음',
+      'Xcode > Settings > Accounts 에서 Apple ID 로 로그인하세요. ' +
+        '무료 계정도 본인 기기용 서명이 됩니다 (7일마다 재빌드 — README 참고).',
+    );
+  }
+
   // 실기기: 연결돼 있지 않아도 빌드 설정 점검에는 문제가 없으므로 경고로 둡니다.
   const devices = run('xcrun', ['devicectl', 'list', 'devices']);
   if (devices && /connected/i.test(devices)) {
