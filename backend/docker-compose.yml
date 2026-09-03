@@ -1,0 +1,18 @@
+# 저장소 루트에서:  docker compose -f backend/docker-compose.yml up --build
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: backend/src/Jinobald.Subway.Api/Dockerfile
+    ports:
+      - "5080:5080"
+    environment:
+      # 키는 셸 환경변수나 .env 파일(compose 가 자동으로 읽음)에 두세요. 비워 두면 시각표 시뮬레이터로 동작합니다.
+      Seoul__ApiKey: ${SEOUL_API_KEY:-}
+      DataGoKr__ServiceKey: ${DATA_GO_KR_SERVICE_KEY:-}
+    volumes:
+      - subway-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  subway-data:

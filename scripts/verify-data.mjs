@@ -66,6 +66,12 @@ for (const line of lines) {
     }
     names.add(station.name);
 
+    if (station.secondsToNext != null) {
+      if (!Number.isFinite(station.secondsToNext) || station.secondsToNext <= 0 || station.secondsToNext > 900) {
+        errors.push(`${where} / ${station.name}: secondsToNext 가 유효하지 않습니다 (${station.secondsToNext})`);
+      }
+    }
+
     const hasLat = station.lat != null;
     const hasLng = station.lng != null;
     if (hasLat !== hasLng) {

@@ -12,15 +12,25 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FASTEST_COST, FEWEST_TRANSFER_COST } from '../src/services/routing/cost.ts';
+import {
+  FASTEST_COST,
+  FEWEST_TRANSFER_COST,
+  withMeasuredTransfers,
+} from '../src/services/routing/cost.ts';
 import {
   buildRouteGraph,
   findRoutesInGraph,
   normalizeStationKey,
+  rideSecondsBetween,
 } from '../src/services/routing/graph.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const lines = JSON.parse(readFileSync(join(root, 'src/data/lines.json'), 'utf8'));
+// routing/index.ts 와 같은 방식으로 실측 환승 도보 시간을 주입합니다.
+const transferTimes = JSON.parse(readFileSync(join(root, 'src/data/generated/transfer-times.json'), 'utf8'));
+const TRANSFER_SECONDS_BY_PAIR = Object.fromEntries(
+  Object.entries(transferTimes).map(([key, value]) => [key, value.seconds]),
+);
 
 const errors = [];
 const fail = (message) => errors.push(message);
@@ -30,8 +40,8 @@ const check = (condition, message) => {
 
 const graph = buildRouteGraph(lines);
 const PROFILES = [
-  { label: 'fastest', cost: FASTEST_COST },
-  { label: 'fewest-transfers', cost: FEWEST_TRANSFER_COST },
+  { label: 'fastest', cost: withMeasuredTransfers(FASTEST_COST, TRANSFER_SECONDS_BY_PAIR) },
+  { label: 'fewest-transfers', cost: withMeasuredTransfers(FEWEST_TRANSFER_COST, TRANSFER_SECONDS_BY_PAIR) },
 ];
 const route = (from, to) => findRoutesInGraph(graph, from, to, PROFILES);
 const fastest = (from, to) => route(from, to).find((plan) => plan.label === 'fastest') ?? null;
@@ -105,6 +115,18 @@ const minutes = (plan) => Math.round(plan.totalSeconds / 60);
 
 const cases = [
   {
+    name: '잠원 → 반포 (고속터미널 3→7 실측 환승)',
+    from: '잠원',
+    to: '반포',
+    assert: (plan) => {
+      const transfer = plan.legs[1]?.transferIn;
+      check(transfer != null && transfer.fromStationName === '고속터미널', '고속터미널에서 환승해야 합니다');
+      check(transfer?.measured === true, '고속터미널 3→7 환승은 실측값이어야 합니다');
+      const expected = TRANSFER_SECONDS_BY_PAIR['고속터미널|3|7'] + FASTEST_COST.transferWaitSeconds;
+      check(transfer?.seconds === expected, `환승 시간이 실측 ${expected}초와 다릅니다 (${transfer?.seconds})`);
+    },
+  },
+  {
     name: '사당 → 왕십리 (그룹 간 환승)',
     from: '사당',
     to: '왕십리',
@@ -134,9 +156,10 @@ const cases = [
     },
   },
   {
-    name: '까치산 → 시청 (같은 그룹 계통 변경)',
-    from: '까치산',
-    to: '시청',
+    // 까치산은 5호선으로 영등포구청까지 가는 편이 실측상 더 빨라 신정지선만 지나는 양천구청을 씁니다.
+    name: '양천구청 → 문래 (같은 그룹 계통 변경)',
+    from: '양천구청',
+    to: '문래',
     assert: (plan) => {
       check(plan.legs.length === 2, `구간이 2개여야 합니다 (현재 ${plan.legs.length})`);
       check(
@@ -216,19 +239,26 @@ const nextIndex = (limit) => {
   return seed % limit;
 };
 
+// 순환선은 정거장 수가 아니라 운행 초가 적은 쪽으로 돕니다 (graph.ts 의 loopSide 와 같은 규칙을 독립 구현).
+const segSeconds = (line, i) => line.stations[i]?.secondsToNext ?? line.avgSecondsPerStation;
+const loopSides = (line, from, to) => {
+  const n = line.stations.length;
+  const forward = (to - from + n) % n;
+  let fwd = 0;
+  for (let k = 0, at = from; k < forward; k += 1, at = (at + 1) % n) fwd += segSeconds(line, at);
+  let bwd = 0;
+  for (let k = 0, at = from; k < n - forward; k += 1, at = (at - 1 + n) % n) bwd += segSeconds(line, (at - 1 + n) % n);
+  const outer = fwd !== bwd ? fwd < bwd : forward <= n - forward;
+  return { outer, count: outer ? forward : n - forward };
+};
 const expectedDirection = (line, from, to) => {
-  if (line.loop) {
-    const n = line.stations.length;
-    const forward = (to - from + n) % n;
-    return forward <= n - forward ? 'outer' : 'inner';
-  }
+  if (line.loop) return loopSides(line, from, to).outer ? 'outer' : 'inner';
   return to > from ? 'down' : 'up';
 };
 const expectedBetween = (line, from, to) => {
   if (!line.loop) return Math.abs(to - from);
-  const n = line.stations.length;
-  const forward = (to - from + n) % n;
-  return Math.min(forward, n - forward);
+  if (from === to) return 0;
+  return loopSides(line, from, to).count;
 };
 
 let sampled = 0;
@@ -272,8 +302,12 @@ for (let attempt = 0; attempt < 2000 && sampled < 200; attempt += 1) {
         `${where}: 구간 ${i} 하차역 이름이 인덱스와 다릅니다`,
       );
       check(
-        leg.seconds === leg.stationCount * line.avgSecondsPerStation,
-        `${where}: 구간 ${i} 소요시간이 정거장 수와 맞지 않습니다`,
+        leg.seconds === rideSecondsBetween(line, leg.boardIndex, leg.alightIndex),
+        `${where}: 구간 ${i} 소요시간이 구간 실측·노선 평균 합과 맞지 않습니다`,
+      );
+      check(
+        leg.seconds >= leg.stationCount * 40 && leg.seconds <= leg.stationCount * 400,
+        `${where}: 구간 ${i} 소요시간 ${leg.seconds}초가 정거장 ${leg.stationCount}개 치고 이상합니다`,
       );
 
       if (i === 0) {

@@ -16,17 +16,30 @@ export interface AlertTimes {
 /** 하차역 도착 60초 전을 도착 알림으로, 그보다 N정거장 앞을 예비 알림으로 잡습니다. */
 export const ARRIVE_LEAD_SECONDS = 60;
 
+/** 탈 열차 도착 60초 전에 승차 알림을 보냅니다. */
+export const BOARD_LEAD_SECONDS = 60;
+
 export function computeAlertTimes(params: {
   nowMs: number;
   etaSeconds: number;
-  avgSecondsPerStation: number;
-  alertNStationsBefore: number;
+  /** 예비 알림을 도착 몇 초 전에 보낼지 — 보통 "N정거장 전"에 해당하는 운행 초의 합. */
+  preAlertLeadSeconds: number;
 }): AlertTimes {
-  const { nowMs, etaSeconds, avgSecondsPerStation, alertNStationsBefore } = params;
+  const { nowMs, etaSeconds, preAlertLeadSeconds } = params;
   const arriveAtMs = nowMs + Math.max(0, etaSeconds - ARRIVE_LEAD_SECONDS) * 1000;
-  const preAtMs = nowMs + Math.max(0, etaSeconds - alertNStationsBefore * avgSecondsPerStation) * 1000;
+  const preAtMs = nowMs + Math.max(0, etaSeconds - preAlertLeadSeconds) * 1000;
   // 예비 알림이 도착 알림보다 뒤로 밀리면 의미가 없습니다.
   return { preAlertAtMs: Math.min(preAtMs, arriveAtMs), arriveAlertAtMs: arriveAtMs };
+}
+
+/** 승차 알림 시각. 열차가 이미 승강장에 있거나 60초 안에 오면 지금입니다. */
+export function computeBoardAlertTime(params: { nowMs: number; secondsUntilTrain: number }): number {
+  return params.nowMs + Math.max(0, params.secondsUntilTrain - BOARD_LEAD_SECONDS) * 1000;
+}
+
+/** 진행 순서대로 늘어놓은 구간 초에서 "뒤에서 n 구간"의 합 = N정거장 전 알림의 리드 타임. */
+export function trailingSegmentsSeconds(segments: number[], n: number): number {
+  return segments.slice(Math.max(0, segments.length - n)).reduce((sum, s) => sum + s, 0);
 }
 
 /**

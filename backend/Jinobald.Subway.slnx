@@ -1,0 +1,11 @@
+<Solution>
+    <Folder Name="/src/">
+        <Project Path="src/Jinobald.Subway.Core/Jinobald.Subway.Core.csproj"/>
+        <Project Path="src/Jinobald.Subway.Data/Jinobald.Subway.Data.csproj"/>
+        <Project Path="src/Jinobald.Subway.Api/Jinobald.Subway.Api.csproj"/>
+        <Project Path="src/Jinobald.Subway.Ingest/Jinobald.Subway.Ingest.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/Jinobald.Subway.Core.Tests/Jinobald.Subway.Core.Tests.csproj"/>
+    </Folder>
+</Solution>

@@ -18,14 +18,16 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '길찾기',
+          title: '홈',
+          // 홈은 자체 헤더(앱 이름 + 데이터 소스)를 그립니다.
+          headerShown: false,
           tabBarIcon: ({ color }) => <TrainIcon color={color} />,
         }}
       />
       <Tabs.Screen
         name="alerts"
         options={{
-          title: '알림',
+          title: '여정',
           tabBarIcon: ({ color }) => <BellIcon color={color} />,
         }}
       />

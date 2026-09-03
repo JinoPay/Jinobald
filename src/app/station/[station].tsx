@@ -6,15 +6,17 @@ import { DataSourceBanner } from '@/components/common/DataSourceBanner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ArrivalCard } from '@/components/subway/ArrivalCard';
 import { LineBadge } from '@/components/subway/LineBadge';
-import { directionLabel, getLine, getUniqueStation } from '@/data/stations';
+import { directionLabel, getLine, getLineGroup, getUniqueStation } from '@/data/stations';
 import { useArrivals } from '@/hooks/use-arrivals';
 import { useTheme } from '@/hooks/use-theme';
 import type { Arrival, Direction } from '@/services/subway/types';
+import { useUserData } from '@/store/UserDataContext';
 
 export default function StationScreen() {
   const theme = useTheme();
   const { station: stationKey } = useLocalSearchParams<{ station: string }>();
   const station = getUniqueStation(decodeURIComponent(stationKey ?? ''));
+  const { isFavorite, toggleFavorite } = useUserData();
 
   // 이 역을 지나는 노선 중 하나라도 실시간 도착 API 범위 안이어야 조회할 값이 있습니다.
   // (인천1·2호선, 경전철, GTX 등은 서울 열린데이터광장이 다루지 않습니다.)
@@ -70,11 +72,29 @@ export default function StationScreen() {
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void refresh()} />}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>{station.displayName}</Text>
-        <View style={styles.badges}>
-          {station.groupIds.map((id) => (
-            <LineBadge key={id} groupId={id} />
-          ))}
-        </View>
+        <Pressable
+          onPress={() => toggleFavorite(station.key)}
+          hitSlop={10}
+          accessibilityLabel={isFavorite(station.key) ? '즐겨찾기 해제' : '즐겨찾기 추가'}>
+          <Text style={[styles.star, { color: isFavorite(station.key) ? theme.warning : theme.textSecondary }]}>
+            {isFavorite(station.key) ? '★' : '☆'}
+          </Text>
+        </Pressable>
+      </View>
+      {/* 배지를 누르면 그 노선의 열차 위치로 갑니다. */}
+      <View style={styles.badges}>
+        {station.groupIds.map((id) => {
+          const mainLineId = getLineGroup(id)?.lineIds[0] ?? id;
+          return (
+            <Pressable
+              key={id}
+              onPress={() => router.push(`/line/${encodeURIComponent(mainLineId)}`)}
+              style={({ pressed }) => [styles.badgeButton, { borderColor: theme.border, opacity: pressed ? 0.6 : 1 }]}>
+              <LineBadge groupId={id} />
+              <Text style={[styles.badgeText, { color: theme.textSecondary }]}>열차 위치 ›</Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {data ? <DataSourceBanner source={data.source} /> : null}
@@ -145,7 +165,10 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 8, paddingBottom: 48 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
   title: { fontSize: 26, fontWeight: '700', flex: 1 },
-  badges: { flexDirection: 'row', gap: 4 },
+  star: { fontSize: 26 },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  badgeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 999, paddingLeft: 4, paddingRight: 10, paddingVertical: 3 },
+  badgeText: { fontSize: 12, fontWeight: '600' },
   group: { gap: 8, marginBottom: 12 },
   groupTitle: { fontSize: 13, fontWeight: '600', marginTop: 8 },
   error: { borderRadius: 10, padding: 12, gap: 4, marginBottom: 8 },

@@ -9,7 +9,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { AppState } from 'react-native';
 
 import { env } from '@/config/env';
 import { getLine } from '@/data/stations';
@@ -33,13 +32,14 @@ import {
   type Trip,
   type TripDraft,
 } from '@/services/alerts/trip';
-import { capabilities } from '@/services/location/capabilities';
+import { capabilities, isForeground } from '@/services/location/capabilities';
 import { alertKey, isAlertKind } from '@/services/notifications/kinds';
 import { presentTripNotification } from '@/services/notifications/schedule';
 import { isPlanValid } from '@/services/routing';
 import { readJson, remove, StorageKeys, writeJson } from '@/services/storage/persist';
 import { getSubwayApi } from '@/services/subway';
-import type { Arrival } from '@/services/subway/types';
+import type { Arrival, TrainPosition } from '@/services/subway/types';
+import { useUserData } from '@/store/UserDataContext';
 
 interface TripContextValue {
   trip: Trip | null;
@@ -80,6 +80,28 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<TripProgress | null>(null);
   const [ready, setReady] = useState(false);
   const tripRef = useRef<Trip | null>(null);
+  // 승차 버튼을 누르는 순간 "지금 들어오는 열차"를 알아야 하므로 최신 진행 상황도 ref 로 둡니다.
+  const progressRef = useRef<TripProgress | null>(null);
+  const { pushHistory } = useUserData();
+
+  const updateProgress = useCallback((next: TripProgress | null) => {
+    progressRef.current = next;
+    setProgress(next);
+  }, []);
+
+  const recordHistory = useCallback(
+    (finished: Trip) => {
+      const first = finished.plan.legs[0];
+      const last = finished.plan.legs[finished.plan.legs.length - 1];
+      pushHistory({
+        originKey: first.boardStationName,
+        destinationKey: last.alightStationName,
+        totalSeconds: finished.plan.totalSeconds,
+        transferCount: finished.plan.transferCount,
+      });
+    },
+    [pushHistory],
+  );
 
   const persist = useCallback((next: Trip | null) => {
     tripRef.current = next;
@@ -124,23 +146,26 @@ export function TripProvider({ children }: { children: ReactNode }) {
     if (!current) return;
     await finishTrip(current, 'cancelled');
     persist(null);
-    setProgress(null);
-  }, [persist]);
+    updateProgress(null);
+  }, [persist, updateProgress]);
 
   const complete = useCallback(async () => {
     const current = tripRef.current;
     if (!current) return;
     await finishTrip(current, 'completed');
+    recordHistory(current);
     persist(null);
-    setProgress(null);
-  }, [persist]);
+    updateProgress(null);
+  }, [persist, recordHistory, updateProgress]);
 
   const setBoarded = useCallback(
     (boarded: boolean) => {
       const current = tripRef.current;
       if (!current) return;
-      // 승차 시각이 승차 후 진행 계산의 기준점입니다.
-      persist({ ...current, boarded, boardedAt: boarded ? Date.now() : null });
+      // 승차 시각이 승차 후 진행 계산의 기준점입니다. 열차번호는 지금 들어오는 열차의 것을
+      // 기록해 두고, 열차 위치 API 가 있으면 이 번호로 사용자의 열차를 따라갑니다.
+      const trainNo = boarded ? (progressRef.current?.matchedArrival?.trainNo ?? null) : null;
+      persist({ ...current, boarded, boardedAt: boarded ? Date.now() : null, boardedTrainNo: trainNo });
     },
     [persist],
   );
@@ -151,9 +176,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
     const next = await advanceLeg(current);
     if (next !== current) {
       persist(next);
-      setProgress(null);
+      updateProgress(null);
     }
-  }, [persist]);
+  }, [persist, updateProgress]);
 
   const reportPosition = useCallback(
     (position: { lat: number; lng: number }) => {
@@ -171,7 +196,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       if (haversineMeters(position, { lat, lng }) > ARRIVE_RADIUS_METERS) return;
 
       void (async () => {
-        const { title, body } = legAlertContent(current, legIndex, kind, 0);
+        const { title, body } = legAlertContent(current, legIndex, kind, 0, null);
         await presentTripNotification(title, body, { tripId: current.id, legIndex, kind });
         // 알림 수신 리스너가 이어받아 여정을 종료하거나 다음 구간으로 넘깁니다.
         persist(await markFired(current, key));
@@ -182,9 +207,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
   // 활성 여정이 있는 동안 진행 상황을 갱신하고 알림 시각을 다시 계산합니다.
   //
-  // 승차 전에만 네트워크를 씁니다. 승차 후에는 하차역 도착정보가 사용자의 열차와
-  // 무관하므로(뒤따라오는 다른 열차입니다) 경과 시간으로 계산하며, 덕분에 일일
-  // 호출 한도도 크게 아낍니다.
+  // 승차 전에는 승차역 도착정보를, 승차 후에는 (구현이 지원하면) 노선 열차 위치를 씁니다.
+  // 하차역 도착정보는 승차 후에 쓰지 않습니다 — 그 열차는 사용자의 열차가 아니라
+  // 뒤따라오는 다른 열차입니다. 열차 위치를 못 받으면 경과 시간으로 계산합니다.
   //
   // 백그라운드에서는 JS 가 멈춰 이 루프도 멈추지만, 이미 OS 에 예약된 알림은
   // 그대로 발화합니다.
@@ -192,25 +217,42 @@ export function TripProvider({ children }: { children: ReactNode }) {
     if (!trip || trip.status !== 'active') return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let positions: TrainPosition[] = [];
+    let positionsAt = 0;
 
     const tick = async () => {
       const current = tripRef.current;
       if (cancelled || !current || current.status !== 'active') return;
+      const api = getSubwayApi();
+      const foreground = isForeground();
 
       let arrivals: Arrival[] = [];
-      if (!current.boarded && AppState.currentState === 'active') {
+      if (!current.boarded && foreground) {
         try {
-          const result = await getSubwayApi().getArrivals(currentLeg(current).boardStationName);
+          const result = await api.getArrivals(currentLeg(current).boardStationName);
           arrivals = result.arrivals;
         } catch {
           // 폴링 실패는 무시합니다. 이미 예약된 알림이 안전망 역할을 합니다.
         }
       }
 
+      const wantsPositions =
+        current.boarded && current.boardedTrainNo !== null && api.capabilities.trainPositions && foreground;
+      if (wantsPositions && Date.now() - positionsAt >= env.positionsPollIntervalMs) {
+        try {
+          const result = await api.getTrainPositions(currentLeg(current).lineId);
+          positions = result?.positions ?? [];
+          positionsAt = Date.now();
+        } catch {
+          // 위치를 못 받으면 마지막 값을 잠시 쓰고, 오래되면 경과 시간 계산으로 내려갑니다.
+          if (Date.now() - positionsAt > env.positionsPollIntervalMs * 3) positions = [];
+        }
+      }
+
       if (!cancelled) {
-        const next = computeProgress(current, arrivals);
+        const next = computeProgress(current, arrivals, current.boarded ? positions : []);
         if (next) {
-          setProgress(next);
+          updateProgress(next);
           const synced = await syncAlerts(tripRef.current ?? current, next);
           if (!cancelled && synced !== current) persist(synced);
         }
@@ -226,7 +268,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [trip, persist]);
+  }, [trip, persist, updateProgress]);
 
   // 알림이 실제로 발화하면 중복 방지를 위해 기록하고, 도착 알림이면 여정을 종료합니다.
   useEffect(() => {
@@ -248,19 +290,21 @@ export function TripProvider({ children }: { children: ReactNode }) {
         const marked = await markFired(current, alertKey(legIndex, kind));
         if (kind === 'arrive') {
           await finishTrip(marked, 'completed');
+          recordHistory(marked);
           persist(null);
-          setProgress(null);
+          updateProgress(null);
         } else if (kind === 'transfer') {
           // 환승역 도착 = 이 구간의 끝. 다음 구간의 승차 대기로 넘어갑니다.
           persist(await advanceLeg(marked));
-          setProgress(null);
+          updateProgress(null);
         } else {
+          // 예비·승차 알림은 기록만 합니다.
           persist(marked);
         }
       })();
     });
     return () => subscription.remove();
-  }, [persist]);
+  }, [persist, recordHistory, updateProgress]);
 
   const value = useMemo(
     () => ({ trip, progress, ready, start, cancel, complete, setBoarded, advance, reportPosition }),

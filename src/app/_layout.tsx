@@ -11,6 +11,7 @@ import '@/services/notifications/setup';
 
 import { SettingsProvider } from '@/store/SettingsContext';
 import { TripProvider } from '@/store/TripContext';
+import { UserDataProvider } from '@/store/UserDataContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,20 +23,23 @@ export default function RootLayout() {
   }, []);
 
   return (
-    // 노선도의 핀치 줌·드래그가 동작하려면 제스처 루트가 앱 최상단에 있어야 합니다.
+    // 노선 뷰의 제스처와 스와이프 내비게이션이 동작하려면 제스처 루트가 앱 최상단에 있어야 합니다.
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SettingsProvider>
+          <UserDataProvider>
           <TripProvider>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="station/[station]" options={{ title: '실시간 도착' }} />
+              <Stack.Screen name="line/[lineId]" options={{ title: '열차 위치' }} />
               <Stack.Screen
                 name="trip/setup"
                 options={{ title: '경로 확인 · 알림 설정', presentation: 'modal' }}
               />
             </Stack>
           </TripProvider>
+          </UserDataProvider>
         </SettingsProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

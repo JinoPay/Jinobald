@@ -2,7 +2,9 @@ import { alertKey, parseAlertKey, type AlertKey } from '@/services/notifications
 import { isPlanValid, planFromSingleLeg } from '@/services/routing';
 import type { RoutePlan } from '@/services/routing/types';
 
-import { TRIP_SCHEMA_VERSION, type ScheduledAlert, type Trip } from './trip';
+import type { DoorGuide } from '@/services/subway/types';
+
+import { TRIP_SCHEMA_VERSION, type DoorGuideKey, type ScheduledAlert, type Trip } from './trip';
 
 /**
  * 저장된 여정을 현재 스키마로 올립니다.
@@ -16,7 +18,9 @@ import { TRIP_SCHEMA_VERSION, type ScheduledAlert, type Trip } from './trip';
  */
 export function migrateStoredTrip(raw: unknown): Trip | null {
   if (!isRecord(raw)) return null;
-  const plan = raw.schemaVersion === TRIP_SCHEMA_VERSION ? readPlan(raw.plan) : planFromV1(raw);
+  // v2 와 v3 는 경로 표현이 같습니다. v3 는 열차번호·칸 안내가 더 있을 뿐입니다.
+  const version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 1;
+  const plan = version >= 2 ? readPlan(raw.plan) : planFromV1(raw);
   if (!plan || !isPlanValid(plan)) return null;
 
   const status = raw.status;
@@ -38,6 +42,8 @@ export function migrateStoredTrip(raw: unknown): Trip | null {
     status,
     boarded: raw.boarded === true,
     boardedAt: typeof raw.boardedAt === 'number' ? raw.boardedAt : null,
+    boardedTrainNo: typeof raw.boardedTrainNo === 'string' && raw.boardedTrainNo ? raw.boardedTrainNo : null,
+    doorGuides: readDoorGuides(raw),
     firedKeys: readFiredKeys(raw),
     scheduled,
     geofenceActive: raw.geofenceActive === true,
@@ -93,6 +99,28 @@ function readScheduled(raw: Record<string, unknown>): Partial<Record<AlertKey, S
     result[key] = {
       notificationId: typeof value.notificationId === 'string' ? value.notificationId : null,
       atMs: value.atMs,
+    };
+  }
+  return result;
+}
+
+/** v3 의 칸 안내. 모양이 조금이라도 다르면 그 항목만 버립니다. */
+function readDoorGuides(raw: Record<string, unknown>): Partial<Record<DoorGuideKey, DoorGuide | null>> {
+  if (!isRecord(raw.doorGuides)) return {};
+  const result: Partial<Record<DoorGuideKey, DoorGuide | null>> = {};
+  for (const [key, value] of Object.entries(raw.doorGuides)) {
+    if (!/^\d+:(alight|board)$/.test(key)) continue;
+    if (value === null) {
+      result[key as DoorGuideKey] = null;
+      continue;
+    }
+    if (!isRecord(value) || typeof value.car !== 'number' || typeof value.door !== 'number') continue;
+    result[key as DoorGuideKey] = {
+      car: value.car,
+      door: value.door,
+      label: typeof value.label === 'string' ? value.label : `${value.car}-${value.door}`,
+      purpose: value.purpose === 'exit' ? 'exit' : 'transfer',
+      note: typeof value.note === 'string' ? value.note : null,
     };
   }
   return result;

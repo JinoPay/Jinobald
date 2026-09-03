@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-09-03",
+  "transferGuides": {
+    "stations": 108,
+    "rows": 1020,
+    "sha256": "f68e9c8938c8b774",
+    "bytes": 331638
+  },
+  "transferTimes": {
+    "rows": 211,
+    "sha256": "3d5a6bed8fb51d16",
+    "bytes": 13967
+  },
+  "stationCodes": {
+    "rows": 437,
+    "sha256": "37736943ce175473",
+    "bytes": 33728
+  }
+}

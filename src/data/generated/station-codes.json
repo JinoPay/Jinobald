@@ -1,0 +1,1750 @@
+{
+  "1|동대문": {
+    "stationCd": "0155",
+    "externalCode": "128"
+  },
+  "1|동묘앞": {
+    "stationCd": "0159",
+    "externalCode": "127"
+  },
+  "1|서울": {
+    "stationCd": "0150",
+    "externalCode": "133"
+  },
+  "1|시청": {
+    "stationCd": "0151",
+    "externalCode": "132"
+  },
+  "1|신설동": {
+    "stationCd": "0156",
+    "externalCode": "126"
+  },
+  "1|제기동": {
+    "stationCd": "0157",
+    "externalCode": "125"
+  },
+  "1|종각": {
+    "stationCd": "0152",
+    "externalCode": "131"
+  },
+  "1|종로3가": {
+    "stationCd": "0153",
+    "externalCode": "130"
+  },
+  "1|종로5가": {
+    "stationCd": "0154",
+    "externalCode": "129"
+  },
+  "1|청량리": {
+    "stationCd": "0158",
+    "externalCode": "124"
+  },
+  "2|강남": {
+    "stationCd": "0222",
+    "externalCode": "222"
+  },
+  "2|강변": {
+    "stationCd": "0214",
+    "externalCode": "214"
+  },
+  "2|건대입구": {
+    "stationCd": "0212",
+    "externalCode": "212"
+  },
+  "2|교대": {
+    "stationCd": "0223",
+    "externalCode": "223"
+  },
+  "2|구로디지털단지": {
+    "stationCd": "0232",
+    "externalCode": "232"
+  },
+  "2|구의": {
+    "stationCd": "0213",
+    "externalCode": "213"
+  },
+  "2|까치산": {
+    "stationCd": "0200",
+    "externalCode": "234-4"
+  },
+  "2|낙성대": {
+    "stationCd": "0227",
+    "externalCode": "227"
+  },
+  "2|당산": {
+    "stationCd": "0237",
+    "externalCode": "237"
+  },
+  "2|대림": {
+    "stationCd": "0233",
+    "externalCode": "233"
+  },
+  "2|도림천": {
+    "stationCd": "0247",
+    "externalCode": "234-1"
+  },
+  "2|동대문역사문화공원": {
+    "stationCd": "0205",
+    "externalCode": "205"
+  },
+  "2|뚝섬": {
+    "stationCd": "0210",
+    "externalCode": "210"
+  },
+  "2|문래": {
+    "stationCd": "0235",
+    "externalCode": "235"
+  },
+  "2|방배": {
+    "stationCd": "0225",
+    "externalCode": "225"
+  },
+  "2|봉천": {
+    "stationCd": "0229",
+    "externalCode": "229"
+  },
+  "2|사당": {
+    "stationCd": "0226",
+    "externalCode": "226"
+  },
+  "2|삼성": {
+    "stationCd": "0219",
+    "externalCode": "219"
+  },
+  "2|상왕십리": {
+    "stationCd": "0207",
+    "externalCode": "207"
+  },
+  "2|서울대입구": {
+    "stationCd": "0228",
+    "externalCode": "228"
+  },
+  "2|서초": {
+    "stationCd": "0224",
+    "externalCode": "224"
+  },
+  "2|선릉": {
+    "stationCd": "0220",
+    "externalCode": "220"
+  },
+  "2|성수": {
+    "stationCd": "0211",
+    "externalCode": "211"
+  },
+  "2|시청": {
+    "stationCd": "0201",
+    "externalCode": "201"
+  },
+  "2|신답": {
+    "stationCd": "0245",
+    "externalCode": "211-2"
+  },
+  "2|신당": {
+    "stationCd": "0206",
+    "externalCode": "206"
+  },
+  "2|신대방": {
+    "stationCd": "0231",
+    "externalCode": "231"
+  },
+  "2|신도림": {
+    "stationCd": "0234",
+    "externalCode": "234"
+  },
+  "2|신림": {
+    "stationCd": "0230",
+    "externalCode": "230"
+  },
+  "2|신설동": {
+    "stationCd": "0246",
+    "externalCode": "211-4"
+  },
+  "2|신정네거리": {
+    "stationCd": "0249",
+    "externalCode": "234-3"
+  },
+  "2|신촌": {
+    "stationCd": "0240",
+    "externalCode": "240"
+  },
+  "2|아현": {
+    "stationCd": "0242",
+    "externalCode": "242"
+  },
+  "2|양천구청": {
+    "stationCd": "0248",
+    "externalCode": "234-2"
+  },
+  "2|역삼": {
+    "stationCd": "0221",
+    "externalCode": "221"
+  },
+  "2|영등포구청": {
+    "stationCd": "0236",
+    "externalCode": "236"
+  },
+  "2|왕십리": {
+    "stationCd": "0208",
+    "externalCode": "208"
+  },
+  "2|용답": {
+    "stationCd": "0244",
+    "externalCode": "211-1"
+  },
+  "2|용두": {
+    "stationCd": "0250",
+    "externalCode": "211-3"
+  },
+  "2|을지로3가": {
+    "stationCd": "0203",
+    "externalCode": "203"
+  },
+  "2|을지로4가": {
+    "stationCd": "0204",
+    "externalCode": "204"
+  },
+  "2|을지로입구": {
+    "stationCd": "0202",
+    "externalCode": "202"
+  },
+  "2|이대": {
+    "stationCd": "0241",
+    "externalCode": "241"
+  },
+  "2|잠실": {
+    "stationCd": "0216",
+    "externalCode": "216"
+  },
+  "2|잠실나루": {
+    "stationCd": "0215",
+    "externalCode": "215"
+  },
+  "2|잠실새내": {
+    "stationCd": "0217",
+    "externalCode": "217"
+  },
+  "2|종합운동장": {
+    "stationCd": "0218",
+    "externalCode": "218"
+  },
+  "2|충정로": {
+    "stationCd": "0243",
+    "externalCode": "243"
+  },
+  "2|한양대": {
+    "stationCd": "0209",
+    "externalCode": "209"
+  },
+  "2|합정": {
+    "stationCd": "0238",
+    "externalCode": "238"
+  },
+  "2|홍대입구": {
+    "stationCd": "0239",
+    "externalCode": "239"
+  },
+  "3|가락시장": {
+    "stationCd": "0340",
+    "externalCode": "350"
+  },
+  "3|경복궁": {
+    "stationCd": "0317",
+    "externalCode": "327"
+  },
+  "3|경찰병원": {
+    "stationCd": "0341",
+    "externalCode": "351"
+  },
+  "3|고속터미널": {
+    "stationCd": "0329",
+    "externalCode": "339"
+  },
+  "3|교대": {
+    "stationCd": "0330",
+    "externalCode": "340"
+  },
+  "3|구파발": {
+    "stationCd": "0310",
+    "externalCode": "320"
+  },
+  "3|금호": {
+    "stationCd": "0324",
+    "externalCode": "334"
+  },
+  "3|남부터미널": {
+    "stationCd": "0331",
+    "externalCode": "341"
+  },
+  "3|녹번": {
+    "stationCd": "0313",
+    "externalCode": "323"
+  },
+  "3|대청": {
+    "stationCd": "0337",
+    "externalCode": "347"
+  },
+  "3|대치": {
+    "stationCd": "0335",
+    "externalCode": "345"
+  },
+  "3|도곡": {
+    "stationCd": "0334",
+    "externalCode": "344"
+  },
+  "3|독립문": {
+    "stationCd": "0316",
+    "externalCode": "326"
+  },
+  "3|동대입구": {
+    "stationCd": "0322",
+    "externalCode": "332"
+  },
+  "3|매봉": {
+    "stationCd": "0333",
+    "externalCode": "343"
+  },
+  "3|무악재": {
+    "stationCd": "0315",
+    "externalCode": "325"
+  },
+  "3|불광": {
+    "stationCd": "0312",
+    "externalCode": "322"
+  },
+  "3|수서": {
+    "stationCd": "0339",
+    "externalCode": "349"
+  },
+  "3|신사": {
+    "stationCd": "0327",
+    "externalCode": "337"
+  },
+  "3|안국": {
+    "stationCd": "0318",
+    "externalCode": "328"
+  },
+  "3|압구정": {
+    "stationCd": "0326",
+    "externalCode": "336"
+  },
+  "3|약수": {
+    "stationCd": "0323",
+    "externalCode": "333"
+  },
+  "3|양재": {
+    "stationCd": "0332",
+    "externalCode": "342"
+  },
+  "3|연신내": {
+    "stationCd": "0311",
+    "externalCode": "321"
+  },
+  "3|오금": {
+    "stationCd": "0342",
+    "externalCode": "352"
+  },
+  "3|옥수": {
+    "stationCd": "0325",
+    "externalCode": "335"
+  },
+  "3|을지로3가": {
+    "stationCd": "0320",
+    "externalCode": "330"
+  },
+  "3|일원": {
+    "stationCd": "0338",
+    "externalCode": "348"
+  },
+  "3|잠원": {
+    "stationCd": "0328",
+    "externalCode": "338"
+  },
+  "3|종로3가": {
+    "stationCd": "0319",
+    "externalCode": "329"
+  },
+  "3|지축": {
+    "stationCd": "0309",
+    "externalCode": "319"
+  },
+  "3|충무로": {
+    "stationCd": "0321",
+    "externalCode": "331"
+  },
+  "3|학여울": {
+    "stationCd": "0336",
+    "externalCode": "346"
+  },
+  "3|홍제": {
+    "stationCd": "0314",
+    "externalCode": "324"
+  },
+  "4|길음": {
+    "stationCd": "0417",
+    "externalCode": "417"
+  },
+  "4|남태령": {
+    "stationCd": "0434",
+    "externalCode": "434"
+  },
+  "4|노원": {
+    "stationCd": "0411",
+    "externalCode": "411"
+  },
+  "4|당고개": {
+    "stationCd": "0409",
+    "externalCode": "409"
+  },
+  "4|동대문": {
+    "stationCd": "0421",
+    "externalCode": "421"
+  },
+  "4|동대문역사문화공원": {
+    "stationCd": "0422",
+    "externalCode": "422"
+  },
+  "4|동작": {
+    "stationCd": "0431",
+    "externalCode": "431"
+  },
+  "4|명동": {
+    "stationCd": "0424",
+    "externalCode": "424"
+  },
+  "4|미아": {
+    "stationCd": "0415",
+    "externalCode": "415"
+  },
+  "4|미아사거리": {
+    "stationCd": "0416",
+    "externalCode": "416"
+  },
+  "4|사당": {
+    "stationCd": "0433",
+    "externalCode": "433"
+  },
+  "4|삼각지": {
+    "stationCd": "0428",
+    "externalCode": "428"
+  },
+  "4|상계": {
+    "stationCd": "0410",
+    "externalCode": "410"
+  },
+  "4|서울": {
+    "stationCd": "0426",
+    "externalCode": "426"
+  },
+  "4|성신여대입구": {
+    "stationCd": "0418",
+    "externalCode": "418"
+  },
+  "4|수유": {
+    "stationCd": "0414",
+    "externalCode": "414"
+  },
+  "4|숙대입구": {
+    "stationCd": "0427",
+    "externalCode": "427"
+  },
+  "4|신용산": {
+    "stationCd": "0429",
+    "externalCode": "429"
+  },
+  "4|쌍문": {
+    "stationCd": "0413",
+    "externalCode": "413"
+  },
+  "4|이촌": {
+    "stationCd": "0430",
+    "externalCode": "430"
+  },
+  "4|창동": {
+    "stationCd": "0412",
+    "externalCode": "412"
+  },
+  "4|총신대입구": {
+    "stationCd": "0432",
+    "externalCode": "432"
+  },
+  "4|충무로": {
+    "stationCd": "0423",
+    "externalCode": "423"
+  },
+  "4|한성대입구": {
+    "stationCd": "0419",
+    "externalCode": "419"
+  },
+  "4|혜화": {
+    "stationCd": "0420",
+    "externalCode": "420"
+  },
+  "4|회현": {
+    "stationCd": "0425",
+    "externalCode": "425"
+  },
+  "5|강동": {
+    "stationCd": "2549",
+    "externalCode": "548"
+  },
+  "5|개화산": {
+    "stationCd": "2512",
+    "externalCode": "511"
+  },
+  "5|고덕": {
+    "stationCd": "2553",
+    "externalCode": "552"
+  },
+  "5|공덕": {
+    "stationCd": "2530",
+    "externalCode": "529"
+  },
+  "5|광나루": {
+    "stationCd": "2547",
+    "externalCode": "546"
+  },
+  "5|광화문": {
+    "stationCd": "2534",
+    "externalCode": "533"
+  },
+  "5|군자": {
+    "stationCd": "2545",
+    "externalCode": "544"
+  },
+  "5|굽은다리": {
+    "stationCd": "2551",
+    "externalCode": "550"
+  },
+  "5|길동": {
+    "stationCd": "2550",
+    "externalCode": "549"
+  },
+  "5|김포공항": {
+    "stationCd": "2513",
+    "externalCode": "512"
+  },
+  "5|까치산": {
+    "stationCd": "2519",
+    "externalCode": "518"
+  },
+  "5|답십리": {
+    "stationCd": "2543",
+    "externalCode": "542"
+  },
+  "5|동대문역사문화공원": {
+    "stationCd": "2537",
+    "externalCode": "536"
+  },
+  "5|마곡": {
+    "stationCd": "2515",
+    "externalCode": "514"
+  },
+  "5|마장": {
+    "stationCd": "2542",
+    "externalCode": "541"
+  },
+  "5|마포": {
+    "stationCd": "2529",
+    "externalCode": "528"
+  },
+  "5|명일": {
+    "stationCd": "2552",
+    "externalCode": "551"
+  },
+  "5|목동": {
+    "stationCd": "2521",
+    "externalCode": "520"
+  },
+  "5|발산": {
+    "stationCd": "2516",
+    "externalCode": "515"
+  },
+  "5|방화": {
+    "stationCd": "2511",
+    "externalCode": "510"
+  },
+  "5|상일동": {
+    "stationCd": "2554",
+    "externalCode": "553"
+  },
+  "5|서대문": {
+    "stationCd": "2533",
+    "externalCode": "532"
+  },
+  "5|송정": {
+    "stationCd": "2514",
+    "externalCode": "513"
+  },
+  "5|신금호": {
+    "stationCd": "2539",
+    "externalCode": "538"
+  },
+  "5|신길": {
+    "stationCd": "2526",
+    "externalCode": "525"
+  },
+  "5|신정": {
+    "stationCd": "2520",
+    "externalCode": "519"
+  },
+  "5|아차산": {
+    "stationCd": "2546",
+    "externalCode": "545"
+  },
+  "5|애오개": {
+    "stationCd": "2531",
+    "externalCode": "530"
+  },
+  "5|양평": {
+    "stationCd": "2523",
+    "externalCode": "522"
+  },
+  "5|여의나루": {
+    "stationCd": "2528",
+    "externalCode": "527"
+  },
+  "5|여의도": {
+    "stationCd": "2527",
+    "externalCode": "526"
+  },
+  "5|영등포구청": {
+    "stationCd": "2524",
+    "externalCode": "523"
+  },
+  "5|영등포시장": {
+    "stationCd": "2525",
+    "externalCode": "524"
+  },
+  "5|오목교": {
+    "stationCd": "2522",
+    "externalCode": "521"
+  },
+  "5|왕십리": {
+    "stationCd": "2541",
+    "externalCode": "540"
+  },
+  "5|우장산": {
+    "stationCd": "2517",
+    "externalCode": "516"
+  },
+  "5|을지로4가": {
+    "stationCd": "2536",
+    "externalCode": "535"
+  },
+  "5|장한평": {
+    "stationCd": "2544",
+    "externalCode": "543"
+  },
+  "5|종로3가": {
+    "stationCd": "2535",
+    "externalCode": "534"
+  },
+  "5|천호": {
+    "stationCd": "2548",
+    "externalCode": "547"
+  },
+  "5|청구": {
+    "stationCd": "2538",
+    "externalCode": "537"
+  },
+  "5|충정로": {
+    "stationCd": "2532",
+    "externalCode": "531"
+  },
+  "5|행당": {
+    "stationCd": "2540",
+    "externalCode": "539"
+  },
+  "5|화곡": {
+    "stationCd": "2518",
+    "externalCode": "517"
+  },
+  "6|고려대": {
+    "stationCd": "2641",
+    "externalCode": "640"
+  },
+  "6|공덕": {
+    "stationCd": "2627",
+    "externalCode": "626"
+  },
+  "6|광흥창": {
+    "stationCd": "2625",
+    "externalCode": "624"
+  },
+  "6|구산": {
+    "stationCd": "2616",
+    "externalCode": "615"
+  },
+  "6|녹사평": {
+    "stationCd": "2630",
+    "externalCode": "629"
+  },
+  "6|대흥": {
+    "stationCd": "2626",
+    "externalCode": "625"
+  },
+  "6|독바위": {
+    "stationCd": "2614",
+    "externalCode": "613"
+  },
+  "6|돌곶이": {
+    "stationCd": "2644",
+    "externalCode": "643"
+  },
+  "6|동묘앞": {
+    "stationCd": "2637",
+    "externalCode": "636"
+  },
+  "6|디지털미디어시티": {
+    "stationCd": "2619",
+    "externalCode": "618"
+  },
+  "6|마포구청": {
+    "stationCd": "2621",
+    "externalCode": "620"
+  },
+  "6|망원": {
+    "stationCd": "2622",
+    "externalCode": "621"
+  },
+  "6|버티고개": {
+    "stationCd": "2633",
+    "externalCode": "632"
+  },
+  "6|보문": {
+    "stationCd": "2639",
+    "externalCode": "638"
+  },
+  "6|봉화산": {
+    "stationCd": "2648",
+    "externalCode": "647"
+  },
+  "6|불광": {
+    "stationCd": "2613",
+    "externalCode": "612"
+  },
+  "6|삼각지": {
+    "stationCd": "2629",
+    "externalCode": "628"
+  },
+  "6|상수": {
+    "stationCd": "2624",
+    "externalCode": "623"
+  },
+  "6|상월곡": {
+    "stationCd": "2643",
+    "externalCode": "642"
+  },
+  "6|새절": {
+    "stationCd": "2617",
+    "externalCode": "616"
+  },
+  "6|석계": {
+    "stationCd": "2645",
+    "externalCode": "644"
+  },
+  "6|신내": {
+    "stationCd": "2649",
+    "externalCode": "648"
+  },
+  "6|신당": {
+    "stationCd": "2636",
+    "externalCode": "635"
+  },
+  "6|안암": {
+    "stationCd": "2640",
+    "externalCode": "639"
+  },
+  "6|약수": {
+    "stationCd": "2634",
+    "externalCode": "633"
+  },
+  "6|역촌": {
+    "stationCd": "2612",
+    "externalCode": "611"
+  },
+  "6|연신내": {
+    "stationCd": "2615",
+    "externalCode": "614"
+  },
+  "6|월곡": {
+    "stationCd": "2642",
+    "externalCode": "641"
+  },
+  "6|월드컵경기장": {
+    "stationCd": "2620",
+    "externalCode": "619"
+  },
+  "6|응암": {
+    "stationCd": "2611",
+    "externalCode": "610"
+  },
+  "6|이태원": {
+    "stationCd": "2631",
+    "externalCode": "630"
+  },
+  "6|증산": {
+    "stationCd": "2618",
+    "externalCode": "617"
+  },
+  "6|창신": {
+    "stationCd": "2638",
+    "externalCode": "637"
+  },
+  "6|청구": {
+    "stationCd": "2635",
+    "externalCode": "634"
+  },
+  "6|태릉입구": {
+    "stationCd": "2646",
+    "externalCode": "645"
+  },
+  "6|한강진": {
+    "stationCd": "2632",
+    "externalCode": "631"
+  },
+  "6|합정": {
+    "stationCd": "2623",
+    "externalCode": "622"
+  },
+  "6|화랑대": {
+    "stationCd": "2647",
+    "externalCode": "646"
+  },
+  "6|효창공원앞": {
+    "stationCd": "2628",
+    "externalCode": "627"
+  },
+  "7|가산디지털단지": {
+    "stationCd": "2748",
+    "externalCode": "746"
+  },
+  "7|강남구청": {
+    "stationCd": "2732",
+    "externalCode": "730"
+  },
+  "7|건대입구": {
+    "stationCd": "2729",
+    "externalCode": "727"
+  },
+  "7|고속터미널": {
+    "stationCd": "2736",
+    "externalCode": "734"
+  },
+  "7|공릉": {
+    "stationCd": "2718",
+    "externalCode": "716"
+  },
+  "7|광명사거리": {
+    "stationCd": "2750",
+    "externalCode": "748"
+  },
+  "7|군자": {
+    "stationCd": "2727",
+    "externalCode": "725"
+  },
+  "7|굴포천": {
+    "stationCd": "2760",
+    "externalCode": "758"
+  },
+  "7|까치울": {
+    "stationCd": "2753",
+    "externalCode": "751"
+  },
+  "7|남구로": {
+    "stationCd": "2747",
+    "externalCode": "745"
+  },
+  "7|남성": {
+    "stationCd": "2739",
+    "externalCode": "737"
+  },
+  "7|내방": {
+    "stationCd": "2737",
+    "externalCode": "735"
+  },
+  "7|노원": {
+    "stationCd": "2715",
+    "externalCode": "713"
+  },
+  "7|논현": {
+    "stationCd": "2734",
+    "externalCode": "732"
+  },
+  "7|대림": {
+    "stationCd": "2746",
+    "externalCode": "744"
+  },
+  "7|도봉산": {
+    "stationCd": "2712",
+    "externalCode": "710"
+  },
+  "7|뚝섬유원지": {
+    "stationCd": "2730",
+    "externalCode": "728"
+  },
+  "7|마들": {
+    "stationCd": "2714",
+    "externalCode": "712"
+  },
+  "7|먹골": {
+    "stationCd": "2720",
+    "externalCode": "718"
+  },
+  "7|면목": {
+    "stationCd": "2723",
+    "externalCode": "721"
+  },
+  "7|반포": {
+    "stationCd": "2735",
+    "externalCode": "733"
+  },
+  "7|보라매": {
+    "stationCd": "2744",
+    "externalCode": "742"
+  },
+  "7|부천시청": {
+    "stationCd": "2757",
+    "externalCode": "755"
+  },
+  "7|부천종합운동장": {
+    "stationCd": "2754",
+    "externalCode": "752"
+  },
+  "7|부평구청": {
+    "stationCd": "2761",
+    "externalCode": "759"
+  },
+  "7|사가정": {
+    "stationCd": "2724",
+    "externalCode": "722"
+  },
+  "7|삼산체육관": {
+    "stationCd": "2759",
+    "externalCode": "757"
+  },
+  "7|상도": {
+    "stationCd": "2741",
+    "externalCode": "739"
+  },
+  "7|상동": {
+    "stationCd": "2758",
+    "externalCode": "756"
+  },
+  "7|상봉": {
+    "stationCd": "2722",
+    "externalCode": "720"
+  },
+  "7|수락산": {
+    "stationCd": "2713",
+    "externalCode": "711"
+  },
+  "7|숭실대입구": {
+    "stationCd": "2740",
+    "externalCode": "738"
+  },
+  "7|신대방삼거리": {
+    "stationCd": "2743",
+    "externalCode": "741"
+  },
+  "7|신중동": {
+    "stationCd": "2756",
+    "externalCode": "754"
+  },
+  "7|신풍": {
+    "stationCd": "2745",
+    "externalCode": "743"
+  },
+  "7|어린이대공원": {
+    "stationCd": "2728",
+    "externalCode": "726"
+  },
+  "7|온수": {
+    "stationCd": "2752",
+    "externalCode": "750"
+  },
+  "7|용마산": {
+    "stationCd": "2725",
+    "externalCode": "723"
+  },
+  "7|장승배기": {
+    "stationCd": "2742",
+    "externalCode": "740"
+  },
+  "7|장암": {
+    "stationCd": "2711",
+    "externalCode": "709"
+  },
+  "7|중계": {
+    "stationCd": "2716",
+    "externalCode": "714"
+  },
+  "7|중곡": {
+    "stationCd": "2726",
+    "externalCode": "724"
+  },
+  "7|중화": {
+    "stationCd": "2721",
+    "externalCode": "719"
+  },
+  "7|천왕": {
+    "stationCd": "2751",
+    "externalCode": "749"
+  },
+  "7|철산": {
+    "stationCd": "2749",
+    "externalCode": "747"
+  },
+  "7|청담": {
+    "stationCd": "2731",
+    "externalCode": "729"
+  },
+  "7|총신대입구": {
+    "stationCd": "2738",
+    "externalCode": "736"
+  },
+  "7|춘의": {
+    "stationCd": "2755",
+    "externalCode": "753"
+  },
+  "7|태릉입구": {
+    "stationCd": "2719",
+    "externalCode": "717"
+  },
+  "7|하계": {
+    "stationCd": "2717",
+    "externalCode": "715"
+  },
+  "7|학동": {
+    "stationCd": "2733",
+    "externalCode": "731"
+  },
+  "8|가락시장": {
+    "stationCd": "2818",
+    "externalCode": "817"
+  },
+  "8|강동구청": {
+    "stationCd": "2813",
+    "externalCode": "812"
+  },
+  "8|남한산성입구": {
+    "stationCd": "2823",
+    "externalCode": "822"
+  },
+  "8|단대오거리": {
+    "stationCd": "2824",
+    "externalCode": "823"
+  },
+  "8|모란": {
+    "stationCd": "2827",
+    "externalCode": "826"
+  },
+  "8|몽촌토성": {
+    "stationCd": "2814",
+    "externalCode": "813"
+  },
+  "8|문정": {
+    "stationCd": "2819",
+    "externalCode": "818"
+  },
+  "8|복정": {
+    "stationCd": "2821",
+    "externalCode": "820"
+  },
+  "8|산성": {
+    "stationCd": "2822",
+    "externalCode": "821"
+  },
+  "8|석촌": {
+    "stationCd": "2816",
+    "externalCode": "815"
+  },
+  "8|송파": {
+    "stationCd": "2817",
+    "externalCode": "816"
+  },
+  "8|수진": {
+    "stationCd": "2826",
+    "externalCode": "825"
+  },
+  "8|신흥": {
+    "stationCd": "2825",
+    "externalCode": "824"
+  },
+  "8|암사": {
+    "stationCd": "2811",
+    "externalCode": "810"
+  },
+  "8|잠실": {
+    "stationCd": "2815",
+    "externalCode": "814"
+  },
+  "8|장지": {
+    "stationCd": "2820",
+    "externalCode": "819"
+  },
+  "8|천호": {
+    "stationCd": "2812",
+    "externalCode": "811"
+  },
+  "9|가양": {
+    "stationCd": "4107",
+    "externalCode": "907"
+  },
+  "9|개화": {
+    "stationCd": "4101",
+    "externalCode": "901"
+  },
+  "9|고속터미널": {
+    "stationCd": "4123",
+    "externalCode": "923"
+  },
+  "9|공항시장": {
+    "stationCd": "4103",
+    "externalCode": "903"
+  },
+  "9|구반포": {
+    "stationCd": "4121",
+    "externalCode": "921"
+  },
+  "9|국회의사당": {
+    "stationCd": "4114",
+    "externalCode": "914"
+  },
+  "9|김포공항": {
+    "stationCd": "4102",
+    "externalCode": "902"
+  },
+  "9|노들": {
+    "stationCd": "4118",
+    "externalCode": "918"
+  },
+  "9|노량진": {
+    "stationCd": "4117",
+    "externalCode": "917"
+  },
+  "9|당산": {
+    "stationCd": "4113",
+    "externalCode": "913"
+  },
+  "9|동작": {
+    "stationCd": "4120",
+    "externalCode": "920"
+  },
+  "9|둔촌오륜": {
+    "stationCd": "4137",
+    "externalCode": "937"
+  },
+  "9|등촌": {
+    "stationCd": "4109",
+    "externalCode": "909"
+  },
+  "9|마곡나루": {
+    "stationCd": "4105",
+    "externalCode": "905"
+  },
+  "9|봉은사": {
+    "stationCd": "4129",
+    "externalCode": "929"
+  },
+  "9|사평": {
+    "stationCd": "4124",
+    "externalCode": "924"
+  },
+  "9|삼성중앙": {
+    "stationCd": "4128",
+    "externalCode": "928"
+  },
+  "9|삼전": {
+    "stationCd": "4131",
+    "externalCode": "931"
+  },
+  "9|샛강": {
+    "stationCd": "4116",
+    "externalCode": "916"
+  },
+  "9|석촌": {
+    "stationCd": "4133",
+    "externalCode": "933"
+  },
+  "9|석촌고분": {
+    "stationCd": "4132",
+    "externalCode": "932"
+  },
+  "9|선유도": {
+    "stationCd": "4112",
+    "externalCode": "912"
+  },
+  "9|선정릉": {
+    "stationCd": "4127",
+    "externalCode": "927"
+  },
+  "9|송파나루": {
+    "stationCd": "4134",
+    "externalCode": "934"
+  },
+  "9|신논현": {
+    "stationCd": "4125",
+    "externalCode": "925"
+  },
+  "9|신목동": {
+    "stationCd": "4111",
+    "externalCode": "911"
+  },
+  "9|신반포": {
+    "stationCd": "4122",
+    "externalCode": "922"
+  },
+  "9|신방화": {
+    "stationCd": "4104",
+    "externalCode": "904"
+  },
+  "9|양천향교": {
+    "stationCd": "4106",
+    "externalCode": "906"
+  },
+  "9|언주": {
+    "stationCd": "4126",
+    "externalCode": "926"
+  },
+  "9|여의도": {
+    "stationCd": "4115",
+    "externalCode": "915"
+  },
+  "9|염창": {
+    "stationCd": "4110",
+    "externalCode": "910"
+  },
+  "9|올림픽공원": {
+    "stationCd": "4136",
+    "externalCode": "936"
+  },
+  "9|종합운동장": {
+    "stationCd": "4130",
+    "externalCode": "930"
+  },
+  "9|중앙보훈병원": {
+    "stationCd": "4138",
+    "externalCode": "938"
+  },
+  "9|증미": {
+    "stationCd": "4108",
+    "externalCode": "908"
+  },
+  "9|한성백제": {
+    "stationCd": "4135",
+    "externalCode": "935"
+  },
+  "9|흑석": {
+    "stationCd": "4119",
+    "externalCode": "919"
+  },
+  "airport|검암": {
+    "stationCd": "4209",
+    "externalCode": "A07"
+  },
+  "airport|계양": {
+    "stationCd": "4208",
+    "externalCode": "A06"
+  },
+  "airport|공덕": {
+    "stationCd": "4202",
+    "externalCode": "A02"
+  },
+  "airport|공항화물청사": {
+    "stationCd": "4212",
+    "externalCode": "A09"
+  },
+  "airport|김포공항": {
+    "stationCd": "4207",
+    "externalCode": "A05"
+  },
+  "airport|디지털미디어시티": {
+    "stationCd": "4204",
+    "externalCode": "A04"
+  },
+  "airport|마곡나루": {
+    "stationCd": "4206",
+    "externalCode": "A042"
+  },
+  "airport|서울": {
+    "stationCd": "4201",
+    "externalCode": "A01"
+  },
+  "airport|영종": {
+    "stationCd": "4217",
+    "externalCode": "A072"
+  },
+  "airport|운서": {
+    "stationCd": "4211",
+    "externalCode": "A08"
+  },
+  "airport|인천공항1터미널": {
+    "stationCd": "4213",
+    "externalCode": "A10"
+  },
+  "airport|인천공항2터미널": {
+    "stationCd": "4215",
+    "externalCode": "A11"
+  },
+  "airport|청라국제도시": {
+    "stationCd": "4210",
+    "externalCode": "A071"
+  },
+  "airport|홍대입구": {
+    "stationCd": "4203",
+    "externalCode": "A03"
+  },
+  "everline|강남대": {
+    "stationCd": "4502",
+    "externalCode": "Y111"
+  },
+  "everline|고진": {
+    "stationCd": "4513",
+    "externalCode": "Y121"
+  },
+  "everline|기흥": {
+    "stationCd": "4501",
+    "externalCode": "Y110"
+  },
+  "everline|김량장": {
+    "stationCd": "4511",
+    "externalCode": "Y119"
+  },
+  "everline|동백": {
+    "stationCd": "4505",
+    "externalCode": "Y114"
+  },
+  "everline|둔전": {
+    "stationCd": "4515",
+    "externalCode": "Y125"
+  },
+  "everline|명지대": {
+    "stationCd": "4510",
+    "externalCode": "Y118"
+  },
+  "everline|보평": {
+    "stationCd": "4514",
+    "externalCode": "Y123"
+  },
+  "everline|삼가": {
+    "stationCd": "4508",
+    "externalCode": "Y116"
+  },
+  "everline|시청.용인대": {
+    "stationCd": "4509",
+    "externalCode": "Y117"
+  },
+  "everline|어정": {
+    "stationCd": "4504",
+    "externalCode": "Y113"
+  },
+  "everline|운동장.송담대": {
+    "stationCd": "4512",
+    "externalCode": "Y120"
+  },
+  "everline|전대.에버랜드": {
+    "stationCd": "4517",
+    "externalCode": "Y126"
+  },
+  "everline|지석": {
+    "stationCd": "4503",
+    "externalCode": "Y112"
+  },
+  "everline|초당": {
+    "stationCd": "4506",
+    "externalCode": "Y115"
+  },
+  "gyeongui|가좌": {
+    "stationCd": "1265",
+    "externalCode": "K315"
+  },
+  "gyeongui|강매": {
+    "stationCd": "1269",
+    "externalCode": "K319"
+  },
+  "gyeongui|곡산": {
+    "stationCd": "1272",
+    "externalCode": "K323"
+  },
+  "gyeongui|공덕": {
+    "stationCd": "1262",
+    "externalCode": "K312"
+  },
+  "gyeongui|구리": {
+    "stationCd": "1205",
+    "externalCode": "K123"
+  },
+  "gyeongui|국수": {
+    "stationCd": "1214",
+    "externalCode": "K132"
+  },
+  "gyeongui|금릉": {
+    "stationCd": "1279",
+    "externalCode": "K330"
+  },
+  "gyeongui|금촌": {
+    "stationCd": "1280",
+    "externalCode": "K331"
+  },
+  "gyeongui|능곡": {
+    "stationCd": "1271",
+    "externalCode": "K321"
+  },
+  "gyeongui|대곡": {
+    "stationCd": "0300",
+    "externalCode": "K322"
+  },
+  "gyeongui|덕소": {
+    "stationCd": "1208",
+    "externalCode": "K126"
+  },
+  "gyeongui|도농": {
+    "stationCd": "1206",
+    "externalCode": "K124"
+  },
+  "gyeongui|도심": {
+    "stationCd": "1209",
+    "externalCode": "K127"
+  },
+  "gyeongui|디지털미디어시티": {
+    "stationCd": "1266",
+    "externalCode": "K316"
+  },
+  "gyeongui|망우": {
+    "stationCd": "1203",
+    "externalCode": "K121"
+  },
+  "gyeongui|문산": {
+    "stationCd": "1284",
+    "externalCode": "K335"
+  },
+  "gyeongui|백마": {
+    "stationCd": "1273",
+    "externalCode": "K324"
+  },
+  "gyeongui|상봉": {
+    "stationCd": "1202",
+    "externalCode": "K120"
+  },
+  "gyeongui|서강대": {
+    "stationCd": "1263",
+    "externalCode": "K313"
+  },
+  "gyeongui|서빙고": {
+    "stationCd": "1009",
+    "externalCode": "K112"
+  },
+  "gyeongui|수색": {
+    "stationCd": "1267",
+    "externalCode": "K317"
+  },
+  "gyeongui|신원": {
+    "stationCd": "1213",
+    "externalCode": "K131"
+  },
+  "gyeongui|아신": {
+    "stationCd": "1215",
+    "externalCode": "K133"
+  },
+  "gyeongui|야당": {
+    "stationCd": "1277",
+    "externalCode": "K328"
+  },
+  "gyeongui|양수": {
+    "stationCd": "1212",
+    "externalCode": "K130"
+  },
+  "gyeongui|양원": {
+    "stationCd": "1204",
+    "externalCode": "K122"
+  },
+  "gyeongui|양정": {
+    "stationCd": "1207",
+    "externalCode": "K125"
+  },
+  "gyeongui|양평": {
+    "stationCd": "1217",
+    "externalCode": "K135"
+  },
+  "gyeongui|오빈": {
+    "stationCd": "1216",
+    "externalCode": "K134"
+  },
+  "gyeongui|옥수": {
+    "stationCd": "1011",
+    "externalCode": "K114"
+  },
+  "gyeongui|왕십리": {
+    "stationCd": "102C",
+    "externalCode": "K210"
+  },
+  "gyeongui|용문": {
+    "stationCd": "1219",
+    "externalCode": "K137"
+  },
+  "gyeongui|용산": {
+    "stationCd": "100C",
+    "externalCode": "K110"
+  },
+  "gyeongui|운길산": {
+    "stationCd": "1211",
+    "externalCode": "K129"
+  },
+  "gyeongui|운정": {
+    "stationCd": "1278",
+    "externalCode": "K329"
+  },
+  "gyeongui|원덕": {
+    "stationCd": "1218",
+    "externalCode": "K136"
+  },
+  "gyeongui|월롱": {
+    "stationCd": "1282",
+    "externalCode": "K333"
+  },
+  "gyeongui|응봉": {
+    "stationCd": "1012",
+    "externalCode": "K115"
+  },
+  "gyeongui|이촌": {
+    "stationCd": "1008",
+    "externalCode": "K111"
+  },
+  "gyeongui|일산": {
+    "stationCd": "1275",
+    "externalCode": "K326"
+  },
+  "gyeongui|임진강": {
+    "stationCd": "1285",
+    "externalCode": "K336"
+  },
+  "gyeongui|중랑": {
+    "stationCd": "1201",
+    "externalCode": "K119"
+  },
+  "gyeongui|지평": {
+    "stationCd": "1220",
+    "externalCode": "K138"
+  },
+  "gyeongui|청량리": {
+    "stationCd": "1845",
+    "externalCode": "K209"
+  },
+  "gyeongui|탄현": {
+    "stationCd": "1276",
+    "externalCode": "K327"
+  },
+  "gyeongui|파주": {
+    "stationCd": "1283",
+    "externalCode": "K334"
+  },
+  "gyeongui|팔당": {
+    "stationCd": "1210",
+    "externalCode": "K128"
+  },
+  "gyeongui|풍산": {
+    "stationCd": "1274",
+    "externalCode": "K325"
+  },
+  "gyeongui|한남": {
+    "stationCd": "1010",
+    "externalCode": "K113"
+  },
+  "gyeongui|행신": {
+    "stationCd": "1270",
+    "externalCode": "K320"
+  },
+  "gyeongui|홍대입구": {
+    "stationCd": "1264",
+    "externalCode": "K314"
+  },
+  "gyeongui|화전": {
+    "stationCd": "1268",
+    "externalCode": "K318"
+  },
+  "gyeongui|회기": {
+    "stationCd": "101C",
+    "externalCode": "K118"
+  },
+  "gyeongui|효창공원앞": {
+    "stationCd": "1261",
+    "externalCode": "K826"
+  },
+  "incheon1|간석오거리": {
+    "stationCd": "3123",
+    "externalCode": "I123"
+  },
+  "incheon1|갈산": {
+    "stationCd": "3117",
+    "externalCode": "I117"
+  },
+  "incheon1|경인교대입구": {
+    "stationCd": "3115",
+    "externalCode": "I115"
+  },
+  "incheon1|계산": {
+    "stationCd": "3114",
+    "externalCode": "I114"
+  },
+  "incheon1|계양": {
+    "stationCd": "3110",
+    "externalCode": "I110"
+  },
+  "incheon1|국제업무지구": {
+    "stationCd": "3138",
+    "externalCode": "I138"
+  },
+  "incheon1|귤현": {
+    "stationCd": "3111",
+    "externalCode": "I111"
+  },
+  "incheon1|동막": {
+    "stationCd": "3132",
+    "externalCode": "I132"
+  },
+  "incheon1|동수": {
+    "stationCd": "3121",
+    "externalCode": "I121"
+  },
+  "incheon1|동춘": {
+    "stationCd": "3131",
+    "externalCode": "I131"
+  },
+  "incheon1|문학경기장": {
+    "stationCd": "3127",
+    "externalCode": "I127"
+  },
+  "incheon1|박촌": {
+    "stationCd": "3112",
+    "externalCode": "I112"
+  },
+  "incheon1|부평": {
+    "stationCd": "3120",
+    "externalCode": "I120"
+  },
+  "incheon1|부평구청": {
+    "stationCd": "3118",
+    "externalCode": "I118"
+  },
+  "incheon1|부평삼거리": {
+    "stationCd": "3122",
+    "externalCode": "I122"
+  },
+  "incheon1|부평시장": {
+    "stationCd": "3119",
+    "externalCode": "I119"
+  },
+  "incheon1|선학": {
+    "stationCd": "3128",
+    "externalCode": "I128"
+  },
+  "incheon1|센트럴파크": {
+    "stationCd": "3137",
+    "externalCode": "I137"
+  },
+  "incheon1|신연수": {
+    "stationCd": "3129",
+    "externalCode": "I129"
+  },
+  "incheon1|예술회관": {
+    "stationCd": "3125",
+    "externalCode": "I125"
+  },
+  "incheon1|원인재": {
+    "stationCd": "3130",
+    "externalCode": "I130"
+  },
+  "incheon1|인천대입구": {
+    "stationCd": "3136",
+    "externalCode": "I136"
+  },
+  "incheon1|인천시청": {
+    "stationCd": "3221",
+    "externalCode": "I221"
+  },
+  "incheon1|인천터미널": {
+    "stationCd": "3126",
+    "externalCode": "I126"
+  },
+  "incheon1|임학": {
+    "stationCd": "3113",
+    "externalCode": "I113"
+  },
+  "incheon1|작전": {
+    "stationCd": "3116",
+    "externalCode": "I116"
+  },
+  "incheon1|지식정보단지": {
+    "stationCd": "3135",
+    "externalCode": "I135"
+  },
+  "incheon1|캠퍼스타운": {
+    "stationCd": "3133",
+    "externalCode": "I133"
+  },
+  "incheon1|테크노파크": {
+    "stationCd": "3134",
+    "externalCode": "I134"
+  },
+  "sinbundang|강남": {
+    "stationCd": "4307",
+    "externalCode": "D7"
+  },
+  "sinbundang|광교": {
+    "stationCd": "4319",
+    "externalCode": "D19"
+  },
+  "sinbundang|광교중앙": {
+    "stationCd": "4318",
+    "externalCode": "D18"
+  },
+  "sinbundang|동천": {
+    "stationCd": "4314",
+    "externalCode": "D14"
+  },
+  "sinbundang|미금": {
+    "stationCd": "4313",
+    "externalCode": "D13"
+  },
+  "sinbundang|상현": {
+    "stationCd": "4317",
+    "externalCode": "D17"
+  },
+  "sinbundang|성복": {
+    "stationCd": "4316",
+    "externalCode": "D16"
+  },
+  "sinbundang|수지구청": {
+    "stationCd": "4315",
+    "externalCode": "D15"
+  },
+  "sinbundang|양재": {
+    "stationCd": "4308",
+    "externalCode": "D8"
+  },
+  "sinbundang|양재시민의숲": {
+    "stationCd": "4309",
+    "externalCode": "D9"
+  },
+  "sinbundang|정자": {
+    "stationCd": "4312",
+    "externalCode": "D12"
+  },
+  "sinbundang|청계산입구": {
+    "stationCd": "4310",
+    "externalCode": "D10"
+  },
+  "sinbundang|판교": {
+    "stationCd": "4311",
+    "externalCode": "D11"
+  },
+  "suin|수원": {
+    "stationCd": "1713",
+    "externalCode": "P155"
+  },
+  "suin|청량리": {
+    "stationCd": "1306",
+    "externalCode": "P117"
+  }
+}

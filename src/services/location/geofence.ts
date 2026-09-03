@@ -7,6 +7,8 @@ import type { AlertKind } from '@/services/notifications/kinds';
 
 /** 지오펜스 반경(m). 지하 구간에서는 GPS 가 잡히지 않으므로 넉넉하게 둡니다. */
 const RADIUS_BY_KIND: Record<AlertKind, number> = {
+  /** 승차 알림은 도착정보로만 잡습니다 — 지오펜스를 걸지 않습니다. */
+  board: 0,
   pre: 500,
   arrive: 300,
   'transfer-pre': 500,

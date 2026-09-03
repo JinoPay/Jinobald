@@ -1,5 +1,5 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 /** Expo Go 로 실행 중인지. 백그라운드 위치/TaskManager 는 여기서 동작하지 않습니다. */
 export const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
@@ -39,3 +39,14 @@ export const capabilityNotice = isWeb
 export const notificationNotice = isWeb
   ? '웹 브라우저에서는 승하차 알림을 예약할 수 없습니다. iOS/Android 빌드(pnpm ios / pnpm android)에서 사용해 주세요.'
   : null;
+
+/**
+ * 네트워크 폴링을 해도 되는 상태인지.
+ *
+ * 네이티브는 AppState 가 'active' 일 때만 폴링해 호출 한도를 아낍니다. 웹은 탭이 가려지면
+ * 'background' 로 보고되는데(미리보기 창 포함) 브라우저에서 폴링을 멈춰 얻는 것이 없으므로 항상 허용합니다.
+ */
+export function isForeground(): boolean {
+  if (isWeb) return true;
+  return AppState.currentState !== 'background' && AppState.currentState !== 'inactive';
+}

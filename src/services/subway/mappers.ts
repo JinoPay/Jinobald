@@ -1,7 +1,14 @@
-import { getLineBySubwayId, normalizeStationName } from '@/data/stations';
+import { findStationRefs, getLineBySubwayId, normalizeStationName } from '@/data/stations';
 
-import type { RawArrival } from './raw-types';
-import type { Arrival, ArrivalStatus, Direction, TrainKind } from './types';
+import type { RawArrival, RawPosition } from './raw-types';
+import type {
+  Arrival,
+  ArrivalStatus,
+  Direction,
+  TrainKind,
+  TrainPosition,
+  TrainPositionStatus,
+} from './types';
 
 const STATUS_BY_CODE: Record<string, ArrivalStatus> = {
   '0': 'entering',
@@ -13,6 +20,13 @@ const STATUS_BY_CODE: Record<string, ArrivalStatus> = {
   '99': 'running',
 };
 
+const POSITION_STATUS_BY_CODE: Record<string, TrainPositionStatus> = {
+  '0': 'entering',
+  '1': 'arrived',
+  '2': 'departed',
+  '3': 'prevDeparted',
+};
+
 export function parseStatus(arvlCd: string | undefined): ArrivalStatus {
   if (!arvlCd) return 'unknown';
   return STATUS_BY_CODE[arvlCd] ?? 'unknown';
@@ -22,6 +36,14 @@ export function parseDirection(updnLine: string | undefined, loop: boolean): Dir
   const value = updnLine ?? '';
   if (loop) return value.includes('내') ? 'inner' : 'outer';
   return value.includes('상') ? 'up' : 'down';
+}
+
+/** 열차 위치 API 는 방향을 "0"/"1" 코드로 줍니다. */
+export function parseDirectionCode(updnLine: string | undefined, loop: boolean): Direction {
+  const code = (updnLine ?? '').trim();
+  const first = code === '0' || code.includes('상') || code.includes('내');
+  if (loop) return first ? 'inner' : 'outer';
+  return first ? 'up' : 'down';
 }
 
 export function parseTrainKind(btrainSttus: string | undefined): TrainKind {
@@ -53,9 +75,10 @@ export function mapArrival(raw: RawArrival, requestedStationName: string, now: n
   const status = parseStatus(raw.arvlCd);
   const stationName = raw.statnNm ?? requestedStationName;
   const currentPosition = raw.arvlMsg3?.trim();
+  const trainNo = raw.btrainNo?.trim() || null;
 
   return {
-    id: [line.id, raw.updnLine, raw.bstatnNm, raw.arvlMsg2, raw.recptnDt]
+    id: [line.id, raw.updnLine, trainNo ?? raw.bstatnNm, raw.arvlMsg2, raw.recptnDt]
       .filter(Boolean)
       .join('|'),
     lineId: line.id,
@@ -63,11 +86,40 @@ export function mapArrival(raw: RawArrival, requestedStationName: string, now: n
     direction: parseDirection(raw.updnLine, line.loop),
     terminalStationName: raw.bstatnNm ?? raw.trainLineNm?.split(/[-행]/)[0]?.trim() ?? '',
     trainKind: parseTrainKind(raw.btrainSttus),
+    trainNo,
     secondsUntilArrival: parseSecondsUntilArrival(raw.barvlDt),
     statusMessage: raw.arvlMsg2?.trim() || '정보 없음',
     currentPositionStationName:
       currentPosition && normalizeStationName(currentPosition) ? currentPosition : null,
     status,
+    receivedAt: now,
+  };
+}
+
+/**
+ * 열차 위치 한 행 → 도메인.
+ *
+ * 서울 API 는 노선 단위(본선 subwayId)로 응답하지만 열차는 지선(성수지선 등)에 있을 수 있으므로
+ * 역을 그룹 안의 모든 계통에서 찾고, 본선을 우선합니다.
+ */
+export function mapPosition(raw: RawPosition, now: number): TrainPosition | null {
+  const line = raw.subwayId ? getLineBySubwayId(raw.subwayId) : undefined;
+  if (!line || !raw.trainNo) return null;
+
+  const stationName = raw.statnNm?.trim() ?? '';
+  const refs = findStationRefs(stationName).filter((r) => r.line.groupId === line.groupId);
+  const ref = refs.find((r) => r.line.id === line.id) ?? refs[0];
+
+  return {
+    lineId: ref?.line.id ?? line.id,
+    trainNo: raw.trainNo.trim(),
+    stationName: ref?.station.name ?? stationName,
+    stationIndex: ref?.index ?? null,
+    direction: parseDirectionCode(raw.updnLine, (ref?.line ?? line).loop),
+    terminalStationName: raw.statnTnm?.trim() ?? '',
+    status: POSITION_STATUS_BY_CODE[raw.trainSttus ?? ''] ?? 'unknown',
+    express: raw.directAt === '1',
+    lastTrain: raw.lstcarAt === '1',
     receivedAt: now,
   };
 }

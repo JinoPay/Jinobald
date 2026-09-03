@@ -7,11 +7,14 @@ import {
 } from '@/services/location/geofence';
 import { alertKey, type AlertKey, type AlertKind } from '@/services/notifications/kinds';
 import { cancelNotifications, scheduleTripNotification } from '@/services/notifications/schedule';
+import { rideSegmentsBetween } from '@/services/routing/graph';
 import type { RouteLeg } from '@/services/routing/types';
 
-import { computeAlertTimes, shouldReschedule } from './eta';
+import { computeAlertTimes, computeBoardAlertTime, shouldReschedule, trailingSegmentsSeconds } from './eta';
 import type { TripProgress } from './progress';
 import {
+  alightDoorGuide,
+  boardDoorGuide,
   currentLeg,
   currentLegIndex,
   hasFired,
@@ -30,20 +33,41 @@ export function legAlertContent(
   legIndex: number,
   kind: AlertKind,
   stationsLeft: number,
+  /** 승차 알림에 실을 열차 (도착정보의 첫 열차). */
+  train?: { trainNo: string | null; terminalStationName: string } | null,
 ): { title: string; body: string } {
   const remaining = Math.max(1, stationsLeft);
+  const leg = legAt(trip, legIndex);
+  const line = leg ? getLine(leg.lineId) : undefined;
+
+  if (kind === 'board') {
+    const boardDoor = boardDoorGuide(trip, legIndex);
+    const trainLabel = train
+      ? `${train.terminalStationName ? `${train.terminalStationName}행 ` : ''}열차${train.trainNo ? ` (${train.trainNo})` : ''}`
+      : '열차';
+    const where = line && leg ? `${line.name} ${directionLabel(line, leg.direction)}` : '열차';
+    return {
+      title: `${leg?.boardStationName ?? '승차역'}에 ${trainLabel} 곧 도착`,
+      body: `${where}에 승차하세요.${boardDoor ? `\n${boardDoor.label} 칸에 타면 ${boardDoor.note ?? '이동이 빠릅니다'}.` : ''}`,
+    };
+  }
+
+  // 하차·환승 알림에는 빠른 칸을 덧붙입니다. 알림은 백그라운드에서 뜨므로 문구에 미리 들어 있어야 합니다.
+  const alightDoor = alightDoorGuide(trip, legIndex);
+  const doorHint = alightDoor
+    ? `\n${alightDoor.label} 칸에서 내리면 ${alightDoor.purpose === 'exit' ? '출구' : '환승'}가 빠릅니다.`
+    : '';
 
   if (kind === 'arrive') {
-    return { title: `${tripDestinationName(trip)} 도착`, body: '하차 준비하세요.' };
+    return { title: `${tripDestinationName(trip)} 도착`, body: `하차 준비하세요.${doorHint}` };
   }
   if (kind === 'pre') {
     return {
       title: `곧 ${tripDestinationName(trip)}입니다`,
-      body: `${remaining}정거장 남았습니다.`,
+      body: `${remaining}정거장 남았습니다.${doorHint}`,
     };
   }
 
-  const leg = legAt(trip, legIndex);
   const next = legAt(trip, legIndex + 1);
   const nextLine = next ? getLine(next.lineId) : undefined;
   const where = leg?.alightStationName ?? tripDestinationName(trip);
@@ -56,13 +80,13 @@ export function legAlertContent(
   if (kind === 'transfer') {
     return isSwitch
       ? { title: `${where} 열차 갈아타기`, body: `같은 승강장에서 ${toward} 열차를 타세요.` }
-      : { title: `${where} 환승`, body: `${toward}으로 갈아타세요.` };
+      : { title: `${where} 환승`, body: `${toward}으로 갈아타세요.${doorHint}` };
   }
   return {
     title: `곧 ${where}입니다`,
     body: isSwitch
       ? `${remaining}정거장 뒤 ${toward} 열차로 갈아탑니다.`
-      : `${remaining}정거장 뒤 ${toward}으로 환승합니다.`,
+      : `${remaining}정거장 뒤 ${toward}으로 환승합니다.${doorHint}`,
   };
 }
 
@@ -84,11 +108,13 @@ export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Tr
   // null 을 돌려주면 "이미 발화함"으로 기록되어 여정 상태가 잘못되기 때문입니다.
   if (!capabilities.localNotifications) return trip;
 
+  const now = Date.now();
+  // "N정거장 전"은 하차역 앞 N개 구간의 실측 초입니다. 구간 실측이 없으면 노선 평균과 같습니다.
+  const segments = rideSegmentsBetween(line, leg.boardIndex, leg.alightIndex);
   const times = computeAlertTimes({
-    nowMs: Date.now(),
+    nowMs: now,
     etaSeconds: progress.etaSeconds,
-    avgSecondsPerStation: line.avgSecondsPerStation,
-    alertNStationsBefore: trip.alertNStationsBefore,
+    preAlertLeadSeconds: trailingSegmentsSeconds(segments, trip.alertNStationsBefore),
   });
 
   const legIndex = currentLegIndex(trip);
@@ -98,6 +124,12 @@ export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Tr
     [arriveKind, times.arriveAlertAtMs],
   ];
 
+  // 승차 알림: 아직 안 탔고 탈 열차의 도착 초를 아는 동안만. 승차하면 더 이상 잡지 않습니다.
+  const train = progress.matchedArrival;
+  if (!trip.boarded && train?.secondsUntilArrival != null) {
+    targets.unshift(['board', computeBoardAlertTime({ nowMs: now, secondsUntilTrain: train.secondsUntilArrival })]);
+  }
+
   let next = trip;
   for (const [kind, atMs] of targets) {
     const key = alertKey(legIndex, kind);
@@ -106,7 +138,7 @@ export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Tr
     if (!shouldReschedule(existing?.atMs ?? null, atMs)) continue;
 
     await cancelNotifications([existing?.notificationId]);
-    const { title, body } = legAlertContent(next, legIndex, kind, progress.stationsLeft);
+    const { title, body } = legAlertContent(next, legIndex, kind, progress.stationsLeft, train);
     const notificationId = await scheduleTripNotification({
       title,
       body,
@@ -216,6 +248,7 @@ export async function advanceLeg(trip: Trip): Promise<Trip> {
     currentLegIndex: index + 1,
     boarded: false,
     boardedAt: null,
+    boardedTrainNo: null,
   });
 }
 

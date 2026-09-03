@@ -5,11 +5,14 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '@/components/common/EmptyState';
 import { LineBadge } from '@/components/subway/LineBadge';
+import { TransferHint } from '@/components/subway/TransferHint';
+import { TripTrack } from '@/components/subway/TripTrack';
 import { directionLabel, getLine, groupIdOf } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
 import { formatCountdown, formatDuration } from '@/services/alerts/eta';
 import type { TripProgress } from '@/services/alerts/progress';
 import {
+  alightDoorGuide,
   currentLeg,
   currentLegIndex,
   isFinalLeg,
@@ -78,8 +81,10 @@ export default function AlertsScreen() {
     .sort((a, b) => a.atMs - b.atMs)[0];
 
   // 승차 후 경과 시간으로 0정거장에 닿아도 자동으로 넘기지 않습니다.
-  // 환승 소요 데이터가 없어서 자동 전진은 조용히 어긋나기 때문입니다.
+  // 환승 소요는 사람마다 달라 자동 전진은 조용히 어긋나기 때문입니다.
   const askedToTransfer = !final && trip.boarded && progress?.stationsLeft === 0;
+  const alightDoor = alightDoorGuide(trip, legIndex);
+  const waitingTrain = !trip.boarded ? progress?.matchedArrival : null;
 
   return (
     <ScrollView
@@ -134,17 +139,49 @@ export default function AlertsScreen() {
           {multiLeg ? ` · 예비 알림 ${trip.alertNStationsBefore}정거장 전` : ''}
         </Text>
         <Text style={[styles.meta, { color: theme.textSecondary }]}>{basisLabel(progress?.basis)}</Text>
+
+        {alightDoor ? (
+          <View style={[styles.door, { backgroundColor: theme.accentSoft }]}>
+            <Text style={[styles.doorLabel, { color: theme.accent }]}>{alightDoor.label} 칸</Text>
+            <Text style={[styles.doorText, { color: theme.text }]}>
+              에서 내리면 {alightDoor.purpose === 'exit' ? '출구' : '환승'}가 빠릅니다
+              {alightDoor.note ? ` · ${alightDoor.note}` : ''}
+            </Text>
+          </View>
+        ) : null}
+
+        {waitingTrain ? (
+          <Text style={[styles.meta, { color: theme.textSecondary }]}>
+            다음 열차: {waitingTrain.terminalStationName}행
+            {waitingTrain.trainNo ? ` (${waitingTrain.trainNo})` : ''} · {waitingTrain.statusMessage}
+          </Text>
+        ) : trip.boarded && trip.boardedTrainNo ? (
+          <Text style={[styles.meta, { color: theme.textSecondary }]}>
+            승차 열차 {trip.boardedTrainNo}
+            {progress?.livePosition ? ` · 현재 ${progress.livePosition.stationName}` : ' · 위치 확인 중'}
+          </Text>
+        ) : null}
       </View>
+
+      {trip.boarded ? (
+        <TripTrack
+          leg={leg}
+          livePosition={progress?.livePosition ?? null}
+          stationsTravelled={progress ? leg.stationCount - progress.stationsLeft : 0}
+        />
+      ) : null}
 
       {multiLeg ? (
         <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
           <Text style={[styles.cardTitle, { color: theme.textSecondary }]}>경로</Text>
           {trip.plan.legs.map((item, index) => (
-            <LegRow
-              key={`${item.lineId}-${item.boardIndex}`}
-              leg={item}
-              state={index < legIndex ? 'past' : index === legIndex ? 'current' : 'future'}
-            />
+            <View key={`${item.lineId}-${item.boardIndex}`}>
+              {index > 0 ? <TransferHint fromLeg={trip.plan.legs[index - 1]} toLeg={item} /> : null}
+              <LegRow
+                leg={item}
+                state={index < legIndex ? 'past' : index === legIndex ? 'current' : 'future'}
+              />
+            </View>
           ))}
         </View>
       ) : null}
@@ -278,6 +315,8 @@ function basisLabel(basis: TripProgress['basis'] | undefined): string {
   switch (basis) {
     case 'arrival':
       return '실시간 도착정보로 계산 중';
+    case 'live-position':
+      return '승차한 열차의 실시간 위치로 계산 중';
     case 'elapsed':
       return '승차 후 경과 시간으로 계산 중 (열차 지연은 반영되지 않습니다)';
     case 'static':
@@ -311,6 +350,9 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 20, fontWeight: '700', fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 12 },
   meta: { fontSize: 12, marginTop: 12 },
+  door: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', marginTop: 12, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  doorLabel: { fontSize: 18, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  doorText: { fontSize: 13 },
   leg: {
     flexDirection: 'row',
     alignItems: 'center',

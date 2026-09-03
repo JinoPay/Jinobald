@@ -9,6 +9,28 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 const API_HOST = 'swopenapi.seoul.go.kr';
 const DEFAULT_API_BASE_URL = `http://${API_HOST}`;
 
+/**
+ * 실제로 쓰는 URL 가운데 http:// 인 호스트만 예외로 엽니다.
+ *
+ * - 서울 API 직접 호출(`SUBWAY_API_BASE_URL`)은 기본이 http 라 예외가 필요합니다.
+ * - 백엔드(`EXPO_PUBLIC_BACKEND_URL`)는 개발 중 LAN IP 로 http 를 쓰고, 운영은 https 입니다.
+ *
+ * https 백엔드만 쓰는 빌드라면 예외 목록이 비어 ATS/cleartext 설정이 아예 생기지 않습니다.
+ */
+function insecureHostOf(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' ? parsed.hostname : null;
+  } catch {
+    return null;
+  }
+}
+const directBaseUrl = process.env.SUBWAY_API_BASE_URL || DEFAULT_API_BASE_URL;
+const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+const insecureHosts = [...new Set([directBaseUrl, backendUrl].map(insecureHostOf).filter((h): h is string => h !== null))];
+// localhost 는 iOS ATS 가 기본 허용하고 Android 도 디버그에서 허용하지만, 명시해 두면 릴리스 구성 확인이 쉽습니다.
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: '지노발드 지하철',
@@ -21,16 +43,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: 'com.jinopay.jinobald',
     supportsTablet: true,
-    infoPlist: {
-      NSAppTransportSecurity: {
-        NSExceptionDomains: {
-          [API_HOST]: {
-            NSExceptionAllowsInsecureHTTPLoads: true,
-            NSIncludesSubdomains: true,
-          },
-        },
-      },
-    },
+    infoPlist:
+      insecureHosts.length > 0
+        ? {
+            NSAppTransportSecurity: {
+              NSExceptionDomains: Object.fromEntries(
+                insecureHosts.map((host) => [
+                  host,
+                  { NSExceptionAllowsInsecureHTTPLoads: true, NSIncludesSubdomains: true },
+                ]),
+              ),
+            },
+          }
+        : {},
   },
   android: {
     package: 'com.jinopay.jinobald',
@@ -59,9 +84,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-build-properties',
       {
-        // 앱 전역 cleartext 허용. 도메인 한정이 필요하면 커스텀 config plugin 으로
-        // network_security_config.xml 을 주입해야 합니다 (README 참고).
-        android: { usesCleartextTraffic: true },
+        // 앱 전역 cleartext 허용 — http 호스트를 하나라도 쓸 때만 켭니다. 도메인 한정이
+        // 필요하면 커스텀 config plugin 으로 network_security_config.xml 을 주입해야 합니다 (README 참고).
+        android: { usesCleartextTraffic: insecureHosts.length > 0 },
       },
     ],
     [
@@ -93,6 +118,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     reactCompiler: true,
   },
   extra: {
-    subwayApiBaseUrl: process.env.SUBWAY_API_BASE_URL || DEFAULT_API_BASE_URL,
+    subwayApiBaseUrl: directBaseUrl,
   },
 });
