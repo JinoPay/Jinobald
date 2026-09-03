@@ -26,6 +26,8 @@ function parseIdentifier(
 }
 
 const GEOFENCE_MESSAGE: Record<AlertKind, { title: string; body: string }> = {
+  // 승차 알림은 지오펜스로 발화하지 않습니다 (Record 완전성을 위해 둡니다).
+  board: { title: '승차', body: '열차가 곧 도착합니다.' },
   arrive: { title: '하차역 도착', body: '목적지에 도착했습니다. 내릴 준비를 하세요.' },
   pre: { title: '하차 준비', body: '곧 하차역입니다.' },
   transfer: { title: '환승역 도착', body: '내려서 갈아탈 준비를 하세요.' },

@@ -11,23 +11,34 @@ import {
   LINES,
   stationsBetween,
 } from '@/data/stations';
+import transferTimes from '@/data/generated/transfer-times.json';
 
-import { FASTEST_COST, FEWEST_TRANSFER_COST } from './cost';
+import { FASTEST_COST, FEWEST_TRANSFER_COST, withMeasuredTransfers } from './cost';
 import {
   buildRouteGraph,
   findRoutesInGraph,
   normalizeStationKey,
+  rideSecondsBetween,
   type RouteGraph,
   type RouteProfile,
 } from './graph';
 import type { RouteLeg, RoutePlan } from './types';
 
 export type { RouteLabel, RouteLeg, RoutePlan, RouteTransfer, TransferKind } from './types';
+export { rideSecondsBetween, rideSegmentsBetween } from './graph';
+
+/**
+ * 실측 환승 도보 시간 (초). `scripts/build-transfer-data.mjs` 가 만든 JSON 을 초만 남겨 비용 모델에 넣습니다.
+ * graph.ts 는 런타임 import 를 두지 않으므로 여기서 주입합니다.
+ */
+export const TRANSFER_SECONDS_BY_PAIR: Record<string, number> = Object.fromEntries(
+  Object.entries(transferTimes as Record<string, { seconds: number }>).map(([key, v]) => [key, v.seconds]),
+);
 
 /** 최소 시간 먼저, 그다음 최소 환승. 화면에 보이는 순서이기도 합니다. */
 const PROFILES: RouteProfile[] = [
-  { label: 'fastest', cost: FASTEST_COST },
-  { label: 'fewest-transfers', cost: FEWEST_TRANSFER_COST },
+  { label: 'fastest', cost: withMeasuredTransfers(FASTEST_COST, TRANSFER_SECONDS_BY_PAIR) },
+  { label: 'fewest-transfers', cost: withMeasuredTransfers(FEWEST_TRANSFER_COST, TRANSFER_SECONDS_BY_PAIR) },
 ];
 
 let graph: RouteGraph | null = null;
@@ -97,7 +108,7 @@ export function planFromSingleLeg(
     boardIndex: board.index,
     alightIndex: alight.index,
     stationCount,
-    seconds: stationCount * line.avgSecondsPerStation,
+    seconds: rideSecondsBetween(line, board.index, alight.index),
     transferIn: null,
   };
 

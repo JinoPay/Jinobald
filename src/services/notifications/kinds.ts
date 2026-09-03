@@ -8,12 +8,13 @@
 /**
  * 한 구간(leg)에서 보낼 수 있는 알림.
  *
- * 마지막 구간은 `pre` → `arrive`, 그 앞 구간들은 `transfer-pre` → `transfer` 를 씁니다.
- * 지오펜스 반경과 발화 후 동작(구간 전진 vs 여정 종료)이 달라서 종류를 나눕니다.
+ * - `board`: 승차 대기 중 탈 열차가 곧 도착 (승차 알림). 발화해도 여정 상태는 바뀌지 않습니다.
+ * - 마지막 구간은 `pre` → `arrive`, 그 앞 구간들은 `transfer-pre` → `transfer` 를 씁니다.
+ *   지오펜스 반경과 발화 후 동작(구간 전진 vs 여정 종료)이 달라서 종류를 나눕니다.
  */
-export type AlertKind = 'pre' | 'arrive' | 'transfer-pre' | 'transfer';
+export type AlertKind = 'board' | 'pre' | 'arrive' | 'transfer-pre' | 'transfer';
 
-export const ALERT_KINDS = ['pre', 'arrive', 'transfer-pre', 'transfer'] as const;
+export const ALERT_KINDS = ['board', 'pre', 'arrive', 'transfer-pre', 'transfer'] as const;
 
 export function isAlertKind(value: unknown): value is AlertKind {
   return typeof value === 'string' && (ALERT_KINDS as readonly string[]).includes(value);

@@ -35,33 +35,79 @@ export function normalizeStationKey(name: string): string {
 }
 
 /**
+ * 순환선에서 from → to 로 갈 때 어느 쪽으로 돌지.
+ *
+ * 정거장 수가 아니라 **운행 초**로 고릅니다 — 구간 실측이 있으면 정거장이 하나 더 많은 쪽이
+ * 더 빠를 수 있고, Dijkstra 도 초를 최소화하므로 여기서 다른 기준을 쓰면 경로와 진행 계산이 어긋납니다.
+ * 같으면 정거장이 적은 쪽, 그것도 같으면 외선(인덱스 증가) 입니다.
+ */
+function loopSide(line: RouteLineInput, fromIndex: number, toIndex: number): { step: 1 | -1; count: number } {
+  const total = line.stations.length;
+  const forward = (toIndex - fromIndex + total) % total;
+  const backward = total - forward;
+  let forwardSeconds = 0;
+  for (let k = 0, at = fromIndex; k < forward; k += 1, at = (at + 1) % total) {
+    forwardSeconds += segmentSeconds(line, at);
+  }
+  let backwardSeconds = 0;
+  for (let k = 0, at = fromIndex; k < backward; k += 1, at = (at - 1 + total) % total) {
+    backwardSeconds += segmentSeconds(line, (at - 1 + total) % total);
+  }
+  if (forwardSeconds !== backwardSeconds) {
+    return forwardSeconds < backwardSeconds ? { step: 1, count: forward } : { step: -1, count: backward };
+  }
+  return forward <= backward ? { step: 1, count: forward } : { step: -1, count: backward };
+}
+
+/**
  * 같은 노선에서 from → to 로 갈 때의 방향.
  * 배열 인덱스가 커지는 쪽이 하행(순환선은 외선), 작아지는 쪽이 상행(내선)입니다.
  */
-export function directionBetweenIndices(
-  loop: boolean,
-  totalStations: number,
-  fromIndex: number,
-  toIndex: number,
-): Direction {
-  if (loop) {
-    // 순환선에서는 더 짧은 쪽으로 도는 방향을 택합니다.
-    const forwardSteps = (toIndex - fromIndex + totalStations) % totalStations;
-    return forwardSteps <= totalStations - forwardSteps ? 'outer' : 'inner';
-  }
+export function directionBetweenIndices(line: RouteLineInput, fromIndex: number, toIndex: number): Direction {
+  if (line.loop) return loopSide(line, fromIndex, toIndex).step === 1 ? 'outer' : 'inner';
   return toIndex > fromIndex ? 'down' : 'up';
 }
 
-/** from → to 사이의 정거장 수. 순환선은 짧은 쪽으로 감아서 셉니다. */
-export function stationsBetweenIndices(
-  loop: boolean,
-  totalStations: number,
-  fromIndex: number,
-  toIndex: number,
-): number {
-  if (!loop) return Math.abs(toIndex - fromIndex);
-  const forward = (toIndex - fromIndex + totalStations) % totalStations;
-  return Math.min(forward, totalStations - forward);
+/**
+ * 인덱스 a 와 a+1 (순환선의 마지막↔첫 역 포함) 사이 운행 초.
+ * 실측이 없으면 노선 평균입니다. 간선 가중치와 구간 소요시간이 모두 이 함수를 씁니다.
+ */
+export function segmentSeconds(line: RouteLineInput, fromIndex: number): number {
+  return line.stations[fromIndex]?.secondsToNext ?? line.avgSecondsPerStation;
+}
+
+/**
+ * from → to 로 갈 때 지나는 각 구간의 운행 초를 진행 순서대로.
+ * 방향은 `directionBetweenIndices` 와 같은 규칙(순환선은 짧은 쪽)입니다.
+ * 길이 = 정거장 수. 같은 역이면 빈 배열.
+ */
+export function rideSegmentsBetween(line: RouteLineInput, fromIndex: number, toIndex: number): number[] {
+  const total = line.stations.length;
+  if (fromIndex === toIndex || total < 2) return [];
+  const { step, count } = line.loop
+    ? loopSide(line, fromIndex, toIndex)
+    : { step: toIndex > fromIndex ? (1 as const) : (-1 as const), count: Math.abs(toIndex - fromIndex) };
+  const segments: number[] = [];
+  let at = fromIndex;
+  for (let k = 0; k < count; k += 1) {
+    // 뒤로 갈 때는 (at-1 → at) 구간이므로 낮은 인덱스의 값을 씁니다.
+    const edgeIndex = step === 1 ? at : (at - 1 + total) % total;
+    segments.push(segmentSeconds(line, edgeIndex));
+    at = (at + step + total) % total;
+  }
+  return segments;
+}
+
+/** from → to 운행 초 합계. */
+export function rideSecondsBetween(line: RouteLineInput, fromIndex: number, toIndex: number): number {
+  return rideSegmentsBetween(line, fromIndex, toIndex).reduce((sum, s) => sum + s, 0);
+}
+
+/** from → to 사이의 정거장 수. 순환선은 (시간 기준으로) 빠른 쪽으로 감아서 셉니다. */
+export function stationsBetweenIndices(line: RouteLineInput, fromIndex: number, toIndex: number): number {
+  if (!line.loop) return Math.abs(toIndex - fromIndex);
+  if (fromIndex === toIndex) return 0;
+  return loopSide(line, fromIndex, toIndex).count;
 }
 
 // ---------------------------------------------------------------------------
@@ -72,6 +118,8 @@ export function stationsBetweenIndices(
 export interface RouteStationInput {
   name: string;
   aliases?: string[];
+  /** 다음 역(배열의 다음 항목, 순환선은 마지막→첫 역 포함)까지의 실측 운행 초. 없으면 노선 평균. */
+  secondsToNext?: number;
 }
 
 /** 그래프가 필요로 하는 최소한의 노선 정보. `Line` 이 구조적으로 만족합니다. */
@@ -118,7 +166,7 @@ function connect(edges: GraphEdge[][], a: number, b: number, kind: EdgeKind, sec
  * 노선 배열에서 그래프를 만듭니다.
  *
  * - 노드 = (계통, 역 인덱스). 인접성은 `stations` 배열 순서에만 존재합니다.
- * - 승차 간선 = 인접 쌍 양방향, 가중치는 노선 평균 소요시간. 순환선은 끝↔처음도 잇습니다.
+ * - 승차 간선 = 인접 쌍 양방향, 가중치는 구간 실측 운행시간(없으면 노선 평균). 순환선은 끝↔처음도 잇습니다.
  * - 전이 간선 = 정규화 이름(별칭 포함)이 같은 서로 다른 계통의 노드 쌍.
  *   별칭까지 봐야 총신대입구(4호선) ↔ 이수(7호선) 가 연결됩니다.
  */
@@ -141,11 +189,11 @@ export function buildRouteGraph(lines: RouteLineInput[]): RouteGraph {
 
     const total = line.stations.length;
     for (let i = 0; i + 1 < total; i += 1) {
-      connect(edges, base + i, base + i + 1, 'ride', line.avgSecondsPerStation);
+      connect(edges, base + i, base + i + 1, 'ride', segmentSeconds(line, i));
     }
     // 순환선의 마지막 → 첫 역. 역이 2개뿐이면 이미 이어져 있으므로 건너뜁니다.
     if (line.loop && total > 2) {
-      connect(edges, base + total - 1, base, 'ride', line.avgSecondsPerStation);
+      connect(edges, base + total - 1, base, 'ride', segmentSeconds(line, total - 1));
     }
   });
 
@@ -199,16 +247,36 @@ function overrideSeconds(
   return undefined;
 }
 
+/** 실측 환승 도보 시간. 양쪽 노드의 모든 표기 키로 (역, 출발 그룹, 도착 그룹) 을 찾습니다. */
+function measuredWalkSeconds(
+  graph: RouteGraph,
+  from: number,
+  to: number,
+  cost: RouteCostConfig,
+): number | undefined {
+  const fromGroup = graph.lines[graph.nodes[from].lineIndex].groupId;
+  const toGroup = graph.lines[graph.nodes[to].lineIndex].groupId;
+  for (const id of [from, to]) {
+    for (const key of graph.nodes[id].keys) {
+      const value = cost.transferSecondsByPair[`${key}|${fromGroup}|${toGroup}`];
+      if (value != null) return value;
+    }
+  }
+  return undefined;
+}
+
 /** 사용자가 실제로 쓰는 시간. 탐색 전용 가산치는 포함하지 않습니다. */
-function transferSeconds(
+export function transferSeconds(
   graph: RouteGraph,
   from: number,
   to: number,
   kind: TransferKind,
   cost: RouteCostConfig,
-): number {
-  if (kind === 'switch') return cost.sameGroupSwitchSeconds;
-  return overrideSeconds(graph, from, to, cost) ?? cost.transferSeconds;
+): { seconds: number; measured: boolean } {
+  if (kind === 'switch') return { seconds: cost.sameGroupSwitchSeconds, measured: false };
+  const walk = measuredWalkSeconds(graph, from, to, cost);
+  if (walk != null) return { seconds: walk + cost.transferWaitSeconds, measured: true };
+  return { seconds: overrideSeconds(graph, from, to, cost) ?? cost.transferSeconds, measured: false };
 }
 
 /** 탐색에 쓰는 간선 비용 = 실제 시간 + 가산치. */
@@ -216,7 +284,7 @@ function edgeCost(graph: RouteGraph, from: number, edge: GraphEdge, cost: RouteC
   if (edge.kind === 'ride') return edge.seconds;
   const line = graph.lines[graph.nodes[edge.to].lineIndex];
   return (
-    transferSeconds(graph, from, edge.to, edge.kind, cost) +
+    transferSeconds(graph, from, edge.to, edge.kind, cost).seconds +
     (edge.kind === 'transfer' ? cost.transferBiasSeconds : 0) +
     (line.realtime ? 0 : cost.nonRealtimeBiasSeconds)
   );
@@ -345,6 +413,8 @@ interface RawLeg {
   startNode: number;
   endNode: number;
   stationCount: number;
+  /** 승차 간선 가중치의 합 = 이 구간의 운행 초. */
+  seconds: number;
   transferIn: { from: number; to: number; kind: TransferKind } | null;
 }
 
@@ -362,6 +432,7 @@ function compress(graph: RouteGraph, path: number[]): RawLeg[] {
     startNode: path[0],
     endNode: path[0],
     stationCount: 0,
+    seconds: 0,
     transferIn: null,
   };
 
@@ -370,6 +441,7 @@ function compress(graph: RouteGraph, path: number[]): RawLeg[] {
     if (edge.kind === 'ride') {
       current.endNode = path[i + 1];
       current.stationCount += 1;
+      current.seconds += edge.seconds;
       continue;
     }
     legs.push(current);
@@ -378,6 +450,7 @@ function compress(graph: RouteGraph, path: number[]): RawLeg[] {
       startNode: path[i + 1],
       endNode: path[i + 1],
       stationCount: 0,
+      seconds: 0,
       transferIn: { from: path[i], to: path[i + 1], kind: edge.kind },
     };
   }
@@ -426,29 +499,18 @@ function describeRoute(
           fromStationName: graph.nodes[leg.transferIn.from].name,
           toStationName: graph.nodes[leg.transferIn.to].name,
           kind: leg.transferIn.kind,
-          seconds: transferSeconds(
-            graph,
-            leg.transferIn.from,
-            leg.transferIn.to,
-            leg.transferIn.kind,
-            cost,
-          ),
+          ...transferSeconds(graph, leg.transferIn.from, leg.transferIn.to, leg.transferIn.kind, cost),
         }
       : null;
     return {
       lineId: line.id,
-      direction: directionBetweenIndices(
-        line.loop,
-        line.stations.length,
-        board.stationIndex,
-        alight.stationIndex,
-      ),
+      direction: directionBetweenIndices(line, board.stationIndex, alight.stationIndex),
       boardStationName: board.name,
       alightStationName: alight.name,
       boardIndex: board.stationIndex,
       alightIndex: alight.stationIndex,
       stationCount: leg.stationCount,
-      seconds: leg.stationCount * line.avgSecondsPerStation,
+      seconds: leg.seconds,
       transferIn: transfer,
     };
   });

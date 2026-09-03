@@ -1,13 +1,14 @@
 /**
  * 경로 탐색 비용 모델 — 순수 데이터만 둡니다.
  *
- * 이 저장소에는 환승 소요시간 데이터가 없습니다. 구간별 소요시간도, 시각표도,
- * 급행 운행 계통도 없습니다. 있는 것은 노선당 `avgSecondsPerStation` 상수 하나뿐입니다.
- * 그래서 추정에 쓰는 숫자를 전부 이 파일 한 곳에 모으고 근거를 적어 둡니다 —
- * 나중에 실측 데이터가 생기면 여기만 고치면 됩니다.
+ * 실측 데이터는 두 곳에서 옵니다.
+ * - 구간별 운행시간: `lines.json` 의 `stations[i].secondsToNext` (build-lines.mjs 가 서울교통공사
+ *   역간거리 데이터를 붙임). 없는 구간은 `avgSecondsPerStation` 으로 폴백합니다.
+ * - 환승 도보시간: `src/data/generated/transfer-times.json` 을 `routing/index.ts` 가
+ *   `transferSecondsByPair` 로 주입합니다. 없는 환승은 아래 상수로 추정합니다.
  *
- * 이 파일은 위상(topology)이 아니라 비용 모델입니다. `lines.json` 에 넣으면
- * `build-lines.mjs` 가 덮어쓰므로 넣지 마세요.
+ * 급행 운행 계통과 시각표는 여전히 없습니다. 손으로 정한 추정치는 전부 이 파일에 모으고 근거를 적어 둡니다.
+ * 이 파일은 위상(topology)이 아니라 비용 모델입니다 — 생성기가 덮어쓰는 `lines.json` 에 손 상수를 넣지 마세요.
  */
 
 export interface RouteCostConfig {
@@ -30,6 +31,13 @@ export interface RouteCostConfig {
    * kind === 'transfer' 인 경계에만 적용합니다 (같은 승강장 열차 변경에는 무의미).
    */
   transferSecondsOverride: Record<string, number>;
+  /**
+   * 실측 환승 **도보** 시간(초). 키는 `${정규화 역명}|${출발 노선그룹}|${도착 노선그룹}`.
+   * 도보만 잰 값이라 아래 `transferWaitSeconds` 를 더해 씁니다. 역명 오버라이드보다 우선합니다.
+   */
+  transferSecondsByPair: Record<string, number>;
+  /** 실측 도보 시간에 더하는 평균 열차 대기(배차 간격의 절반 남짓). */
+  transferWaitSeconds: number;
 }
 
 /**
@@ -58,6 +66,8 @@ export const FASTEST_COST: RouteCostConfig = {
   nonRealtimeBiasSeconds: 60,
   transferBiasSeconds: 0,
   transferSecondsOverride: TRANSFER_SECONDS_OVERRIDE,
+  transferSecondsByPair: {},
+  transferWaitSeconds: 120,
 };
 
 /**
@@ -78,4 +88,12 @@ export const FEWEST_TRANSFER_COST: RouteCostConfig = {
  */
 export function displayCost(cost: RouteCostConfig): RouteCostConfig {
   return { ...cost, transferBiasSeconds: 0, nonRealtimeBiasSeconds: 0 };
+}
+
+/** 실측 환승 도보 시간을 주입한 비용 모델. */
+export function withMeasuredTransfers(
+  cost: RouteCostConfig,
+  transferSecondsByPair: Record<string, number>,
+): RouteCostConfig {
+  return { ...cost, transferSecondsByPair };
 }

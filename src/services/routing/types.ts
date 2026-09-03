@@ -22,8 +22,10 @@ export interface RouteTransfer {
   /** 승차하는 계통에서의 역 표기. 총신대입구 → 이수처럼 다를 수 있습니다. */
   toStationName: string;
   kind: TransferKind;
-  /** 이 환승에 배정한 초 (도보 + 대기 추정). */
+  /** 이 환승에 배정한 초 (도보 + 대기). */
   seconds: number;
+  /** 도보 시간이 서울교통공사 실측 데이터에서 왔는지. false 면 cost.ts 의 추정치입니다. */
+  measured: boolean;
 }
 
 export interface RouteLeg {
@@ -37,7 +39,7 @@ export interface RouteLeg {
   alightIndex: number;
   /** 승차역 → 하차역 정거장 수. 항상 1 이상입니다. */
   stationCount: number;
-  /** stationCount * line.avgSecondsPerStation */
+  /** 승차역 → 하차역 운행 초. 구간 실측(`secondsToNext`)이 있으면 그 합, 없으면 정거장 수 × 노선 평균. */
   seconds: number;
   /** 이 구간으로 넘어오는 환승. 첫 구간은 null 입니다. */
   transferIn: RouteTransfer | null;

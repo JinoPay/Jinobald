@@ -1,0 +1,846 @@
+{
+  "가락시장|3|8": {
+    "seconds": 29,
+    "meters": 35
+  },
+  "가락시장|8|3": {
+    "seconds": 29,
+    "meters": 35
+  },
+  "가산디지털단지|1|7": {
+    "seconds": 92,
+    "meters": 110
+  },
+  "가산디지털단지|7|1": {
+    "seconds": 92,
+    "meters": 110
+  },
+  "강남|2|sinbundang": {
+    "seconds": 178,
+    "meters": 214
+  },
+  "강남|sinbundang|2": {
+    "seconds": 178,
+    "meters": 214
+  },
+  "강남구청|7|suin": {
+    "seconds": 104,
+    "meters": 125
+  },
+  "강남구청|suin|7": {
+    "seconds": 104,
+    "meters": 125
+  },
+  "강동|5|5": {
+    "seconds": 16,
+    "meters": 19
+  },
+  "건대입구|2|7": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "건대입구|7|2": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "고속터미널|3|7": {
+    "seconds": 141,
+    "meters": 169
+  },
+  "고속터미널|3|9": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "고속터미널|7|3": {
+    "seconds": 141,
+    "meters": 169
+  },
+  "고속터미널|7|9": {
+    "seconds": 262,
+    "meters": 314
+  },
+  "고속터미널|9|3": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "고속터미널|9|7": {
+    "seconds": 262,
+    "meters": 314
+  },
+  "공덕|5|6": {
+    "seconds": 61,
+    "meters": 73
+  },
+  "공덕|5|airport": {
+    "seconds": 229,
+    "meters": 275
+  },
+  "공덕|5|gyeongui": {
+    "seconds": 178,
+    "meters": 214
+  },
+  "공덕|6|5": {
+    "seconds": 61,
+    "meters": 73
+  },
+  "공덕|6|airport": {
+    "seconds": 221,
+    "meters": 265
+  },
+  "공덕|6|gyeongui": {
+    "seconds": 127,
+    "meters": 152
+  },
+  "공덕|airport|5": {
+    "seconds": 229,
+    "meters": 275
+  },
+  "공덕|airport|6": {
+    "seconds": 221,
+    "meters": 265
+  },
+  "공덕|gyeongui|5": {
+    "seconds": 178,
+    "meters": 214
+  },
+  "공덕|gyeongui|6": {
+    "seconds": 127,
+    "meters": 152
+  },
+  "교대|2|3": {
+    "seconds": 63,
+    "meters": 75
+  },
+  "교대|3|2": {
+    "seconds": 63,
+    "meters": 75
+  },
+  "군자|5|7": {
+    "seconds": 63,
+    "meters": 75
+  },
+  "군자|7|5": {
+    "seconds": 63,
+    "meters": 75
+  },
+  "김포공항|5|9": {
+    "seconds": 88,
+    "meters": 106
+  },
+  "김포공항|5|airport": {
+    "seconds": 282,
+    "meters": 122
+  },
+  "김포공항|5|gimpo": {
+    "seconds": 167,
+    "meters": 200
+  },
+  "김포공항|5|seohae": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "김포공항|9|5": {
+    "seconds": 88,
+    "meters": 106
+  },
+  "김포공항|airport|5": {
+    "seconds": 282,
+    "meters": 122
+  },
+  "김포공항|gimpo|5": {
+    "seconds": 167,
+    "meters": 200
+  },
+  "김포공항|seohae|5": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "까치산|2|5": {
+    "seconds": 14,
+    "meters": 17
+  },
+  "까치산|5|2": {
+    "seconds": 14,
+    "meters": 17
+  },
+  "노원|4|7": {
+    "seconds": 232,
+    "meters": 278
+  },
+  "노원|7|4": {
+    "seconds": 232,
+    "meters": 278
+  },
+  "논현|7|sinbundang": {
+    "seconds": 67,
+    "meters": 80
+  },
+  "논현|sinbundang|7": {
+    "seconds": 67,
+    "meters": 80
+  },
+  "당산|2|9": {
+    "seconds": 88,
+    "meters": 105
+  },
+  "당산|9|2": {
+    "seconds": 88,
+    "meters": 105
+  },
+  "대림|2|7": {
+    "seconds": 230,
+    "meters": 276
+  },
+  "대림|7|2": {
+    "seconds": 230,
+    "meters": 276
+  },
+  "도곡|3|suin": {
+    "seconds": 65,
+    "meters": 78
+  },
+  "도곡|suin|3": {
+    "seconds": 65,
+    "meters": 78
+  },
+  "도봉산|1|7": {
+    "seconds": 37,
+    "meters": 44
+  },
+  "도봉산|7|1": {
+    "seconds": 37,
+    "meters": 44
+  },
+  "동대문|1|4": {
+    "seconds": 162,
+    "meters": 194
+  },
+  "동대문|4|1": {
+    "seconds": 162,
+    "meters": 194
+  },
+  "동대문역사문화공원|2|4": {
+    "seconds": 38,
+    "meters": 45
+  },
+  "동대문역사문화공원|2|5": {
+    "seconds": 195,
+    "meters": 234
+  },
+  "동대문역사문화공원|4|2": {
+    "seconds": 38,
+    "meters": 45
+  },
+  "동대문역사문화공원|4|5": {
+    "seconds": 89,
+    "meters": 107
+  },
+  "동대문역사문화공원|5|2": {
+    "seconds": 195,
+    "meters": 234
+  },
+  "동대문역사문화공원|5|4": {
+    "seconds": 89,
+    "meters": 107
+  },
+  "동묘앞|1|6": {
+    "seconds": 80,
+    "meters": 96
+  },
+  "동묘앞|6|1": {
+    "seconds": 80,
+    "meters": 96
+  },
+  "동작|4|9": {
+    "seconds": 204,
+    "meters": 245
+  },
+  "동작|9|4": {
+    "seconds": 204,
+    "meters": 245
+  },
+  "디지털미디어시티|6|airport": {
+    "seconds": 155,
+    "meters": 186
+  },
+  "디지털미디어시티|6|gyeongui": {
+    "seconds": 46,
+    "meters": 55
+  },
+  "디지털미디어시티|airport|6": {
+    "seconds": 155,
+    "meters": 186
+  },
+  "디지털미디어시티|gyeongui|6": {
+    "seconds": 46,
+    "meters": 55
+  },
+  "모란|8|suin": {
+    "seconds": 83,
+    "meters": 99
+  },
+  "모란|suin|8": {
+    "seconds": 83,
+    "meters": 99
+  },
+  "보라매|7|sillim": {
+    "seconds": 59,
+    "meters": 71
+  },
+  "보라매|sillim|7": {
+    "seconds": 59,
+    "meters": 71
+  },
+  "보문|6|uisinseol": {
+    "seconds": 73,
+    "meters": 87
+  },
+  "보문|uisinseol|6": {
+    "seconds": 73,
+    "meters": 87
+  },
+  "복정|8|suin": {
+    "seconds": 13,
+    "meters": 16
+  },
+  "복정|suin|8": {
+    "seconds": 13,
+    "meters": 16
+  },
+  "불광|3|6": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "불광|6|3": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "사당|2|4": {
+    "seconds": 62,
+    "meters": 74
+  },
+  "사당|4|2": {
+    "seconds": 62,
+    "meters": 74
+  },
+  "삼각지|4|6": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "삼각지|6|4": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "상봉|7|gyeongchun": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "상봉|7|gyeongui": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "상봉|gyeongchun|7": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "상봉|gyeongui|7": {
+    "seconds": 83,
+    "meters": 100
+  },
+  "서울|1|4": {
+    "seconds": 133,
+    "meters": 159
+  },
+  "서울|1|airport": {
+    "seconds": 258,
+    "meters": 309
+  },
+  "서울|1|gtxa": {
+    "seconds": 143,
+    "meters": 172
+  },
+  "서울|1|gyeongui": {
+    "seconds": 137,
+    "meters": 164
+  },
+  "서울|4|1": {
+    "seconds": 133,
+    "meters": 159
+  },
+  "서울|4|airport": {
+    "seconds": 187,
+    "meters": 224
+  },
+  "서울|4|gtxa": {
+    "seconds": 220,
+    "meters": 264
+  },
+  "서울|4|gyeongui": {
+    "seconds": 269,
+    "meters": 323
+  },
+  "서울|airport|1": {
+    "seconds": 258,
+    "meters": 309
+  },
+  "서울|airport|4": {
+    "seconds": 187,
+    "meters": 224
+  },
+  "서울|gtxa|1": {
+    "seconds": 143,
+    "meters": 172
+  },
+  "서울|gtxa|4": {
+    "seconds": 220,
+    "meters": 264
+  },
+  "서울|gyeongui|1": {
+    "seconds": 137,
+    "meters": 164
+  },
+  "서울|gyeongui|4": {
+    "seconds": 269,
+    "meters": 323
+  },
+  "석계|1|6": {
+    "seconds": 104,
+    "meters": 125
+  },
+  "석계|6|1": {
+    "seconds": 104,
+    "meters": 125
+  },
+  "석촌|8|9": {
+    "seconds": 68,
+    "meters": 82
+  },
+  "석촌|9|8": {
+    "seconds": 68,
+    "meters": 82
+  },
+  "선릉|2|suin": {
+    "seconds": 68,
+    "meters": 81
+  },
+  "선릉|suin|2": {
+    "seconds": 68,
+    "meters": 81
+  },
+  "성수|2|2": {
+    "seconds": 19,
+    "meters": 23
+  },
+  "성신여대입구|4|uisinseol": {
+    "seconds": 6,
+    "meters": 7
+  },
+  "성신여대입구|uisinseol|4": {
+    "seconds": 6,
+    "meters": 7
+  },
+  "수서|3|gtxa": {
+    "seconds": 230,
+    "meters": 276
+  },
+  "수서|3|suin": {
+    "seconds": 77,
+    "meters": 92
+  },
+  "수서|gtxa|3": {
+    "seconds": 230,
+    "meters": 276
+  },
+  "수서|suin|3": {
+    "seconds": 77,
+    "meters": 92
+  },
+  "시청|1|2": {
+    "seconds": 84,
+    "meters": 101
+  },
+  "시청|2|1": {
+    "seconds": 84,
+    "meters": 101
+  },
+  "신길|1|5": {
+    "seconds": 202,
+    "meters": 242
+  },
+  "신길|5|1": {
+    "seconds": 202,
+    "meters": 242
+  },
+  "신내|6|gyeongchun": {
+    "seconds": 42,
+    "meters": 50
+  },
+  "신내|gyeongchun|6": {
+    "seconds": 42,
+    "meters": 50
+  },
+  "신당|2|6": {
+    "seconds": 202,
+    "meters": 242
+  },
+  "신당|6|2": {
+    "seconds": 202,
+    "meters": 242
+  },
+  "신도림|1|2": {
+    "seconds": 68,
+    "meters": 81
+  },
+  "신도림|2|1": {
+    "seconds": 68,
+    "meters": 81
+  },
+  "신도림|2|2": {
+    "seconds": 68,
+    "meters": 81
+  },
+  "신림|2|sillim": {
+    "seconds": 73,
+    "meters": 88
+  },
+  "신림|sillim|2": {
+    "seconds": 73,
+    "meters": 88
+  },
+  "신사|3|sinbundang": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "신사|sinbundang|3": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "신설동|1|2": {
+    "seconds": 133,
+    "meters": 159
+  },
+  "신설동|1|uisinseol": {
+    "seconds": 108,
+    "meters": 129
+  },
+  "신설동|2|1": {
+    "seconds": 133,
+    "meters": 159
+  },
+  "신설동|2|uisinseol": {
+    "seconds": 228,
+    "meters": 273
+  },
+  "신설동|uisinseol|1": {
+    "seconds": 108,
+    "meters": 129
+  },
+  "신설동|uisinseol|2": {
+    "seconds": 228,
+    "meters": 273
+  },
+  "약수|3|6": {
+    "seconds": 108,
+    "meters": 130
+  },
+  "약수|6|3": {
+    "seconds": 108,
+    "meters": 130
+  },
+  "양재|3|sinbundang": {
+    "seconds": 78,
+    "meters": 93
+  },
+  "양재|sinbundang|3": {
+    "seconds": 78,
+    "meters": 93
+  },
+  "여의도|5|9": {
+    "seconds": 57,
+    "meters": 68
+  },
+  "여의도|9|5": {
+    "seconds": 57,
+    "meters": 68
+  },
+  "연신내|3|6": {
+    "seconds": 151,
+    "meters": 181
+  },
+  "연신내|3|gtxa": {
+    "seconds": 201,
+    "meters": 241
+  },
+  "연신내|6|3": {
+    "seconds": 151,
+    "meters": 181
+  },
+  "연신내|6|gtxa": {
+    "seconds": 156,
+    "meters": 187
+  },
+  "연신내|gtxa|3": {
+    "seconds": 201,
+    "meters": 241
+  },
+  "연신내|gtxa|6": {
+    "seconds": 156,
+    "meters": 187
+  },
+  "영등포구청|2|5": {
+    "seconds": 92,
+    "meters": 110
+  },
+  "영등포구청|5|2": {
+    "seconds": 92,
+    "meters": 110
+  },
+  "오금|3|5": {
+    "seconds": 54,
+    "meters": 65
+  },
+  "오금|5|3": {
+    "seconds": 54,
+    "meters": 65
+  },
+  "옥수|3|gyeongui": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "옥수|gyeongui|3": {
+    "seconds": 129,
+    "meters": 155
+  },
+  "온수|1|7": {
+    "seconds": 85,
+    "meters": 102
+  },
+  "온수|7|1": {
+    "seconds": 85,
+    "meters": 102
+  },
+  "올림픽공원|5|9": {
+    "seconds": 78,
+    "meters": 93
+  },
+  "올림픽공원|9|5": {
+    "seconds": 78,
+    "meters": 93
+  },
+  "왕십리|2|5": {
+    "seconds": 72,
+    "meters": 86
+  },
+  "왕십리|2|gyeongui": {
+    "seconds": 42,
+    "meters": 50
+  },
+  "왕십리|2|suin": {
+    "seconds": 83,
+    "meters": 99
+  },
+  "왕십리|5|2": {
+    "seconds": 72,
+    "meters": 86
+  },
+  "왕십리|5|gyeongui": {
+    "seconds": 165,
+    "meters": 198
+  },
+  "왕십리|5|suin": {
+    "seconds": 203,
+    "meters": 244
+  },
+  "왕십리|gyeongui|2": {
+    "seconds": 42,
+    "meters": 50
+  },
+  "왕십리|gyeongui|5": {
+    "seconds": 165,
+    "meters": 198
+  },
+  "왕십리|suin|2": {
+    "seconds": 83,
+    "meters": 99
+  },
+  "왕십리|suin|5": {
+    "seconds": 203,
+    "meters": 244
+  },
+  "을지로3가|2|3": {
+    "seconds": 124,
+    "meters": 149
+  },
+  "을지로3가|3|2": {
+    "seconds": 124,
+    "meters": 149
+  },
+  "을지로4가|2|5": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "을지로4가|5|2": {
+    "seconds": 64,
+    "meters": 77
+  },
+  "이촌|4|gyeongui": {
+    "seconds": 65,
+    "meters": 78
+  },
+  "이촌|gyeongui|4": {
+    "seconds": 65,
+    "meters": 78
+  },
+  "잠실|2|8": {
+    "seconds": 158,
+    "meters": 190
+  },
+  "잠실|8|2": {
+    "seconds": 158,
+    "meters": 190
+  },
+  "종로3가|1|3": {
+    "seconds": 98,
+    "meters": 118
+  },
+  "종로3가|1|5": {
+    "seconds": 260,
+    "meters": 312
+  },
+  "종로3가|3|1": {
+    "seconds": 98,
+    "meters": 118
+  },
+  "종로3가|3|5": {
+    "seconds": 98,
+    "meters": 117
+  },
+  "종로3가|5|1": {
+    "seconds": 260,
+    "meters": 312
+  },
+  "종로3가|5|3": {
+    "seconds": 98,
+    "meters": 117
+  },
+  "종합운동장|2|9": {
+    "seconds": 78,
+    "meters": 94
+  },
+  "종합운동장|9|2": {
+    "seconds": 78,
+    "meters": 94
+  },
+  "창동|1|4": {
+    "seconds": 70,
+    "meters": 84
+  },
+  "창동|4|1": {
+    "seconds": 70,
+    "meters": 84
+  },
+  "천호|5|8": {
+    "seconds": 29,
+    "meters": 35
+  },
+  "천호|8|5": {
+    "seconds": 29,
+    "meters": 35
+  },
+  "청구|5|6": {
+    "seconds": 87,
+    "meters": 104
+  },
+  "청구|6|5": {
+    "seconds": 87,
+    "meters": 104
+  },
+  "청량리|1|gyeongchun": {
+    "seconds": 169,
+    "meters": 203
+  },
+  "청량리|1|gyeongui": {
+    "seconds": 138,
+    "meters": 165
+  },
+  "청량리|1|suin": {
+    "seconds": 150,
+    "meters": 180
+  },
+  "청량리|gyeongchun|1": {
+    "seconds": 169,
+    "meters": 203
+  },
+  "청량리|gyeongui|1": {
+    "seconds": 138,
+    "meters": 165
+  },
+  "청량리|suin|1": {
+    "seconds": 150,
+    "meters": 180
+  },
+  "총신대입구|4|7": {
+    "seconds": 143,
+    "meters": 171
+  },
+  "총신대입구|7|4": {
+    "seconds": 143,
+    "meters": 171
+  },
+  "충무로|3|4": {
+    "seconds": 14,
+    "meters": 17
+  },
+  "충무로|4|3": {
+    "seconds": 14,
+    "meters": 17
+  },
+  "충정로|2|5": {
+    "seconds": 177,
+    "meters": 212
+  },
+  "충정로|5|2": {
+    "seconds": 177,
+    "meters": 212
+  },
+  "태릉입구|6|7": {
+    "seconds": 38,
+    "meters": 46
+  },
+  "태릉입구|7|6": {
+    "seconds": 38,
+    "meters": 46
+  },
+  "합정|2|6": {
+    "seconds": 68,
+    "meters": 82
+  },
+  "합정|6|2": {
+    "seconds": 68,
+    "meters": 82
+  },
+  "홍대입구|2|airport": {
+    "seconds": 296,
+    "meters": 355
+  },
+  "홍대입구|2|gyeongui": {
+    "seconds": 254,
+    "meters": 305
+  },
+  "홍대입구|airport|2": {
+    "seconds": 296,
+    "meters": 355
+  },
+  "홍대입구|gyeongui|2": {
+    "seconds": 254,
+    "meters": 305
+  },
+  "효창공원앞|6|gyeongui": {
+    "seconds": 92,
+    "meters": 110
+  },
+  "효창공원앞|gyeongui|6": {
+    "seconds": 92,
+    "meters": 110
+  }
+}

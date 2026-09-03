@@ -4,9 +4,12 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 're
 
 import { LineBadge } from '@/components/subway/LineBadge';
 import { RouteSummary } from '@/components/subway/RouteSummary';
+import { TransferHint } from '@/components/subway/TransferHint';
 import { directionLabel, getLine, groupIdOf } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
+import { buildTransferDoorGuides } from '@/services/alerts/door-guides';
 import { formatDuration } from '@/services/alerts/eta';
+import { doorGuideKey } from '@/services/alerts/trip';
 import {
   capabilities,
   capabilityNotice,
@@ -16,6 +19,8 @@ import { requestLocationPermission } from '@/services/location/geofence';
 import { requestNotificationPermission } from '@/services/notifications/setup';
 import { findRoutePlan } from '@/services/routing';
 import type { RouteLeg } from '@/services/routing/types';
+import { getSubwayApi } from '@/services/subway';
+import type { DoorGuide } from '@/services/subway/types';
 import { useSettings } from '@/store/SettingsContext';
 import { useTrip } from '@/store/TripContext';
 
@@ -64,7 +69,14 @@ export default function TripSetupScreen() {
       }
       if (useGps) await requestLocationPermission();
 
-      await start({ plan, alertNStationsBefore: alertN, useGps });
+      // 환승 칸은 번들 데이터에서 바로, 최종 하차역의 빠른하차 칸은 서버에서 (3초 안에 못 받으면 없이) 갑니다.
+      const doorGuides = buildTransferDoorGuides(plan);
+      const lastIndex = plan.legs.length - 1;
+      const last = plan.legs[lastIndex];
+      const exit = await fetchFastExitWithin(last, 3_000);
+      if (exit) doorGuides[doorGuideKey(lastIndex, 'alight')] = exit;
+
+      await start({ plan, alertNStationsBefore: alertN, useGps, doorGuides });
       router.replace('/alerts');
     } catch {
       Alert.alert('여정을 시작할 수 없습니다', '경로를 다시 선택해 주세요.');
@@ -97,16 +109,16 @@ export default function TripSetupScreen() {
       <Text style={[styles.label, { color: theme.textSecondary }]}>경로</Text>
       {plan.legs.map((leg, index) => (
         <View key={`${leg.lineId}-${leg.boardIndex}`}>
-          {leg.transferIn ? (
-            <Text style={[styles.transfer, { color: theme.textSecondary }]}>
-              {leg.transferIn.kind === 'transfer'
-                ? `${leg.transferIn.fromStationName}에서 환승 (약 ${formatDuration(leg.transferIn.seconds)})`
-                : `${leg.transferIn.fromStationName}에서 같은 승강장 열차 갈아타기`}
-            </Text>
-          ) : null}
+          {index > 0 ? <TransferHint fromLeg={plan.legs[index - 1]} toLeg={leg} /> : null}
           <LegRow leg={leg} first={index === 0} />
         </View>
       ))}
+
+      <Text style={[styles.label, { color: theme.textSecondary }]}>알림</Text>
+      <Text style={[styles.hint, { color: theme.textSecondary }]}>
+        탈 열차가 1분 안에 오면 승차 알림, 하차·환승역은 아래 시점의 예비 알림과 도착 1분 전 알림을 보냅니다.
+        빠른 하차 칸을 아는 역은 알림 문구에 칸 번호가 함께 나옵니다.
+      </Text>
 
       <Text style={[styles.label, { color: theme.textSecondary }]}>예비 알림 시점</Text>
       <Text style={[styles.hint, { color: theme.textSecondary }]}>
@@ -165,6 +177,21 @@ export default function TripSetupScreen() {
   );
 }
 
+/** 최종 하차역의 빠른하차 칸. 서버가 느리면 기다리지 않고 없이 진행합니다. */
+async function fetchFastExitWithin(leg: RouteLeg, timeoutMs: number): Promise<DoorGuide | null> {
+  const api = getSubwayApi();
+  if (!api.capabilities.fastExits) return null;
+  try {
+    const exits = await Promise.race([
+      api.getFastExits(leg.lineId, leg.alightStationName, leg.direction),
+      new Promise<DoorGuide[]>((resolve) => setTimeout(() => resolve([]), timeoutMs)),
+    ]);
+    return exits[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function LegRow({ leg, first }: { leg: RouteLeg; first: boolean }) {
   const theme = useTheme();
   const line = getLine(leg.lineId);
@@ -207,7 +234,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   legText: { flex: 1, gap: 2 },
-  transfer: { fontSize: 13, marginTop: 10, marginLeft: 4 },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',

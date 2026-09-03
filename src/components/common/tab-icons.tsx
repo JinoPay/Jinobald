@@ -7,7 +7,7 @@ interface IconProps {
   size?: number;
 }
 
-/** 열차 — 노선도 탭. */
+/** 열차 — 홈 탭. */
 export function TrainIcon({ color, size = 24 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -25,7 +25,7 @@ export function TrainIcon({ color, size = 24 }: IconProps) {
   );
 }
 
-/** 종 — 알림 탭. */
+/** 종 — 여정 탭. */
 export function BellIcon({ color, size = 24 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

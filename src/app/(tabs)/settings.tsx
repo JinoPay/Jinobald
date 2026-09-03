@@ -1,8 +1,9 @@
 import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { LINES } from '@/data/stations';
+import { LINES, LINE_GROUPS } from '@/data/stations';
+import { TRANSFER_DATA_MANIFEST } from '@/data/transfers';
 import { useTheme } from '@/hooks/use-theme';
 import {
   capabilities,
@@ -16,8 +17,15 @@ import {
   requestNotificationPermission,
   type NotificationPermissionState,
 } from '@/services/notifications/setup';
-import { getSubwayApi, hasApiKey } from '@/services/subway';
+import { describeSource, hasApiKey, hasBackendUrl, type DataSource } from '@/services/subway';
 import { useSettings } from '@/store/SettingsContext';
+
+const DATA_SOURCE_OPTIONS: { value: DataSource; label: string }[] = [
+  { value: 'auto', label: '자동' },
+  { value: 'backend', label: '백엔드' },
+  { value: 'seoul-direct', label: '서울 직접' },
+  { value: 'mock', label: '모의' },
+];
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -30,7 +38,12 @@ export default function SettingsScreen() {
     void getLocationPermission().then(setLocation);
   }, []);
 
+  const source = describeSource();
   const stationCount = LINES.reduce((sum, line) => sum + line.stations.length, 0);
+  const segmentCount = LINES.reduce(
+    (sum, line) => sum + line.stations.filter((s) => s.secondsToNext != null).length,
+    0,
+  );
   const coordCount = LINES.reduce(
     (sum, line) => sum + line.stations.filter((s) => s.lat != null).length,
     0,
@@ -39,22 +52,19 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Section title="데이터 소스" theme={theme}>
-        <Row
-          label="인증키"
-          value={hasApiKey() ? '설정됨' : '미설정 — 모의 데이터 사용 중'}
-          theme={theme}
-        />
-        <Row label="현재 사용 중" value={getSubwayApi().kind === 'mock' ? '모의 데이터' : '실시간 API'} theme={theme} />
-        <SwitchRow
-          label="모의 데이터 강제 사용"
-          hint="인증키가 있어도 모의 데이터로 동작합니다. 일일 호출 한도를 아끼거나 데모할 때 유용합니다."
-          value={settings.forceMock}
-          onValueChange={(v) => update({ forceMock: v })}
+        <Row label="백엔드" value={hasBackendUrl() ? source.kind === 'backend' ? source.detail : '설정됨' : '미설정'} theme={theme} />
+        <Row label="서울 인증키" value={hasApiKey() ? '설정됨' : '미설정'} theme={theme} />
+        <Row label="현재 사용 중" value={source.label} theme={theme} />
+        <ChipRow
+          options={DATA_SOURCE_OPTIONS}
+          value={settings.dataSource}
+          onChange={(v) => update({ dataSource: v })}
           theme={theme}
         />
         <Text style={[styles.note, { color: theme.textSecondary }]}>
-          인증키는 프로젝트 루트의 .env 파일에 EXPO_PUBLIC_SEOUL_SUBWAY_API_KEY 로 넣고 앱을 다시
-          시작하면 적용됩니다. 발급은 data.seoul.go.kr 에서 무료로 할 수 있습니다.
+          자동은 백엔드 → 서울 직접 호출 → 모의 데이터 순으로 고릅니다. 설정이 없는 항목을 고르면 모의
+          데이터로 동작합니다. 백엔드 주소는 .env 의 EXPO_PUBLIC_BACKEND_URL, 서울 인증키는
+          EXPO_PUBLIC_SEOUL_SUBWAY_API_KEY 에 넣고 앱을 다시 시작하면 적용됩니다.
         </Text>
       </Section>
 
@@ -128,16 +138,25 @@ export default function SettingsScreen() {
       </Section>
 
       <Section title="데이터셋" theme={theme}>
-        <Row label="노선" value={`${LINES.length}개 (서울 1~9호선 본선)`} theme={theme} />
+        <Row label="노선" value={`${LINE_GROUPS.length}개 노선 · ${LINES.length}개 운행 계통`} theme={theme} />
         <Row label="역 항목" value={`${stationCount}개`} theme={theme} />
         <Row
           label="좌표 보유"
           value={`${coordCount}개 (${Math.round((coordCount / stationCount) * 100)}%)`}
           theme={theme}
         />
+        <Row label="구간 실측 소요시간" value={`${segmentCount}개 구간`} theme={theme} />
+        <Row
+          label="환승 칸 안내"
+          value={`${TRANSFER_DATA_MANIFEST.transferGuides.rows}건 · ${TRANSFER_DATA_MANIFEST.transferGuides.stations}역`}
+          theme={theme}
+        />
+        <Row label="환승 도보 시간" value={`${TRANSFER_DATA_MANIFEST.transferTimes.rows}건`} theme={theme} />
+        <Row label="데이터 생성일" value={TRANSFER_DATA_MANIFEST.generatedAt} theme={theme} />
         <Text style={[styles.note, { color: theme.textSecondary }]}>
-          좌표가 없는 역은 GPS 보정이 자동으로 비활성화되고 도착예정 기반 알림만 사용합니다.
-          지선(경부선·마천지선·성수지선·신정지선 등)과 광역철도는 아직 포함되어 있지 않습니다.
+          수도권 전철 전 노선을 포함합니다. 좌표가 없는 역은 GPS 보정이 자동으로 비활성화되고
+          도착예정 기반 알림만 사용합니다. 환승 칸·환승 시간·구간 소요시간은 서울교통공사 공공데이터이며,
+          없는 구간은 노선 평균으로 추정합니다.
         </Text>
       </Section>
 
@@ -168,26 +187,38 @@ function Row({ label, value, theme }: { label: string; value: string; theme: The
   );
 }
 
-function SwitchRow({
-  label,
-  hint,
+function ChipRow<T extends string>({
+  options,
   value,
-  onValueChange,
+  onChange,
   theme,
 }: {
-  label: string;
-  hint: string;
-  value: boolean;
-  onValueChange: (value: boolean) => void;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
   theme: Theme;
 }) {
   return (
-    <View style={styles.switchRow}>
-      <View style={styles.switchText}>
-        <Text style={[styles.rowLabel, { color: theme.text }]}>{label}</Text>
-        <Text style={[styles.note, { color: theme.textSecondary }]}>{hint}</Text>
-      </View>
-      <Switch value={value} onValueChange={onValueChange} />
+    <View style={styles.chips}>
+      {options.map((option) => {
+        const selected = option.value === value;
+        return (
+          <Pressable
+            key={option.value}
+            onPress={() => onChange(option.value)}
+            style={[
+              styles.chip,
+              {
+                borderColor: selected ? theme.accent : theme.border,
+                backgroundColor: selected ? theme.accent : 'transparent',
+              },
+            ]}>
+            <Text style={{ color: selected ? '#fff' : theme.text, fontSize: 13, fontWeight: '600' }}>
+              {option.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -200,8 +231,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   rowLabel: { fontSize: 15, fontWeight: '500' },
   rowValue: { fontSize: 14, flexShrink: 1, textAlign: 'right' },
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  switchText: { flex: 1, gap: 2 },
   note: { fontSize: 12, lineHeight: 17 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
   button: { alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, borderWidth: 1 },
 });

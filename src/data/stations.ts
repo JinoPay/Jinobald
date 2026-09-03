@@ -12,6 +12,11 @@ export interface Station {
   lat?: number;
   lng?: number;
   aliases?: string[];
+  /**
+   * 다음 역(배열의 다음 항목, 순환선은 마지막→첫 역 포함)까지의 실측 운행 초.
+   * 서울교통공사 역간거리 데이터가 있는 구간에만 있고, 없으면 노선 평균을 씁니다.
+   */
+  secondsToNext?: number;
 }
 
 export interface Line {
@@ -219,14 +224,15 @@ export function searchStations(query: string, limit = 30): UniqueStation[] {
 /**
  * 같은 노선에서 from → to 로 갈 때의 방향.
  * 배열 인덱스가 커지는 쪽이 하행(순환선은 외선), 작아지는 쪽이 상행(내선)입니다.
+ * 순환선은 운행 초가 적은 쪽을 고릅니다 (graph.ts 참고).
  */
 export function directionBetween(line: Line, fromIndex: number, toIndex: number): Direction {
-  return directionBetweenIndices(line.loop, line.stations.length, fromIndex, toIndex);
+  return directionBetweenIndices(line, fromIndex, toIndex);
 }
 
-/** from → to 사이의 정거장 수. 순환선은 진행 방향에 맞춰 감아서 셉니다. */
+/** from → to 사이의 정거장 수. 순환선은 빠른 쪽으로 감아서 셉니다. */
 export function stationsBetween(line: Line, fromIndex: number, toIndex: number): number {
-  return stationsBetweenIndices(line.loop, line.stations.length, fromIndex, toIndex);
+  return stationsBetweenIndices(line, fromIndex, toIndex);
 }
 
 /**
