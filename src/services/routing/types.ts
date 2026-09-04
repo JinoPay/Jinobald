@@ -45,7 +45,14 @@ export interface RouteLeg {
   transferIn: RouteTransfer | null;
 }
 
-export type RouteLabel = 'fastest' | 'fewest-transfers';
+/**
+ * 후보의 성격.
+ * - saved: 사용자가 저장한 "내 경로". 같은 출발·도착이면 항상 맨 앞입니다.
+ * - recommended: 시간·환승·실시간 추적 가능성을 함께 본 균형 점수.
+ * - fastest / fewest-transfers / fewest-stops: 한 가지 기준만 최소화.
+ * - alternative: 추천 경로의 노선 하나를 피해 본 대안 ("N호선 제외").
+ */
+export type RouteLabel = 'saved' | 'recommended' | 'fastest' | 'fewest-transfers' | 'fewest-stops' | 'alternative';
 
 export interface RoutePlan {
   /** 결정적 식별자 — 후보 중복 제거에 씁니다. */
@@ -62,4 +69,8 @@ export interface RoutePlan {
   /** 실시간 도착정보가 없는 계통이 포함되는지. UI 안내와 정확도 기대치에 씁니다. */
   hasNonRealtimeLine: boolean;
   label: RouteLabel;
+  /** 다른 프로파일로도 같은 경로가 나온 경우 그 라벨들. "추천 · 최소 시간" 처럼 함께 보여 줍니다. */
+  alsoLabels?: RouteLabel[];
+  /** `alternative` 후보가 피한 계통 id. 화면에 "N호선 제외"로 보입니다. */
+  avoidedLineId?: string | null;
 }

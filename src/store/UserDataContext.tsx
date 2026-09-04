@@ -1,5 +1,6 @@
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { isSavedRouteList, newSavedRoute, type SavedRoute, type SavedRouteInput } from '@/services/routes/saved';
 import { readJson, StorageKeys, writeJson } from '@/services/storage/persist';
 
 /** 집·회사 같은 라벨. null 은 일반 즐겨찾기. */
@@ -18,7 +19,7 @@ export interface RecentSearch {
   at: number;
 }
 
-/** 끝난 여정 요약. 홈의 "자주 가는 경로"에 씁니다. */
+/** 끝난 여정 요약. 홈의 "자주 가는 경로"에 씁니다. 키는 정규화 역명(UniqueStation.key)입니다. */
 export interface TripHistoryEntry {
   originKey: string;
   destinationKey: string;
@@ -34,6 +35,7 @@ interface UserDataContextValue {
   favorites: FavoriteStation[];
   recents: RecentSearch[];
   history: TripHistoryEntry[];
+  savedRoutes: SavedRoute[];
   ready: boolean;
   isFavorite: (key: string) => boolean;
   toggleFavorite: (key: string) => void;
@@ -43,12 +45,18 @@ interface UserDataContextValue {
   pushRecent: (search: Omit<RecentSearch, 'at'>) => void;
   clearRecents: () => void;
   pushHistory: (entry: Omit<TripHistoryEntry, 'at'>) => void;
+  saveRoute: (input: SavedRouteInput) => SavedRoute;
+  updateSavedRoute: (id: string, patch: Partial<Omit<SavedRoute, 'id'>>) => void;
+  removeSavedRoute: (id: string) => void;
+  /** 이 경로로 여정을 시작했을 때. 사용 횟수·시각을 올려 같은 쌍의 저장 경로 중 우선순위를 정합니다. */
+  touchSavedRoute: (id: string) => void;
 }
 
 const UserDataContext = createContext<UserDataContextValue>({
   favorites: [],
   recents: [],
   history: [],
+  savedRoutes: [],
   ready: false,
   isFavorite: () => false,
   toggleFavorite: () => {},
@@ -57,6 +65,12 @@ const UserDataContext = createContext<UserDataContextValue>({
   pushRecent: () => {},
   clearRecents: () => {},
   pushHistory: () => {},
+  saveRoute: () => {
+    throw new Error('UserDataProvider 가 없습니다.');
+  },
+  updateSavedRoute: () => {},
+  removeSavedRoute: () => {},
+  touchSavedRoute: () => {},
 });
 
 function isFavoriteList(value: unknown): value is FavoriteStation[] {
@@ -72,13 +86,14 @@ function isHistoryList(value: unknown): value is TripHistoryEntry[] {
 }
 
 /**
- * 즐겨찾기·최근 검색·여정 이력. 전부 기기 로컬(AsyncStorage)에만 있습니다.
+ * 즐겨찾기·최근 검색·여정 이력·저장 경로. 전부 기기 로컬(AsyncStorage)에만 있습니다.
  * 저장은 항상 낙관적으로 — 화면을 먼저 바꾸고 뒤에서 씁니다.
  */
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<FavoriteStation[]>([]);
   const [recents, setRecents] = useState<RecentSearch[]>([]);
   const [history, setHistory] = useState<TripHistoryEntry[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -86,10 +101,12 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
       readJson<unknown>(StorageKeys.favoriteStations, []),
       readJson<unknown>(StorageKeys.recentStations, []),
       readJson<unknown>(StorageKeys.tripHistory, []),
-    ]).then(([f, r, h]) => {
+      readJson<unknown>(StorageKeys.savedRoutes, []),
+    ]).then(([f, r, h, s]) => {
       if (isFavoriteList(f)) setFavorites(f);
       if (isRecentList(r)) setRecents(r);
       if (isHistoryList(h)) setHistory(h);
+      if (isSavedRouteList(s)) setSavedRoutes(s);
       setReady(true);
     });
   }, []);
@@ -113,11 +130,13 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
 
   const setFavoriteLabel = useCallback(
     (key: string, label: FavoriteLabel) => {
-      const without = favorites
-        .filter((f) => f.key !== key)
-        .map((f) => (label && f.label === label ? { ...f, label: null } : f));
+      // 순서를 유지합니다 — 라벨을 붙였다고 목록 끝으로 옮기지 않습니다.
       const existing = favorites.find((f) => f.key === key);
-      saveFavorites([...without, { key, label, addedAt: existing?.addedAt ?? Date.now() }]);
+      const next = favorites.map((f) => {
+        if (f.key === key) return { ...f, label };
+        return label && f.label === label ? { ...f, label: null } : f;
+      });
+      saveFavorites(existing ? next : [...next, { key, label, addedAt: Date.now() }]);
     },
     [favorites, saveFavorites],
   );
@@ -153,11 +172,50 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const writeSavedRoutes = useCallback((updater: (prev: SavedRoute[]) => SavedRoute[]) => {
+    setSavedRoutes((prev) => {
+      const next = updater(prev);
+      void writeJson(StorageKeys.savedRoutes, next);
+      return next;
+    });
+  }, []);
+
+  const saveRoute = useCallback(
+    (input: SavedRouteInput) => {
+      const created = newSavedRoute(input);
+      writeSavedRoutes((prev) => [created, ...prev]);
+      return created;
+    },
+    [writeSavedRoutes],
+  );
+
+  const updateSavedRoute = useCallback(
+    (id: string, patch: Partial<Omit<SavedRoute, 'id'>>) =>
+      writeSavedRoutes((prev) => prev.map((route) => (route.id === id ? { ...route, ...patch } : route))),
+    [writeSavedRoutes],
+  );
+
+  const removeSavedRoute = useCallback(
+    (id: string) => writeSavedRoutes((prev) => prev.filter((route) => route.id !== id)),
+    [writeSavedRoutes],
+  );
+
+  const touchSavedRoute = useCallback(
+    (id: string) =>
+      writeSavedRoutes((prev) =>
+        prev.map((route) =>
+          route.id === id ? { ...route, useCount: route.useCount + 1, lastUsedAt: Date.now() } : route,
+        ),
+      ),
+    [writeSavedRoutes],
+  );
+
   const value = useMemo(
     () => ({
       favorites,
       recents,
       history,
+      savedRoutes,
       ready,
       isFavorite,
       toggleFavorite,
@@ -166,8 +224,29 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
       pushRecent,
       clearRecents,
       pushHistory,
+      saveRoute,
+      updateSavedRoute,
+      removeSavedRoute,
+      touchSavedRoute,
     }),
-    [favorites, recents, history, ready, isFavorite, toggleFavorite, setFavoriteLabel, removeFavorite, pushRecent, clearRecents, pushHistory],
+    [
+      favorites,
+      recents,
+      history,
+      savedRoutes,
+      ready,
+      isFavorite,
+      toggleFavorite,
+      setFavoriteLabel,
+      removeFavorite,
+      pushRecent,
+      clearRecents,
+      pushHistory,
+      saveRoute,
+      updateSavedRoute,
+      removeSavedRoute,
+      touchSavedRoute,
+    ],
   );
 
   return <UserDataContext value={value}>{children}</UserDataContext>;

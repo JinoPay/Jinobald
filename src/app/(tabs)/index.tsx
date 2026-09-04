@@ -1,17 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/common/EmptyState';
 import { ActiveTripBanner } from '@/components/home/ActiveTripBanner';
 import { FavoriteStrip } from '@/components/home/FavoriteStrip';
+import { FrequentRoutes } from '@/components/home/FrequentRoutes';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { LineChips } from '@/components/home/LineChips';
 import { NearbyStations } from '@/components/home/NearbyStations';
 import { NoticeStrip } from '@/components/home/NoticeStrip';
 import { RouteResults } from '@/components/home/RouteResults';
 import { RouteSearchCard, type Slot } from '@/components/home/RouteSearchCard';
+import { SavedRoutesStrip } from '@/components/home/SavedRoutesStrip';
+import { SaveRouteSheet } from '@/components/home/SaveRouteSheet';
 import { SectionTitle } from '@/components/home/SectionTitle';
 import { StationRow } from '@/components/subway/StationRow';
 import { Radius, Spacing, Typography } from '@/constants/theme';
@@ -20,7 +23,9 @@ import { useFavoriteArrivals } from '@/hooks/use-favorite-arrivals';
 import { useNow } from '@/hooks/use-now';
 import { useTheme } from '@/hooks/use-theme';
 import { notificationNotice } from '@/services/location/capabilities';
-import { findRoutes } from '@/services/routing';
+import { findSavedForPair, resolveSavedRoute, type SavedRoute } from '@/services/routes/saved';
+import { findRoutes, isPlanValid } from '@/services/routing';
+import type { RoutePlan } from '@/services/routing/types';
 import { useUserData, type FavoriteLabel, type RecentSearch } from '@/store/UserDataContext';
 
 /** 검색창이 열린 이유 — 슬롯을 채우거나, 집/회사 칩에 역을 배정하거나. */
@@ -28,11 +33,25 @@ type SearchTarget = Slot | { assign: Exclude<FavoriteLabel, null> };
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { favorites, recents, setFavoriteLabel, removeFavorite, pushRecent, clearRecents } = useUserData();
+  const {
+    favorites,
+    recents,
+    history,
+    savedRoutes,
+    setFavoriteLabel,
+    removeFavorite,
+    pushRecent,
+    clearRecents,
+    saveRoute,
+    updateSavedRoute,
+    removeSavedRoute,
+  } = useUserData();
   const [origin, setOrigin] = useState<UniqueStation | null>(null);
   const [destination, setDestination] = useState<UniqueStation | null>(null);
+  const [via, setVia] = useState<UniqueStation | null>(null);
   const [target, setTarget] = useState<SearchTarget | null>(null);
   const [query, setQuery] = useState('');
+  const [saving, setSaving] = useState<RoutePlan | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const results = useMemo(() => searchStations(query), [query]);
@@ -62,13 +81,29 @@ export default function HomeScreen() {
     }
   }
 
-  /** 최소 시간 · 최소 환승 후보. 두 역이 이어져 있지 않으면 빈 배열입니다. */
-  const routes = useMemo(
-    () => (origin && destination ? findRoutes(origin.key, destination.key) : []),
-    [origin, destination],
+  /** 계산된 후보 (추천 · 최소 시간 · 최소 환승 · 최소 정거장 · 대안). 두 역이 이어져 있지 않으면 빈 배열입니다. */
+  const computed = useMemo(
+    () => (origin && destination ? findRoutes(origin.key, destination.key, via ? { viaKey: via.key } : {}) : []),
+    [origin, destination, via],
   );
+
+  /** 같은 출발·도착의 저장 경로. 경유역을 지정한 검색에는 끼어들지 않습니다. */
+  const savedMatch = useMemo(() => {
+    if (!origin || !destination || via) return null;
+    const saved = findSavedForPair(savedRoutes, origin.key, destination.key);
+    if (!saved) return null;
+    const resolved = resolveSavedRoute(saved, isPlanValid, (o, d) => findRoutes(o, d));
+    return resolved.plan ? { route: saved, plan: resolved.plan, refreshed: resolved.status === 'refreshed' } : null;
+  }, [origin, destination, via, savedRoutes]);
+
+  /** "내 경로"가 있으면 맨 앞, 그다음 계산된 후보. 같은 경로면 하나만. */
+  const routes = useMemo(
+    () => (savedMatch ? [savedMatch.plan, ...computed.filter((plan) => plan.id !== savedMatch.plan.id)] : computed),
+    [savedMatch, computed],
+  );
+
   const sameStation = origin && destination && origin.key === destination.key;
-  const activeSlot: Slot | null = target === 'origin' || target === 'destination' ? target : null;
+  const activeSlot: Slot | null = target === 'origin' || target === 'destination' || target === 'via' ? target : null;
 
   const openSearch = (next: SearchTarget) => {
     setTarget(next);
@@ -81,10 +116,14 @@ export default function HomeScreen() {
     setQuery('');
   };
 
-  const applyPair = (nextOrigin: UniqueStation | null, nextDestination: UniqueStation | null) => {
+  const applyPair = (
+    nextOrigin: UniqueStation | null,
+    nextDestination: UniqueStation | null,
+    options: { record?: boolean } = {},
+  ) => {
     setOrigin(nextOrigin);
     setDestination(nextDestination);
-    if (nextOrigin && nextDestination && nextOrigin.key !== nextDestination.key) {
+    if (options.record !== false && nextOrigin && nextDestination && nextOrigin.key !== nextDestination.key) {
       pushRecent({ originKey: nextOrigin.key, destinationKey: nextDestination.key });
     }
   };
@@ -92,6 +131,11 @@ export default function HomeScreen() {
   const pick = (station: UniqueStation) => {
     if (target && typeof target === 'object') {
       setFavoriteLabel(station.key, target.assign);
+      closeSearch();
+      return;
+    }
+    if (target === 'via') {
+      setVia(station);
       closeSearch();
       return;
     }
@@ -106,28 +150,56 @@ export default function HomeScreen() {
     closeSearch();
   };
 
-  const pickRecent = (search: RecentSearch) => {
-    const a = getUniqueStation(search.originKey);
-    const b = search.destinationKey ? getUniqueStation(search.destinationKey) : null;
+  const pickPair = (originKey: string, destinationKey: string) => {
+    const a = getUniqueStation(originKey);
+    const b = getUniqueStation(destinationKey);
     if (!a || !b) return;
+    setVia(null);
     applyPair(a, b);
     closeSearch();
   };
 
-  const swap = () => applyPair(destination, origin);
+  const pickRecent = (search: RecentSearch) => {
+    if (search.destinationKey) pickPair(search.originKey, search.destinationKey);
+  };
+
+  // 방향 바꾸기는 검색이 아니라 편집이므로 최근 검색에 남기지 않습니다.
+  const swap = () => applyPair(destination, origin, { record: false });
+
+  const clearSlot = (slot: Slot) => {
+    if (slot === 'origin') setOrigin(null);
+    else if (slot === 'destination') setDestination(null);
+    else setVia(null);
+  };
 
   const openArrivals = (station: UniqueStation) => {
     router.push(`/station/${encodeURIComponent(station.key)}`);
   };
 
-  // 경로 객체 대신 후보 번호만 넘깁니다. expo-router 는 params 를 문자열로 만들고,
-  // 탐색이 1ms 라 setup 화면에서 다시 찾는 편이 캐시보다 싸고 딥링크에도 안전합니다.
-  const openRoute = (index: number) => {
+  // 경로 객체 대신 후보 id 만 넘깁니다. expo-router 는 params 를 문자열로 만들고,
+  // 탐색이 몇 ms 라 setup 화면에서 다시 찾는 편이 캐시보다 싸고 딥링크에도 안전합니다.
+  // 저장 경로는 저장소에서 다시 꺼내므로 id 만 넘깁니다.
+  const openRoute = (plan: RoutePlan) => {
+    if (plan.label === 'saved' && savedMatch) {
+      router.push({ pathname: '/trip/setup', params: { saved: savedMatch.route.id } });
+      return;
+    }
     if (!origin || !destination) return;
     router.push({
       pathname: '/trip/setup',
-      params: { origin: origin.key, destination: destination.key, plan: String(index) },
+      params: { origin: origin.key, destination: destination.key, planId: plan.id, ...(via ? { via: via.key } : {}) },
     });
+  };
+
+  const openSavedRoute = (route: SavedRoute) => {
+    router.push({ pathname: '/trip/setup', params: { saved: route.id } });
+  };
+
+  const confirmRemoveSavedRoute = (route: SavedRoute) => {
+    Alert.alert(route.name, '저장한 경로를 지울까요? 이 경로를 쓰는 출퇴근 루틴도 동작하지 않게 됩니다.', [
+      { text: '취소', style: 'cancel' },
+      { text: '지우기', style: 'destructive', onPress: () => removeSavedRoute(route.id) },
+    ]);
   };
 
   const confirmRemoveFavorite = (station: UniqueStation) => {
@@ -137,13 +209,25 @@ export default function HomeScreen() {
     ]);
   };
 
+  const saveCurrent = (name: string) => {
+    if (!saving || !origin || !destination) return;
+    saveRoute({ name, originKey: origin.key, destinationKey: destination.key, plan: saving });
+  };
+
+  // 데이터셋이 바뀌어 저장 경로를 다시 찾았으면 저장값도 갱신해 둡니다.
+  useEffect(() => {
+    if (savedMatch?.refreshed) updateSavedRoute(savedMatch.route.id, { plan: savedMatch.plan });
+  }, [savedMatch, updateSavedRoute]);
+
   if (target !== null) {
     const placeholder =
       typeof target === 'object'
         ? `${target.assign === 'home' ? '집' : '회사'} 근처 역 검색`
         : target === 'origin'
           ? '출발역 검색'
-          : '도착역 검색';
+          : target === 'via'
+            ? '경유역 검색'
+            : '도착역 검색';
     const favoriteStations = favorites
       .map((f) => getUniqueStation(f.key))
       .filter((s): s is UniqueStation => !!s);
@@ -209,13 +293,20 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <HomeHeader />
         <ActiveTripBanner />
+        {savedRoutes.length > 0 ? (
+          <>
+            <SectionTitle title="내 경로" />
+            <SavedRoutesStrip routes={savedRoutes} onPress={openSavedRoute} onLongPress={confirmRemoveSavedRoute} />
+          </>
+        ) : null}
         <RouteSearchCard
           origin={origin}
           destination={destination}
+          via={via}
           active={activeSlot}
           recents={recents}
           onFocusSlot={openSearch}
-          onClear={(slot) => (slot === 'origin' ? setOrigin(null) : setDestination(null))}
+          onClear={clearSlot}
           onSwap={swap}
           onPickRecent={pickRecent}
         />
@@ -232,8 +323,8 @@ export default function HomeScreen() {
 
         {routes.length > 0 ? (
           <View style={styles.routes}>
-            <SectionTitle title="추천 경로" />
-            <RouteResults routes={routes} onPress={openRoute} />
+            <SectionTitle title={savedMatch ? '내 경로 · 추천' : '추천 경로'} />
+            <RouteResults routes={routes} onPress={openRoute} onSave={setSaving} />
           </View>
         ) : null}
 
@@ -244,6 +335,8 @@ export default function HomeScreen() {
             <Text style={[Typography.bodyStrong, { color: theme.text }]}>{origin.displayName} 실시간 도착 보기</Text>
           </Pressable>
         ) : null}
+
+        <FrequentRoutes history={history} savedRoutes={savedRoutes} onPress={pickPair} />
 
         <SectionTitle
           title="즐겨찾기"
@@ -268,6 +361,14 @@ export default function HomeScreen() {
         <LineChips />
         <View style={{ height: Spacing.five }} />
       </ScrollView>
+
+      <SaveRouteSheet
+        visible={saving !== null}
+        originName={origin?.displayName ?? ''}
+        destinationName={destination?.displayName ?? ''}
+        onSave={saveCurrent}
+        onClose={() => setSaving(null)}
+      />
     </SafeAreaView>
   );
 }

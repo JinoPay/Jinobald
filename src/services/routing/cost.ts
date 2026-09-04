@@ -38,6 +38,13 @@ export interface RouteCostConfig {
   transferSecondsByPair: Record<string, number>;
   /** 실측 도보 시간에 더하는 평균 열차 대기(배차 간격의 절반 남짓). */
   transferWaitSeconds: number;
+  /**
+   * 승차 간선 비용의 단위. `seconds` 는 실측 운행 초, `stations` 는 정거장마다 `stationCostSeconds` 를 씁니다.
+   * 후자가 "최소 정거장" 프로파일입니다 — 노선 데이터에 거리(km)가 없어 정거장 수가 가장 정직한 대용치입니다.
+   */
+  rideCost: 'seconds' | 'stations';
+  /** `rideCost === 'stations'` 일 때 정거장 하나의 비용(초). 환승 비용과 저울이 맞아야 합니다. */
+  stationCostSeconds: number;
 }
 
 /**
@@ -68,6 +75,27 @@ export const FASTEST_COST: RouteCostConfig = {
   transferSecondsOverride: TRANSFER_SECONDS_OVERRIDE,
   transferSecondsByPair: {},
   transferWaitSeconds: 120,
+  rideCost: 'seconds',
+  stationCostSeconds: 120,
+};
+
+/**
+ * 추천(균형).
+ *
+ * 최소 시간과 최소 환승 사이입니다: 환승 1회를 줄이려고 3분까지는 더 타고, 실시간 도착정보가
+ * 없어 진행을 추적할 수 없는 계통은 2분어치 불이익을 줍니다 — 잠들어도 되는 앱에서는
+ * "몇 분 빠른가"보다 "지금 어디쯤인지 아는가"가 더 중요하기 때문입니다.
+ */
+export const RECOMMENDED_COST: RouteCostConfig = {
+  ...FASTEST_COST,
+  transferBiasSeconds: 180,
+  nonRealtimeBiasSeconds: 120,
+};
+
+/** 정거장 수 최소화. 정차가 적어 앉아 갈 확률이 높고, 단순한 경로가 되기 쉽습니다. */
+export const FEWEST_STOPS_COST: RouteCostConfig = {
+  ...FASTEST_COST,
+  rideCost: 'stations',
 };
 
 /**
@@ -87,7 +115,7 @@ export const FEWEST_TRANSFER_COST: RouteCostConfig = {
  * 이걸 거치지 않으면 "최소 환승" 후보의 소요시간이 가산치만큼 부풀어 표시됩니다.
  */
 export function displayCost(cost: RouteCostConfig): RouteCostConfig {
-  return { ...cost, transferBiasSeconds: 0, nonRealtimeBiasSeconds: 0 };
+  return { ...cost, transferBiasSeconds: 0, nonRealtimeBiasSeconds: 0, rideCost: 'seconds' };
 }
 
 /** 실측 환승 도보 시간을 주입한 비용 모델. */

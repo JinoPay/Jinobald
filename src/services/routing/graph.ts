@@ -12,7 +12,7 @@
  */
 import type { Direction } from '@/services/subway/types';
 
-import type { RouteCostConfig } from './cost';
+import { displayCost, type RouteCostConfig } from './cost';
 import type { RouteLabel, RouteLeg, RoutePlan, RouteTransfer, TransferKind } from './types';
 
 // ---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ export function transferSeconds(
 
 /** 탐색에 쓰는 간선 비용 = 실제 시간 + 가산치. */
 function edgeCost(graph: RouteGraph, from: number, edge: GraphEdge, cost: RouteCostConfig): number {
-  if (edge.kind === 'ride') return edge.seconds;
+  if (edge.kind === 'ride') return cost.rideCost === 'stations' ? cost.stationCostSeconds : edge.seconds;
   const line = graph.lines[graph.nodes[edge.to].lineIndex];
   return (
     transferSeconds(graph, from, edge.to, edge.kind, cost).seconds +
@@ -293,6 +293,8 @@ function edgeCost(graph: RouteGraph, from: number, edge: GraphEdge, cost: RouteC
 // ---------------------------------------------------------------------------
 // Dijkstra
 // ---------------------------------------------------------------------------
+
+const EMPTY_SET: ReadonlySet<number> = new Set();
 
 /** 최소 힙. 노드 794개라 배열 정렬로도 되지만, 힙 쪽이 정직하고 의존성도 없습니다. */
 class MinHeap {
@@ -354,6 +356,8 @@ function shortestPath(
   sources: number[],
   targets: Set<number>,
   cost: RouteCostConfig,
+  /** 타지 않을 계통(lineIndex). 대안 탐색과 사용자의 노선 제외에 씁니다. */
+  avoidLines: ReadonlySet<number> = EMPTY_SET,
 ): number[] | null {
   const count = graph.nodes.length;
   const dist = new Float64Array(count).fill(Infinity);
@@ -362,6 +366,7 @@ function shortestPath(
   const heap = new MinHeap();
 
   for (const source of sources) {
+    if (avoidLines.has(graph.nodes[source].lineIndex)) continue;
     // 실시간 도착정보가 없는 계통에서 출발하는 것도 한 번의 "구간"이므로 가산합니다.
     const initial = graph.lines[graph.nodes[source].lineIndex].realtime
       ? 0
@@ -383,6 +388,7 @@ function shortestPath(
     }
     for (const edge of graph.edges[node]) {
       if (done[edge.to]) continue;
+      if (avoidLines.has(graph.nodes[edge.to].lineIndex)) continue;
       const next = dist[node] + edgeCost(graph, node, edge, cost);
       if (next < dist[edge.to]) {
         dist[edge.to] = next;
@@ -486,6 +492,7 @@ function describeRoute(
   path: number[],
   label: RouteLabel,
   cost: RouteCostConfig,
+  avoidedLineId: string | null = null,
 ): RoutePlan | null {
   const raw = compress(graph, path);
   if (raw.length === 0) return null;
@@ -529,6 +536,7 @@ function describeRoute(
     legChangeCount: legs.length - 1,
     hasNonRealtimeLine: raw.some((leg) => !graph.lines[leg.lineIndex].realtime),
     label,
+    avoidedLineId,
   };
 }
 
@@ -541,45 +549,122 @@ export interface RouteProfile {
   cost: RouteCostConfig;
 }
 
+export interface RouteSearchOptions {
+  /** 타지 않을 계통 id. 사용자가 "이 노선은 빼고" 라고 한 경우입니다. */
+  avoidLineIds?: string[];
+  /** 반드시 거칠 역 (정규화 전 이름이어도 됩니다). */
+  viaKey?: string;
+  /**
+   * 추천 경로가 탄 계통을 하나씩 피해 본 대안을 덧붙일지. 기본 true.
+   * "늘 타던 내 길"이 최소 시간·최소 환승 어느 쪽도 아닐 때 그 경로를 고를 수 있게 합니다.
+   */
+  alternatives?: boolean;
+  /** 전체 후보 상한. 기본 6. */
+  maxCandidates?: number;
+  /** 대안은 가장 빠른 후보의 이 배수 안에 들어야 합니다. 기본 1.5. */
+  maxRatio?: number;
+}
+
+function lineIndexSet(graph: RouteGraph, lineIds: Iterable<string>): Set<number> {
+  const result = new Set<number>();
+  const wanted = new Set(lineIds);
+  graph.lines.forEach((line, index) => {
+    if (wanted.has(line.id)) result.add(index);
+  });
+  return result;
+}
+
+/** 출발·도착·경유를 노드 집합으로. 하나라도 없거나 겹치면 null. */
+function endpoints(graph: RouteGraph, originKey: string, destinationKey: string): { sources: number[]; targets: Set<number> } | null {
+  const origin = normalizeStationKey(originKey);
+  const destination = normalizeStationKey(destinationKey);
+  if (!origin || !destination || origin === destination) return null;
+  const sources = graph.nodesByKey.get(origin);
+  const targetIds = graph.nodesByKey.get(destination);
+  if (!sources?.length || !targetIds?.length) return null;
+  const targets = new Set(targetIds);
+  // 표기만 다른 같은 역 (예: "서울역"과 "서울") 이면 경로가 없습니다.
+  if (sources.some((id) => targets.has(id))) return null;
+  return { sources, targets };
+}
+
+/**
+ * 한 프로파일로 경로 하나. 경유역이 있으면 두 번 찾아 잇습니다 — 앞 구간이 끝난
+ * 노드에서 뒤 구간을 시작하므로, 경유역에서 갈아탈지는 뒤 구간의 Dijkstra 가 정합니다.
+ */
+function searchPath(
+  graph: RouteGraph,
+  originKey: string,
+  destinationKey: string,
+  cost: RouteCostConfig,
+  avoid: ReadonlySet<number>,
+  viaKey: string | undefined,
+): number[] | null {
+  if (!viaKey || normalizeStationKey(viaKey) === normalizeStationKey(originKey) || normalizeStationKey(viaKey) === normalizeStationKey(destinationKey)) {
+    const ends = endpoints(graph, originKey, destinationKey);
+    return ends ? shortestPath(graph, ends.sources, ends.targets, cost, avoid) : null;
+  }
+  const first = endpoints(graph, originKey, viaKey);
+  const second = endpoints(graph, viaKey, destinationKey);
+  if (!first || !second) return null;
+  const head = shortestPath(graph, first.sources, first.targets, cost, avoid);
+  if (!head) return null;
+  const tail = shortestPath(graph, [head[head.length - 1]], second.targets, cost, avoid);
+  if (!tail) return null;
+  return [...head, ...tail.slice(1)];
+}
+
 /**
  * 후보 경로를 찾습니다.
  *
- * 프로파일(가중치)마다 Dijkstra 를 한 번씩 돌립니다. 794 노드 그래프에서 1회가
- * 1ms 남짓이라 k-shortest 알고리즘이나 라이브러리가 필요 없습니다.
- * 같은 경로가 나오면 하나만 남깁니다.
+ * 프로파일(가중치)마다 Dijkstra 를 한 번씩 돌립니다. 797 노드 그래프에서 1회가
+ * 1ms 남짓이라 k-shortest 알고리즘이나 라이브러리가 필요 없습니다. 같은 경로가 나오면
+ * 하나만 남깁니다. 그 뒤 첫 후보(추천)가 탄 계통을 하나씩 피해 대안을 더 찾습니다.
  */
 export function findRoutesInGraph(
   graph: RouteGraph,
   originKey: string,
   destinationKey: string,
   profiles: RouteProfile[],
+  options: RouteSearchOptions = {},
 ): RoutePlan[] {
-  const origin = normalizeStationKey(originKey);
-  const destination = normalizeStationKey(destinationKey);
-  if (!origin || !destination || origin === destination) return [];
-
-  const sources = graph.nodesByKey.get(origin);
-  const targetIds = graph.nodesByKey.get(destination);
-  if (!sources?.length || !targetIds?.length) return [];
-
-  const targets = new Set(targetIds);
-  // 표기만 다른 같은 역 (예: "서울역"과 "서울") 이면 경로가 없습니다.
-  if (sources.some((id) => targets.has(id))) return [];
+  const { viaKey, alternatives = true, maxCandidates = 6, maxRatio = 1.5 } = options;
+  if (profiles.length === 0) return [];
+  const avoid = lineIndexSet(graph, options.avoidLineIds ?? []);
 
   const plans: RoutePlan[] = [];
   const seen = new Set<string>();
+
   for (const profile of profiles) {
-    const path = shortestPath(graph, sources, targets, profile.cost);
+    const path = searchPath(graph, originKey, destinationKey, profile.cost, avoid, viaKey);
     if (!path) continue;
     // 표시 소요시간은 프로파일과 무관하게 같은 상수로 계산합니다.
-    const plan = describeRoute(graph, path, profile.label, {
-      ...profile.cost,
-      transferBiasSeconds: 0,
-      nonRealtimeBiasSeconds: 0,
-    });
-    if (!plan || seen.has(plan.id)) continue;
+    const plan = describeRoute(graph, path, profile.label, displayCost(profile.cost));
+    if (!plan) continue;
+    const existing = plans.find((p) => p.id === plan.id);
+    if (existing) {
+      // 같은 경로가 여러 기준에서 나왔습니다. 첫 라벨을 유지하고 나머지는 덧붙입니다.
+      existing.alsoLabels = [...(existing.alsoLabels ?? []), profile.label];
+      continue;
+    }
     seen.add(plan.id);
     plans.push(plan);
   }
-  return plans;
+  if (plans.length === 0 || !alternatives) return plans.slice(0, maxCandidates);
+
+  const best = Math.min(...plans.map((plan) => plan.totalSeconds));
+  const base = plans[0];
+  const fastest = profiles.find((p) => p.label === 'fastest') ?? profiles[0];
+  const extras: RoutePlan[] = [];
+  for (const lineId of new Set(base.legs.map((leg) => leg.lineId))) {
+    const avoidMore = new Set([...avoid, ...lineIndexSet(graph, [lineId])]);
+    const path = searchPath(graph, originKey, destinationKey, fastest.cost, avoidMore, viaKey);
+    if (!path) continue;
+    const plan = describeRoute(graph, path, 'alternative', displayCost(fastest.cost), lineId);
+    if (!plan || seen.has(plan.id) || plan.totalSeconds > best * maxRatio) continue;
+    seen.add(plan.id);
+    extras.push(plan);
+  }
+  extras.sort((a, b) => a.totalSeconds - b.totalSeconds);
+  return [...plans, ...extras].slice(0, maxCandidates);
 }

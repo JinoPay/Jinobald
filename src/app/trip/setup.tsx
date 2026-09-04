@@ -1,15 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { SaveRouteSheet } from '@/components/home/SaveRouteSheet';
 import { LineBadge } from '@/components/subway/LineBadge';
 import { RouteSummary } from '@/components/subway/RouteSummary';
 import { TransferHint } from '@/components/subway/TransferHint';
-import { directionLabel, getLine, groupIdOf } from '@/data/stations';
+import { directionLabel, getLine, getUniqueStation, groupIdOf, normalizeStationName } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
-import { buildTransferDoorGuides } from '@/services/alerts/door-guides';
+import { buildDoorGuides } from '@/services/alerts/door-guides';
 import { formatDuration } from '@/services/alerts/eta';
-import { doorGuideKey } from '@/services/alerts/trip';
 import {
   capabilities,
   capabilityNotice,
@@ -17,45 +17,91 @@ import {
 } from '@/services/location/capabilities';
 import { requestLocationPermission } from '@/services/location/geofence';
 import { requestNotificationPermission } from '@/services/notifications/setup';
-import { findRoutePlan } from '@/services/routing';
-import type { RouteLeg } from '@/services/routing/types';
-import { getSubwayApi } from '@/services/subway';
-import type { DoorGuide } from '@/services/subway/types';
+import { resolveSavedRoute } from '@/services/routes/saved';
+import { findRoutes, isPlanValid, ROUTE_LABEL } from '@/services/routing';
+import type { RoutePlan } from '@/services/routing/types';
 import { useSettings } from '@/store/SettingsContext';
 import { useTrip } from '@/store/TripContext';
+import { useUserData } from '@/store/UserDataContext';
 
+/**
+ * 경로 확인 · 알림 설정.
+ *
+ * 들어오는 길이 둘입니다.
+ * - 검색 결과 카드: `origin` `destination` `planId` (+`via`). 같은 탐색을 다시 돌려 그 후보를 고릅니다.
+ * - 저장 경로 / 출퇴근 루틴: `saved` (저장 경로 id). 저장소에서 꺼내 현재 데이터셋에 맞춥니다.
+ *
+ * 어느 쪽이든 화면에서 추천·최소 시간·최소 환승·최소 정거장 칩으로 다른 후보로 바꿀 수 있습니다.
+ */
 export default function TripSetupScreen() {
   const theme = useTheme();
   const { settings } = useSettings();
   const { start } = useTrip();
-  const { origin, destination, plan: planIndex } = useLocalSearchParams<{
+  const { savedRoutes, saveRoute, updateSavedRoute, touchSavedRoute } = useUserData();
+  const params = useLocalSearchParams<{
     origin?: string;
     destination?: string;
-    plan?: string;
+    planId?: string;
+    via?: string;
+    saved?: string;
   }>();
 
-  // 검색 화면에서 경로 객체를 넘기지 않고 후보 번호만 넘깁니다. 같은 탐색을 다시
-  // 돌려도 1ms 라, 문자열로 눌린 객체를 되살리는 것보다 안전합니다.
-  const plan = useMemo(
-    () => (origin && destination ? findRoutePlan(origin, destination, Number(planIndex ?? 0)) : null),
-    [origin, destination, planIndex],
+  const savedRoute = params.saved ? savedRoutes.find((route) => route.id === params.saved) ?? null : null;
+  const originKey = savedRoute?.originKey ?? params.origin ?? null;
+  const destinationKey = savedRoute?.destinationKey ?? params.destination ?? null;
+
+  const resolved = useMemo(
+    () => (savedRoute ? resolveSavedRoute(savedRoute, isPlanValid, (o, d) => findRoutes(o, d)) : null),
+    [savedRoute],
   );
 
-  const [alertN, setAlertN] = useState(settings.alertNStationsBefore);
-  const [useGps, setUseGps] = useState(settings.useGps && capabilities.backgroundGeofencing);
-  const [submitting, setSubmitting] = useState(false);
+  /** 고를 수 있는 후보: 저장 경로(있으면) + 계산된 주요 후보. 대안은 검색 화면에서만 고릅니다. */
+  const candidates = useMemo(() => {
+    if (!originKey || !destinationKey) return [];
+    const computed = findRoutes(originKey, destinationKey, params.via ? { viaKey: params.via } : {});
+    const savedPlan = resolved?.plan ?? null;
+    const main = computed.filter((plan) => plan.label !== 'alternative' || plan.id === params.planId);
+    return savedPlan ? [savedPlan, ...main.filter((plan) => plan.id !== savedPlan.id)] : main;
+  }, [originKey, destinationKey, params.via, params.planId, resolved]);
 
-  if (!plan) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const plan: RoutePlan | null =
+    candidates.find((candidate) => candidate.id === (selectedId ?? resolved?.plan?.id ?? params.planId)) ??
+    candidates[0] ??
+    null;
+
+  const [alertN, setAlertN] = useState(savedRoute?.alertNStationsBefore ?? settings.alertNStationsBefore);
+  const [useGps, setUseGps] = useState((savedRoute?.useGps ?? settings.useGps) && capabilities.backgroundGeofencing);
+  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // 데이터셋이 바뀌어 저장 경로를 다시 찾았으면 저장값을 갱신합니다.
+  useEffect(() => {
+    if (savedRoute && resolved?.status === 'refreshed') updateSavedRoute(savedRoute.id, { plan: resolved.plan });
+  }, [savedRoute, resolved, updateSavedRoute]);
+
+  if (params.saved && !savedRoute) {
+    return <Message theme={theme} text="저장한 경로를 찾을 수 없습니다. 홈에서 다시 골라 주세요." />;
+  }
+  if (resolved?.status === 'unavailable') {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <Text style={{ color: theme.text }}>경로를 찾을 수 없습니다.</Text>
-      </View>
+      <Message
+        theme={theme}
+        text={`노선 데이터가 바뀌어 "${savedRoute?.name}" 경로를 더 이상 만들 수 없습니다. 홈에서 같은 출발·도착을 검색해 다시 저장해 주세요.`}
+      />
     );
+  }
+  if (!plan) {
+    return <Message theme={theme} text="경로를 찾을 수 없습니다." />;
   }
 
   const canStart = capabilities.localNotifications;
+  const originName = getUniqueStation(originKey ?? '')?.displayName ?? plan.legs[0].boardStationName;
+  const destinationName =
+    getUniqueStation(destinationKey ?? '')?.displayName ?? plan.legs[plan.legs.length - 1].alightStationName;
+  const isSavedPlan = plan.label === 'saved';
 
-  const submit = async () => {
+  const submit = async (planToStart: RoutePlan = plan) => {
     if (!canStart) return;
     setSubmitting(true);
     try {
@@ -80,20 +126,29 @@ export default function TripSetupScreen() {
         }
       }
 
-      // 환승 칸은 번들 데이터에서 바로, 최종 하차역의 빠른하차 칸은 서버에서 (3초 안에 못 받으면 없이) 갑니다.
-      const doorGuides = buildTransferDoorGuides(plan);
-      const lastIndex = plan.legs.length - 1;
-      const last = plan.legs[lastIndex];
-      const exit = await fetchFastExitWithin(last, 3_000);
-      if (exit) doorGuides[doorGuideKey(lastIndex, 'alight')] = exit;
-
-      await start({ plan, alertNStationsBefore: alertN, useGps: gps, doorGuides });
+      const doorGuides = await buildDoorGuides(planToStart);
+      await start({ plan: planToStart, alertNStationsBefore: alertN, useGps: gps, doorGuides });
+      if (savedRoute && isSavedPlan) touchSavedRoute(savedRoute.id);
       router.replace('/alerts');
     } catch {
       Alert.alert('여정을 시작할 수 없습니다', '경로를 다시 선택해 주세요.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const saveAndStart = (name: string) => {
+    if (!originKey || !destinationKey) return;
+    const created = saveRoute({
+      name,
+      originKey: normalizeStationName(originKey),
+      destinationKey: normalizeStationName(destinationKey),
+      plan,
+      alertNStationsBefore: alertN,
+      useGps,
+    });
+    touchSavedRoute(created.id);
+    void submit(created.plan);
   };
 
   return (
@@ -105,12 +160,45 @@ export default function TripSetupScreen() {
           <Text style={[styles.bannerText, { color: theme.danger }]}>{notificationNotice}</Text>
         </View>
       ) : null}
+      {resolved?.status === 'refreshed' ? (
+        <View style={[styles.banner, { backgroundColor: theme.accentSoft }]}>
+          <Text style={[styles.bannerText, { color: theme.accent }]}>
+            노선 데이터가 갱신되어 저장한 경로를 같은 모양으로 다시 찾았습니다.
+          </Text>
+        </View>
+      ) : null}
 
-      <View style={[styles.summary, { backgroundColor: theme.backgroundElement }]}>
+      {candidates.length > 1 ? (
+        <View style={styles.chips}>
+          {candidates.map((candidate) => {
+            const selected = candidate.id === plan.id;
+            return (
+              <Pressable
+                key={candidate.id}
+                onPress={() => setSelectedId(candidate.id)}
+                style={[
+                  styles.chip,
+                  {
+                    borderColor: selected ? theme.accent : theme.border,
+                    backgroundColor: selected ? theme.accent : theme.backgroundElement,
+                  },
+                ]}>
+                <Text style={{ color: selected ? '#fff' : theme.text, fontSize: 13, fontWeight: '600' }}>
+                  {candidate.label === 'saved' && savedRoute ? savedRoute.name : ROUTE_LABEL[candidate.label]} ·{' '}
+                  {formatDuration(candidate.totalSeconds)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+
+      <View style={[styles.summary, { backgroundColor: theme.backgroundElement }, isSavedPlan && { borderWidth: 1, borderColor: theme.accent }]}>
         <Text style={[styles.duration, { color: theme.text }]}>
           {formatDuration(plan.totalSeconds)}
         </Text>
         <Text style={[styles.hint, { color: theme.textSecondary }]}>
+          {isSavedPlan && savedRoute ? `내 경로 "${savedRoute.name}" · ` : `${ROUTE_LABEL[plan.label]} · `}
           {plan.transferCount === 0 ? '환승 없음' : `환승 ${plan.transferCount}회`} ·{' '}
           {plan.totalStations}정거장
         </Text>
@@ -127,7 +215,7 @@ export default function TripSetupScreen() {
 
       <Text style={[styles.label, { color: theme.textSecondary }]}>알림</Text>
       <Text style={[styles.hint, { color: theme.textSecondary }]}>
-        탈 열차가 1분 안에 오면 승차 알림, 하차·환승역은 아래 시점의 예비 알림과 도착 1분 전 알림을 보냅니다.
+        탈 열차가 1분 안에 오면 승차 알림, 하차·환승역은 아래 시점의 예비 알림과 도착 1분 전 알림을 전용 알람음으로 보냅니다.
         빠른 하차 칸을 아는 역은 알림 문구에 칸 번호가 함께 나옵니다.
       </Text>
 
@@ -184,26 +272,44 @@ export default function TripSetupScreen() {
             : '이 환경에서는 알림을 예약할 수 없습니다'}
         </Text>
       </Pressable>
+
+      {canStart && !isSavedPlan ? (
+        <Pressable disabled={submitting} onPress={() => setSaving(true)} style={[styles.secondary, { borderColor: theme.border }]}>
+          <Text style={[styles.secondaryText, { color: theme.accent }]}>☆ 내 경로로 저장하고 시작</Text>
+        </Pressable>
+      ) : null}
+      {isSavedPlan && savedRoute ? (
+        <Pressable
+          disabled={submitting}
+          onPress={() => updateSavedRoute(savedRoute.id, { alertNStationsBefore: alertN, useGps })}
+          style={[styles.secondary, { borderColor: theme.border }]}>
+          <Text style={[styles.secondaryText, { color: theme.accent }]}>이 알림 설정을 ‘{savedRoute.name}’ 기본값으로 저장</Text>
+        </Pressable>
+      ) : null}
+
+      <SaveRouteSheet
+        visible={saving}
+        originName={originName}
+        destinationName={destinationName}
+        onSave={saveAndStart}
+        onClose={() => setSaving(false)}
+      />
     </ScrollView>
   );
 }
 
-/** 최종 하차역의 빠른하차 칸. 서버가 느리면 기다리지 않고 없이 진행합니다. */
-async function fetchFastExitWithin(leg: RouteLeg, timeoutMs: number): Promise<DoorGuide | null> {
-  const api = getSubwayApi();
-  if (!api.capabilities.fastExits) return null;
-  try {
-    const exits = await Promise.race([
-      api.getFastExits(leg.lineId, leg.alightStationName, leg.direction),
-      new Promise<DoorGuide[]>((resolve) => setTimeout(() => resolve([]), timeoutMs)),
-    ]);
-    return exits[0] ?? null;
-  } catch {
-    return null;
-  }
+function Message({ theme, text }: { theme: ReturnType<typeof useTheme>; text: string }) {
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={{ color: theme.text, lineHeight: 22 }}>{text}</Text>
+      <Pressable onPress={() => router.back()} style={[styles.secondary, { borderColor: theme.border }]}>
+        <Text style={[styles.secondaryText, { color: theme.accent }]}>돌아가기</Text>
+      </Pressable>
+    </View>
+  );
 }
 
-function LegRow({ leg, first }: { leg: RouteLeg; first: boolean }) {
+function LegRow({ leg, first }: { leg: RoutePlan['legs'][number]; first: boolean }) {
   const theme = useTheme();
   const line = getLine(leg.lineId);
   return (
@@ -256,4 +362,6 @@ const styles = StyleSheet.create({
   switchText: { flex: 1, gap: 2 },
   cta: { marginTop: 24, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   ctaText: { fontSize: 16, fontWeight: '700' },
+  secondary: { marginTop: 10, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
+  secondaryText: { fontSize: 14, fontWeight: '600' },
 });
