@@ -19,7 +19,12 @@ public sealed class RealtimeCache
     private readonly RealtimeOptions _options;
     private readonly ILogger<RealtimeCache>? _logger;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
-    private readonly ConcurrentDictionary<string, object> _lastKnown = new();
+    private readonly ConcurrentDictionary<string, (object Entry, DateTimeOffset At)> _lastKnown = new();
+
+    /// <summary>
+    /// 마지막으로 알던 값을 몇 개까지 기억할지. 역 이름은 유한하지만 아무 문자열이나 요청할 수 있으므로 상한을 둡니다.
+    /// </summary>
+    public const int MaxLastKnown = 512;
 
     public RealtimeCache(IMemoryCache cache, IClock clock, IOptions<RealtimeOptions> options, ILogger<RealtimeCache>? logger = null)
     {
@@ -63,7 +68,7 @@ public sealed class RealtimeCache
             var now = _clock.UtcNow;
             if (value is null)
             {
-                if (_lastKnown.TryGetValue(key, out var last) && last is Cached<T> lastCached)
+                if (_lastKnown.TryGetValue(key, out var last) && last.Entry is Cached<T> lastCached)
                 {
                     _logger?.LogInformation("{Key}: 할당량 보호로 {Age}초 전 값을 냅니다.", key, (now - lastCached.FetchedAt).TotalSeconds);
                     return lastCached with { Source = DataSource.Stale };
@@ -74,12 +79,36 @@ public sealed class RealtimeCache
 
             var entry = new Cached<T>(value, now, freshSource);
             _cache.Set(key, entry, ttl);
-            _lastKnown[key] = entry;
+            _lastKnown[key] = (entry, now);
+            TrimLastKnown();
             return entry;
         }
         finally
         {
             gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// 지금 기억하고 있는 키 수 (테스트·상태 확인용).
+    /// </summary>
+    public int LastKnownCount => _lastKnown.Count;
+
+    /// <summary>
+    /// 상한을 넘으면 가장 오래된 것부터 10% 를 버립니다. 캐시 삽입은 드물어 정렬 비용이 문제 되지 않습니다.
+    /// </summary>
+    private void TrimLastKnown()
+    {
+        if (_lastKnown.Count <= MaxLastKnown)
+        {
+            return;
+        }
+
+        var stale = _lastKnown.OrderBy(kv => kv.Value.At).Take(Math.Max(1, MaxLastKnown / 10)).Select(kv => kv.Key).ToList();
+        foreach (var key in stale)
+        {
+            _lastKnown.TryRemove(key, out _);
+            _locks.TryRemove(key, out _);
         }
     }
 }

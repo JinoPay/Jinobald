@@ -6,11 +6,13 @@ import { getUniqueStation, type UniqueStation } from '@/data/stations';
 import { useTheme } from '@/hooks/use-theme';
 import type { RecentSearch } from '@/store/UserDataContext';
 
-export type Slot = 'origin' | 'destination';
+export type Slot = 'origin' | 'destination' | 'via';
 
 interface Props {
   origin: UniqueStation | null;
   destination: UniqueStation | null;
+  /** 경유역. 있으면 출발·도착 사이에 슬롯이 하나 더 보입니다. */
+  via: UniqueStation | null;
   active: Slot | null;
   recents: RecentSearch[];
   onFocusSlot: (slot: Slot) => void;
@@ -20,7 +22,7 @@ interface Props {
 }
 
 /** 출발·도착 슬롯과 최근 검색. 홈의 주인공이라 카드 하나로 묶어 그림자를 줍니다. */
-export function RouteSearchCard({ origin, destination, active, recents, onFocusSlot, onClear, onSwap, onPickRecent }: Props) {
+export function RouteSearchCard({ origin, destination, via, active, recents, onFocusSlot, onClear, onSwap, onPickRecent }: Props) {
   const theme = useTheme();
   const pairs = recents.filter((r) => r.destinationKey).slice(0, 6);
   return (
@@ -35,6 +37,19 @@ export function RouteSearchCard({ origin, destination, active, recents, onFocusS
             onPress={() => onFocusSlot('origin')}
             onClear={() => onClear('origin')}
           />
+          {via ? (
+            <>
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+              <StationSlot
+                label="경유"
+                placeholder="경유역"
+                station={via}
+                active={active === 'via'}
+                onPress={() => onFocusSlot('via')}
+                onClear={() => onClear('via')}
+              />
+            </>
+          ) : null}
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
           <StationSlot
             label="도착"
@@ -57,6 +72,12 @@ export function RouteSearchCard({ origin, destination, active, recents, onFocusS
           <Text style={[styles.swapIcon, { color: theme.text }]}>⇅</Text>
         </Pressable>
       </View>
+
+      {origin && destination && !via ? (
+        <Pressable onPress={() => onFocusSlot('via')} hitSlop={6} style={styles.viaLink}>
+          <Text style={[Typography.caption, { color: theme.accent, fontWeight: '600' }]}>+ 경유역 추가 (꼭 지나갈 역)</Text>
+        </Pressable>
+      ) : null}
 
       {pairs.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recents}>
@@ -135,6 +156,7 @@ const styles = StyleSheet.create({
   clear: { paddingLeft: 6 },
   swap: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   swapIcon: { fontSize: 18, fontWeight: '700' },
+  viaLink: { paddingHorizontal: 4 },
   recents: { gap: Spacing.two, paddingTop: 2 },
   recent: { borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
 });

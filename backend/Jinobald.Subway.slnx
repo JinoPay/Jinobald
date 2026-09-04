@@ -7,5 +7,6 @@
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/Jinobald.Subway.Core.Tests/Jinobald.Subway.Core.Tests.csproj"/>
+        <Project Path="tests/Jinobald.Subway.Api.Tests/Jinobald.Subway.Api.Tests.csproj"/>
     </Folder>
 </Solution>

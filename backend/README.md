@@ -14,7 +14,7 @@ pnpm check:backend           # .NET 10 SDK / docker 확인
 pnpm backend:build
 pnpm backend:test
 pnpm backend:import          # scripts/data/raw → backend/data/subway.db (체크섬이 같으면 건너뜀)
-pnpm backend:run             # http://0.0.0.0:5080  (시작 시에도 자동 적재)
+pnpm backend:run             # http://0.0.0.0:5080  (시작 시에도 자동 적재 — 개발 환경은 같은 backend/data/subway.db 를 씁니다)
 ```
 
 ```bash
@@ -78,11 +78,27 @@ dotnet user-secrets --project backend/src/Jinobald.Subway.Api set Seoul:ApiKey �
 | `GET /transfers/guides?station=&from=` | 환승 가이드 (하차 칸·승차 칸·소요시간) |
 | `GET /transfers/walk-times` | 환승 도보 거리·시간 |
 | `GET /segments[/{호선}]` | 역간 표준 운행시간 |
-| `GET /timetable/{호선}/{역코드}?day=DAY&direction=UP&after=08:30&limit=5` | 다음 출발 열차 |
+| `GET /timetable/{호선}/{역코드}?day=DAY&direction=UP&after=08:30&limit=5` | 다음 출발 열차 (`day` 는 DAY/SAT/END, 아니면 400) |
+| `GET /timetable/{호선}/{역코드}/last?day=&direction=` | 막차. 방향을 주지 않으면 방향마다 하나 |
 | `GET /fast-exit/{호선}/{역코드}?station=` | 빠른하차 칸 (키 있을 때 공공데이터포털에서 받아 7일 보관) |
 | `GET /notices?active=true` | 운행 공지 |
 | `GET /datasets/manifest` | 데이터셋 체크섬·행수·적재 시각 |
-| `POST /admin/import?rawDir=` | 수동 적재 |
+| `POST /admin/import` | 수동 적재 (`Datasets:RawDir`). `Admin:ApiKey` 가 없으면 404, 있으면 `X-Admin-Key` 헤더 필수 |
+
+`/health` 는 DB 를 실제로 읽고 시각표 행이 있어야 `ok: true` 이며, 아니면 503 입니다 — readiness 프로브로 쓸 수 있습니다.
+실시간·시각표·빠른하차 엔드포인트는 IP 당 분당 `RateLimit:PermitPerMinute`(기본 60)회로 제한되고 넘으면 429 `quota` 입니다.
+
+### 운영 설정
+
+| 설정 키 | 기본 | 설명 |
+|---|---|---|
+| `Admin:ApiKey` | 없음 | 관리 엔드포인트 키. 비우면 관리 엔드포인트가 아예 없는 것처럼 동작합니다 |
+| `Cors:AllowedOrigins` | `[]` | 웹 빌드를 다른 오리진에서 띄울 때만. 비우면 CORS 정책을 등록하지 않습니다 |
+| `RateLimit:PermitPerMinute` | 60 | IP 당 분당 실시간 요청 |
+| `Https:Redirect` | false | TLS 프록시가 `X-Forwarded-Proto` 를 붙일 때만 켭니다. 없는데 켜면 리디렉션 루프 |
+
+OpenAPI 문서(`/openapi/v1.json`)는 Development 환경에서만 노출됩니다. 컨테이너는 비루트 사용자 `app` 으로 돕니다.
+서울 API 가 실패하거나 할당량이 소진되면 도착정보·열차 위치 모두 시각표 시뮬레이터로 폴백합니다(시각표가 없는 역은 원래 오류).
 
 OpenAPI 문서: `GET /openapi/v1.json`.
 

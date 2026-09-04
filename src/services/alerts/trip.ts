@@ -52,6 +52,8 @@ export interface Trip {
    * 열차 위치 API 가 있으면 이 번호로 사용자의 열차를 따라갑니다. 모르면 null.
    */
   boardedTrainNo: string | null;
+  /** 승차 상태를 누가 정했는지. 자동 감지로 넘어간 경우 화면에서 밝혀 둡니다. */
+  boardedBy: 'manual' | 'auto' | null;
   /** 구간별 빠른 승하차 칸. 없는 구간은 키가 없거나 null 입니다. */
   doorGuides: Partial<Record<DoorGuideKey, DoorGuide | null>>;
   /** 이미 발화한 알림. ETA 경로와 GPS 경로가 중복 발화하지 않도록 하는 잠금입니다. */
@@ -81,6 +83,7 @@ export function createTrip(draft: TripDraft): Trip {
     boarded: false,
     boardedAt: null,
     boardedTrainNo: null,
+    boardedBy: null,
     firedKeys: [],
     scheduled: {},
     geofenceActive: false,

@@ -9,6 +9,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/services/location/geofence-task';
 import '@/services/notifications/setup';
 
+import { registerCategories } from '@/services/notifications/categories';
+
+import { RoutinesProvider } from '@/store/RoutinesContext';
 import { SettingsProvider } from '@/store/SettingsContext';
 import { TripProvider } from '@/store/TripContext';
 import { UserDataProvider } from '@/store/UserDataContext';
@@ -20,6 +23,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     void SplashScreen.hideAsync();
+    // 알림의 "승차했어요 / 갈아탔어요 / 확인" 버튼. 앱이 죽어 있다가 켜져도 먼저 등록되어야 합니다.
+    void registerCategories();
   }, []);
 
   return (
@@ -29,15 +34,19 @@ export default function RootLayout() {
         <SettingsProvider>
           <UserDataProvider>
           <TripProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="station/[station]" options={{ title: '실시간 도착' }} />
-              <Stack.Screen name="line/[lineId]" options={{ title: '열차 위치' }} />
-              <Stack.Screen
-                name="trip/setup"
-                options={{ title: '경로 확인 · 알림 설정', presentation: 'modal' }}
-              />
-            </Stack>
+            <RoutinesProvider>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="station/[station]" options={{ title: '실시간 도착' }} />
+                <Stack.Screen name="line/[lineId]" options={{ title: '열차 위치' }} />
+                <Stack.Screen
+                  name="trip/setup"
+                  options={{ title: '경로 확인 · 알림 설정', presentation: 'modal' }}
+                />
+                <Stack.Screen name="routines/index" options={{ title: '출퇴근 루틴' }} />
+                <Stack.Screen name="routines/[id]" options={{ title: '루틴 설정', presentation: 'modal' }} />
+              </Stack>
+            </RoutinesProvider>
           </TripProvider>
           </UserDataProvider>
         </SettingsProvider>

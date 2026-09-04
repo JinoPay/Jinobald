@@ -14,7 +14,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   FASTEST_COST,
+  FEWEST_STOPS_COST,
   FEWEST_TRANSFER_COST,
+  RECOMMENDED_COST,
   withMeasuredTransfers,
 } from '../src/services/routing/cost.ts';
 import {
@@ -40,11 +42,14 @@ const check = (condition, message) => {
 
 const graph = buildRouteGraph(lines);
 const PROFILES = [
+  { label: 'recommended', cost: withMeasuredTransfers(RECOMMENDED_COST, TRANSFER_SECONDS_BY_PAIR) },
   { label: 'fastest', cost: withMeasuredTransfers(FASTEST_COST, TRANSFER_SECONDS_BY_PAIR) },
   { label: 'fewest-transfers', cost: withMeasuredTransfers(FEWEST_TRANSFER_COST, TRANSFER_SECONDS_BY_PAIR) },
+  { label: 'fewest-stops', cost: withMeasuredTransfers(FEWEST_STOPS_COST, TRANSFER_SECONDS_BY_PAIR) },
 ];
-const route = (from, to) => findRoutesInGraph(graph, from, to, PROFILES);
-const fastest = (from, to) => route(from, to).find((plan) => plan.label === 'fastest') ?? null;
+const route = (from, to, options) => findRoutesInGraph(graph, from, to, PROFILES, options);
+const hasLabel = (plan, label) => plan.label === label || (plan.alsoLabels ?? []).includes(label);
+const fastest = (from, to) => route(from, to).find((plan) => hasLabel(plan, 'fastest')) ?? null;
 
 const lineById = new Map(lines.map((line) => [line.id, line]));
 
@@ -213,15 +218,64 @@ for (const testCase of cases) {
   for (let i = before; i < errors.length; i += 1) errors[i] = `${testCase.name}: ${errors[i]}`;
 }
 
-// 후보 2종이 실제로 갈라지는지 — 이 한 쌍이 "최소 환승" 프로파일의 존재 이유입니다.
+// 후보가 실제로 갈라지는지 — 이 한 쌍이 "최소 환승" 프로파일의 존재 이유입니다.
 {
   const plans = route('소요산', '신창');
-  const fewest = plans.find((plan) => plan.label === 'fewest-transfers');
-  check(plans.length === 2, `소요산 → 신창: 후보가 2개여야 합니다 (현재 ${plans.length})`);
+  const fewest = plans.find((plan) => hasLabel(plan, 'fewest-transfers'));
+  check(plans.length >= 2, `소요산 → 신창: 후보가 2개 이상이어야 합니다 (현재 ${plans.length})`);
   check(
     fewest?.transferCount === 0,
     `소요산 → 신창: 최소 환승 후보가 무환승이어야 합니다 (현재 ${fewest?.transferCount})`,
   );
+  check(new Set(plans.map((plan) => plan.id)).size === plans.length, '소요산 → 신창: 후보가 중복됩니다');
+}
+
+// 프로파일 순서와 라벨 — 첫 후보는 언제나 추천입니다.
+{
+  const plans = route('김포공항', '강남');
+  check(plans[0]?.label === 'recommended', `김포공항 → 강남: 첫 후보가 추천이어야 합니다 (${plans[0]?.label})`);
+  const stops = plans.find((plan) => hasLabel(plan, 'fewest-stops'));
+  const fast = plans.find((plan) => hasLabel(plan, 'fastest'));
+  if (stops && fast) {
+    check(stops.totalStations <= fast.totalStations, '김포공항 → 강남: 최소 정거장 후보의 정거장 수가 최소 시간보다 많습니다');
+  }
+}
+
+// 대안 — 추천 경로의 계통을 하나씩 피한 경로. 피한 계통을 타면 안 되고, 너무 느리면 안 됩니다.
+{
+  const plans = route('김포공항', '강남');
+  const best = Math.min(...plans.map((plan) => plan.totalSeconds));
+  const alternatives = plans.filter((plan) => plan.label === 'alternative');
+  check(alternatives.length >= 1, '김포공항 → 강남: 대안이 하나는 있어야 합니다');
+  for (const plan of alternatives) {
+    check(typeof plan.avoidedLineId === 'string', '대안에는 피한 계통 id 가 있어야 합니다');
+    check(
+      !plan.legs.some((leg) => leg.lineId === plan.avoidedLineId),
+      `대안이 피했다는 계통 ${plan.avoidedLineId} 을 탑니다`,
+    );
+    check(plan.totalSeconds <= best * 1.5 + 1, `대안이 최선의 1.5배를 넘습니다 (${plan.totalSeconds} vs ${best})`);
+  }
+  check(plans.length <= 6, `후보가 6개를 넘습니다 (${plans.length})`);
+}
+
+// 노선 제외
+{
+  const plans = route('김포공항', '강남', { avoidLineIds: ['9'], alternatives: false });
+  check(plans.length >= 1, '9호선 제외: 경로가 있어야 합니다');
+  check(!plans.some((plan) => plan.legs.some((leg) => leg.lineId === '9')), '9호선 제외 옵션이 무시되었습니다');
+}
+
+// 경유역
+{
+  const plans = route('강남', '홍대입구', { viaKey: '서울역', alternatives: false });
+  check(plans.length >= 1, '경유 탐색: 경로가 있어야 합니다');
+  const passes = (plan) =>
+    plan.legs.some(
+      (leg) => normalizeStationKey(leg.boardStationName) === '서울' || normalizeStationKey(leg.alightStationName) === '서울',
+    );
+  check(plans.every(passes), '경유역(서울역)을 지나지 않는 경로가 있습니다');
+  // 경유가 출발·도착과 같으면 보통 탐색과 같습니다.
+  check(route('강남', '홍대입구', { viaKey: '강남', alternatives: false })[0]?.id === route('강남', '홍대입구', { alternatives: false })[0]?.id, '경유=출발 이면 보통 탐색과 같아야 합니다');
 }
 
 // 같은 역 / 표기만 다른 같은 역 / 없는 역

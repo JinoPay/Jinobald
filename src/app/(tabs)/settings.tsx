@@ -1,6 +1,8 @@
 import Constants from 'expo-constants';
+import * as IntentLauncher from 'expo-intent-launcher';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { LINES, LINE_GROUPS } from '@/data/stations';
 import { TRANSFER_DATA_MANIFEST } from '@/data/transfers';
@@ -18,7 +20,25 @@ import {
   type NotificationPermissionState,
 } from '@/services/notifications/setup';
 import { describeSource, hasApiKey, hasBackendUrl, type DataSource } from '@/services/subway';
+import { useRoutines } from '@/store/RoutinesContext';
 import { useSettings } from '@/store/SettingsContext';
+import { useUserData } from '@/store/UserDataContext';
+
+/**
+ * Android 12(API 31)·12L(32)에서는 정확한 알람 권한을 사용자가 설정에서 켜야 합니다.
+ * 13+ 는 USE_EXACT_ALARM 으로 자동 부여되고, 11 이하는 권한 자체가 없습니다.
+ */
+const needsExactAlarmToggle =
+  Platform.OS === 'android' && typeof Platform.Version === 'number' && Platform.Version >= 31 && Platform.Version < 33;
+
+function openExactAlarmSettings(): void {
+  const pkg = Constants.expoConfig?.android?.package ?? 'com.jinopay.jinobald';
+  void IntentLauncher.startActivityAsync('android.settings.REQUEST_SCHEDULE_EXACT_ALARM', {
+    data: `package:${pkg}`,
+  }).catch(() => Linking.openSettings());
+}
+
+const ALERT_N_OPTIONS = [1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}정거장 전` }));
 
 const DATA_SOURCE_OPTIONS: { value: DataSource; label: string }[] = [
   { value: 'auto', label: '자동' },
@@ -30,6 +50,8 @@ const DATA_SOURCE_OPTIONS: { value: DataSource; label: string }[] = [
 export default function SettingsScreen() {
   const theme = useTheme();
   const { settings, update } = useSettings();
+  const { routines } = useRoutines();
+  const { savedRoutes } = useUserData();
   const [notification, setNotification] = useState<NotificationPermissionState | null>(null);
   const [location, setLocation] = useState<LocationPermissionState | null>(null);
 
@@ -107,6 +129,57 @@ export default function SettingsScreen() {
               {notification?.canAskAgain === false ? '시스템 설정 열기' : '알림 권한 요청'}
             </Text>
           </Pressable>
+        ) : null}
+      </Section>
+
+      <Section title="출퇴근 루틴" theme={theme}>
+        <Row label="저장한 경로" value={`${savedRoutes.length}개`} theme={theme} />
+        <Row label="루틴" value={`${routines.length}개 · 켜짐 ${routines.filter((r) => r.enabled).length}개`} theme={theme} />
+        <Text style={[styles.note, { color: theme.textSecondary }]}>
+          정해 둔 요일·시각에 여정 시작을 알리고, 알림의 [여정 시작] 한 번으로 저장한 경로의 하차 알림이 시작됩니다.
+        </Text>
+        <Pressable onPress={() => router.push('/routines')} style={[styles.button, { borderColor: theme.border }]}>
+          <Text style={{ color: theme.accent, fontWeight: '600' }}>루틴 관리</Text>
+        </Pressable>
+      </Section>
+
+      <Section title="알람 기본값" theme={theme}>
+        <Text style={[styles.note, { color: theme.textSecondary }]}>
+          새 여정을 시작할 때 미리 채워지는 값입니다. 여정마다 바꿀 수 있습니다.
+        </Text>
+        <Row label="예비 알림 시점" value={`${settings.alertNStationsBefore}정거장 전`} theme={theme} />
+        <ChipRow
+          options={ALERT_N_OPTIONS}
+          value={String(settings.alertNStationsBefore)}
+          onChange={(v) => update({ alertNStationsBefore: Number(v) })}
+          theme={theme}
+        />
+        <View style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowLabel, { color: theme.text }]}>GPS 보정 기본 사용</Text>
+            <Text style={[styles.note, { color: theme.textSecondary }]}>
+              {capabilities.backgroundGeofencing ? '역 좌표를 아는 경우 지오펜스로 하차 시점을 보정합니다.' : '개발 빌드에서만 동작합니다.'}
+            </Text>
+          </View>
+          <Switch
+            value={settings.useGps}
+            onValueChange={(v) => update({ useGps: v })}
+            disabled={!capabilities.backgroundGeofencing}
+          />
+        </View>
+        <Text style={[styles.note, { color: theme.textSecondary }]}>
+          하차·환승 알림은 전용 알람음으로 울리고, Android 에서는 방해 금지 모드를 우회합니다. iOS 는 무음 스위치를 따르므로
+          출퇴근 중에는 무음을 풀어 두는 편이 안전합니다.
+        </Text>
+        {needsExactAlarmToggle ? (
+          <Pressable onPress={openExactAlarmSettings} style={[styles.button, { borderColor: theme.border }]}>
+            <Text style={{ color: theme.accent, fontWeight: '600' }}>알람 및 리마인더 권한 열기</Text>
+          </Pressable>
+        ) : null}
+        {needsExactAlarmToggle ? (
+          <Text style={[styles.note, { color: theme.textSecondary }]}>
+            Android 12 에서는 ‘알람 및 리마인더’ 권한이 있어야 정확한 시각에 울립니다. 없으면 절전 상태에서 수 분 늦을 수 있습니다.
+          </Text>
         ) : null}
       </Section>
 

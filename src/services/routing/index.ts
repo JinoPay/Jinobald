@@ -13,7 +13,13 @@ import {
 } from '@/data/stations';
 import transferTimes from '@/data/generated/transfer-times.json';
 
-import { FASTEST_COST, FEWEST_TRANSFER_COST, withMeasuredTransfers } from './cost';
+import {
+  FASTEST_COST,
+  FEWEST_STOPS_COST,
+  FEWEST_TRANSFER_COST,
+  RECOMMENDED_COST,
+  withMeasuredTransfers,
+} from './cost';
 import {
   buildRouteGraph,
   findRoutesInGraph,
@@ -21,10 +27,12 @@ import {
   rideSecondsBetween,
   type RouteGraph,
   type RouteProfile,
+  type RouteSearchOptions,
 } from './graph';
-import type { RouteLeg, RoutePlan } from './types';
+import type { RouteLabel, RouteLeg, RoutePlan } from './types';
 
 export type { RouteLabel, RouteLeg, RoutePlan, RouteTransfer, TransferKind } from './types';
+export type { RouteSearchOptions } from './graph';
 export { rideSecondsBetween, rideSegmentsBetween } from './graph';
 
 /**
@@ -35,11 +43,23 @@ export const TRANSFER_SECONDS_BY_PAIR: Record<string, number> = Object.fromEntri
   Object.entries(transferTimes as Record<string, { seconds: number }>).map(([key, v]) => [key, v.seconds]),
 );
 
-/** 최소 시간 먼저, 그다음 최소 환승. 화면에 보이는 순서이기도 합니다. */
+/** 추천 먼저, 그다음 최소 시간 · 최소 환승 · 최소 정거장. 화면에 보이는 순서이기도 합니다. */
 const PROFILES: RouteProfile[] = [
+  { label: 'recommended', cost: withMeasuredTransfers(RECOMMENDED_COST, TRANSFER_SECONDS_BY_PAIR) },
   { label: 'fastest', cost: withMeasuredTransfers(FASTEST_COST, TRANSFER_SECONDS_BY_PAIR) },
   { label: 'fewest-transfers', cost: withMeasuredTransfers(FEWEST_TRANSFER_COST, TRANSFER_SECONDS_BY_PAIR) },
+  { label: 'fewest-stops', cost: withMeasuredTransfers(FEWEST_STOPS_COST, TRANSFER_SECONDS_BY_PAIR) },
 ];
+
+/** 화면 라벨. */
+export const ROUTE_LABEL: Record<RouteLabel, string> = {
+  saved: '내 경로',
+  recommended: '추천',
+  fastest: '최소 시간',
+  'fewest-transfers': '최소 환승',
+  'fewest-stops': '최소 정거장',
+  alternative: '대안',
+};
 
 let graph: RouteGraph | null = null;
 
@@ -52,35 +72,52 @@ function getGraph(): RouteGraph {
  * 탐색 결과 캐시.
  *
  * 검색 화면이 출발·도착이 바뀔 때마다 렌더 중에 부르므로, 같은 쌍을 두 번 계산하지
- * 않게 합니다. 한 번에 1ms 남짓이지만 캐시가 있으면 화면 전환(`/trip/setup` 이 같은
+ * 않게 합니다. 한 번에 수 ms 지만 캐시가 있으면 화면 전환(`/trip/setup` 이 같은
  * 탐색을 다시 돌려 경로를 재현합니다)이 공짜가 됩니다.
  */
 const cache = new Map<string, RoutePlan[]>();
 const CACHE_LIMIT = 100;
 
+function cacheKey(originName: string, destinationName: string, options: RouteSearchOptions): string {
+  const via = options.viaKey ? normalizeStationKey(options.viaKey) : '';
+  const avoid = [...(options.avoidLineIds ?? [])].sort().join(',');
+  return `${normalizeStationKey(originName)}>${normalizeStationKey(destinationName)}|${via}|${avoid}`;
+}
+
 /**
- * 출발역 → 도착역 후보 경로. 최대 2개 (최소 시간 / 최소 환승).
+ * 출발역 → 도착역 후보 경로. 추천 · 최소 시간 · 최소 환승 · 최소 정거장에 대안까지 최대 6개.
  *
  * 인자는 정규화 전 이름이어도 됩니다. 두 역이 이어져 있지 않거나 같은 역이면 빈 배열입니다.
+ * 렌더 중에 불리므로 절대 던지지 않습니다.
  */
-export function findRoutes(originName: string, destinationName: string): RoutePlan[] {
-  const key = `${normalizeStationKey(originName)}>${normalizeStationKey(destinationName)}`;
+export function findRoutes(
+  originName: string,
+  destinationName: string,
+  options: RouteSearchOptions = {},
+): RoutePlan[] {
+  const key = cacheKey(originName, destinationName, options);
   const cached = cache.get(key);
   if (cached) return cached;
 
-  const plans = findRoutesInGraph(getGraph(), originName, destinationName, PROFILES);
+  let plans: RoutePlan[];
+  try {
+    plans = findRoutesInGraph(getGraph(), originName, destinationName, PROFILES, options);
+  } catch {
+    plans = [];
+  }
   if (cache.size >= CACHE_LIMIT) cache.clear();
   cache.set(key, plans);
   return plans;
 }
 
-/** 후보 목록의 n 번째 경로. 화면 사이에는 이 인덱스만 넘깁니다. */
-export function findRoutePlan(
+/** 후보 목록에서 id 가 같은 경로. 화면 사이에는 이 id 만 넘깁니다. */
+export function findRoutePlanById(
   originName: string,
   destinationName: string,
-  index: number,
+  id: string,
+  options: RouteSearchOptions = {},
 ): RoutePlan | null {
-  return findRoutes(originName, destinationName)[index] ?? null;
+  return findRoutes(originName, destinationName, options).find((plan) => plan.id === id) ?? null;
 }
 
 /**
@@ -121,6 +158,7 @@ export function planFromSingleLeg(
     legChangeCount: 0,
     hasNonRealtimeLine: !line.realtime,
     label: 'fastest',
+    avoidedLineId: null,
   };
 }
 

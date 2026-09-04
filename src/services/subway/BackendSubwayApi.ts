@@ -3,7 +3,7 @@ import { stationCodeOf } from '@/data/transfers';
 
 import { mapArrival, mapPosition } from './mappers';
 import type { RawArrival, RawPosition } from './raw-types';
-import type { RequestOptions, SubwayApi, SubwayCapabilities } from './SubwayApi';
+import type { RequestOptions, SubwayApi, SubwayCapabilities, TimetableOptions } from './SubwayApi';
 import {
   SubwayApiError,
   type Arrival,
@@ -12,6 +12,9 @@ import {
   type Direction,
   type DisruptionNotice,
   type DoorGuide,
+  type TimetableDayType,
+  type TimetableDeparture,
+  type TimetableResult,
   type TrainPosition,
   type TrainPositionsResult,
 } from './types';
@@ -41,6 +44,25 @@ interface FastExitRow {
   facilityKind: string;
   facilityLabel: string;
 }
+
+interface TimetableEnvelope {
+  dayType: TimetableDayType;
+  afterSeconds: number;
+  entries: {
+    direction: string;
+    express: boolean;
+    trainNo: string;
+    depart: string | null;
+    arrive: string | null;
+    departSeconds: number | null;
+    arriveSeconds: number | null;
+    destinationStation: string;
+  }[];
+}
+
+/** 앱 방향 → 시각표 방향 코드. */
+const TIMETABLE_DIRECTION: Record<Direction, string> = { up: 'UP', down: 'DOWN', inner: 'IN', outer: 'OUT' };
+const DIRECTION_FROM_TIMETABLE: Record<string, Direction> = { UP: 'up', DOWN: 'down', IN: 'inner', OUT: 'outer' };
 
 interface NoticeRow {
   id: string;
@@ -73,6 +95,7 @@ export class BackendSubwayApi implements SubwayApi {
     trainPositions: true,
     fastExits: true,
     notices: true,
+    timetable: true,
   };
 
   private readonly options: ClientOptions;
@@ -145,6 +168,33 @@ export class BackendSubwayApi implements SubwayApi {
     }));
   }
 
+  async getNextDepartures(
+    lineId: string,
+    stationName: string,
+    direction: Direction,
+    { signal, afterSeconds, limit = 3 }: TimetableOptions = {},
+  ): Promise<TimetableResult | null> {
+    const target = timetableTarget(lineId, stationName);
+    if (!target) return null;
+    const query = new URLSearchParams({ direction: TIMETABLE_DIRECTION[direction], limit: String(limit) });
+    if (afterSeconds != null) query.set('after', clock(afterSeconds));
+    const body = await this.fetchJson<TimetableEnvelope>(`/api/v1/timetable/${target.lineNo}/${target.stationCd}?${query}`, signal);
+    return mapTimetable(body);
+  }
+
+  async getLastDeparture(
+    lineId: string,
+    stationName: string,
+    direction: Direction,
+    { signal }: RequestOptions = {},
+  ): Promise<TimetableDeparture | null> {
+    const target = timetableTarget(lineId, stationName);
+    if (!target) return null;
+    const query = new URLSearchParams({ direction: TIMETABLE_DIRECTION[direction] });
+    const body = await this.fetchJson<TimetableEnvelope>(`/api/v1/timetable/${target.lineNo}/${target.stationCd}/last?${query}`, signal);
+    return mapTimetable(body).entries[0] ?? null;
+  }
+
   private async fetchJson<T>(path: string, signal?: AbortSignal): Promise<T> {
     const { baseUrl, timeoutMs } = this.options;
     const timeout = AbortSignal.timeout(timeoutMs);
@@ -181,6 +231,40 @@ export class BackendSubwayApi implements SubwayApi {
       throw new SubwayApiError('unknown', '백엔드 응답을 JSON 으로 해석하지 못했습니다.');
     }
   }
+}
+
+/** 시각표는 서울교통공사 1~9호선 역코드로만 조회됩니다. */
+function timetableTarget(lineId: string, stationName: string): { lineNo: string; stationCd: string } | null {
+  const line = getLine(lineId);
+  if (!line || !/^[1-9]$/.test(line.groupId)) return null;
+  const code = stationCodeOf(line.groupId, stationName);
+  return code ? { lineNo: line.groupId, stationCd: code.stationCd } : null;
+}
+
+/** 운행일 자정 기준 초 → "HH:mm:ss" (24시 이후는 25:10:00 처럼 그대로). */
+function clock(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function mapTimetable(body: TimetableEnvelope): TimetableResult {
+  const entries = body.entries
+    .map((e): TimetableDeparture | null => {
+      const seconds = e.departSeconds ?? e.arriveSeconds;
+      if (seconds == null) return null;
+      return {
+        trainNo: e.trainNo,
+        direction: DIRECTION_FROM_TIMETABLE[e.direction.toUpperCase()] ?? 'down',
+        express: e.express,
+        seconds,
+        label: clock(seconds).slice(0, 5),
+        destinationStation: e.destinationStation,
+      };
+    })
+    .filter((e): e is TimetableDeparture => e !== null);
+  return { dayType: body.dayType, afterSeconds: body.afterSeconds, entries };
 }
 
 /**

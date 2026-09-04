@@ -251,11 +251,43 @@ function write(name, value) {
   return { sha256: createHash('sha256').update(text).digest('hex').slice(0, 16), bytes: Buffer.byteLength(text) };
 }
 
+/**
+ * 생성 날짜 — **데이터가 그대로면 이전 값을 유지합니다.**
+ *
+ * 항상 오늘 날짜를 쓰면 입력이 하나도 안 바뀌어도 산출물이 매일 달라집니다. 그러면 CI 의
+ * "생성 파일이 커밋된 것과 같은지"(`git diff --exit-code -- src/data`) 검사가 커밋한 다음 날부터
+ * 무조건 실패합니다 — 실제로 그렇게 됐습니다.
+ *
+ * 설정 화면에 "데이터 생성일"로 보이는 값이기도 한데, 스크립트를 언제 돌렸는지보다
+ * **데이터가 언제 바뀌었는지**가 사용자에게 맞는 정보입니다. 세 파일의 체크섬이 모두 같으면
+ * 데이터가 그대로이므로 날짜도 그대로 둡니다.
+ */
+function resolveGeneratedAt(fingerprints) {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const previous = JSON.parse(readFileSync(join(outDir, 'manifest.json'), 'utf8'));
+    if (typeof previous.generatedAt !== 'string') return today;
+    const unchanged = Object.entries(fingerprints).every(([name, sha256]) => previous[name]?.sha256 === sha256);
+    return unchanged ? previous.generatedAt : today;
+  } catch {
+    // 처음 생성하거나 이전 매니페스트가 깨진 경우.
+    return today;
+  }
+}
+
+const transferGuides = { stations: Object.keys(sortedGuides).length, rows: guideCount, ...write('transfer-guides.json', sortedGuides) };
+const transferTimes = { rows: Object.keys(sortedTimes).length, ...write('transfer-times.json', sortedTimes) };
+const stationCodes = { rows: Object.keys(sortedCodes).length, ...write('station-codes.json', sortedCodes) };
+
 const manifest = {
-  generatedAt: new Date().toISOString().slice(0, 10),
-  transferGuides: { stations: Object.keys(sortedGuides).length, rows: guideCount, ...write('transfer-guides.json', sortedGuides) },
-  transferTimes: { rows: Object.keys(sortedTimes).length, ...write('transfer-times.json', sortedTimes) },
-  stationCodes: { rows: Object.keys(sortedCodes).length, ...write('station-codes.json', sortedCodes) },
+  generatedAt: resolveGeneratedAt({
+    transferGuides: transferGuides.sha256,
+    transferTimes: transferTimes.sha256,
+    stationCodes: stationCodes.sha256,
+  }),
+  transferGuides,
+  transferTimes,
+  stationCodes,
 };
 write('manifest.json', manifest);
 

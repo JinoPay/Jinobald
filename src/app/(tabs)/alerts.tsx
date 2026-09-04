@@ -25,7 +25,7 @@ import { useTrip } from '@/store/TripContext';
 
 export default function AlertsScreen() {
   const theme = useTheme();
-  const { trip, progress, cancel, setBoarded, advance, reportPosition } = useTrip();
+  const { trip, progress, boardSuggestion, cancel, setBoarded, dismissBoardSuggestion, advance, reportPosition } = useTrip();
 
   // 화면이 열려 있는 동안의 포그라운드 위치 보정.
   // 백그라운드 지오펜싱과 달리 Expo Go 에서도 동작합니다.
@@ -90,6 +90,38 @@ export default function AlertsScreen() {
     <ScrollView
       style={{ backgroundColor: theme.background }}
       contentContainerStyle={styles.container}>
+      {progress?.warning === 'wrong-direction' ? (
+        <View style={[styles.warning, { backgroundColor: theme.danger }]}>
+          <Text style={styles.warningTitle}>반대 방향 열차에 타신 것 같습니다</Text>
+          <Text style={styles.warningText}>
+            승차 열차 {trip.boardedTrainNo} 이(가) {leg.alightStationName} 반대쪽으로 가고 있습니다. 다음 역에서 내려
+            반대편 열차로 갈아탄 뒤 ‘승차 취소’를 눌러 다시 시작하세요.
+          </Text>
+        </View>
+      ) : null}
+
+      {boardSuggestion && !trip.boarded ? (
+        <View style={[styles.card, { backgroundColor: theme.accentSoft }]}>
+          <Text style={[styles.cardTitle, { color: theme.accent }]}>방금 출발한 열차에 타셨나요?</Text>
+          <Text style={[styles.prompt, { color: theme.text }]}>
+            {leg.boardStationName}에 있던 열차{boardSuggestion.trainNo ? ` (${boardSuggestion.trainNo})` : ''}가 출발했습니다.
+            타셨으면 알려 주세요 — 하차 알림 시각이 여기서 정해집니다.
+          </Text>
+          <View style={styles.promptActions}>
+            <Pressable
+              onPress={() => setBoarded(true, { trainNo: boardSuggestion.trainNo, atMs: boardSuggestion.departedAtMs })}
+              style={[styles.action, styles.promptAction, { backgroundColor: theme.accent, borderColor: theme.accent }]}>
+              <Text style={[styles.actionText, { color: '#fff' }]}>네, 탔어요</Text>
+            </Pressable>
+            <Pressable
+              onPress={dismissBoardSuggestion}
+              style={[styles.action, styles.promptAction, { backgroundColor: 'transparent', borderColor: theme.border }]}>
+              <Text style={[styles.actionText, { color: theme.text }]}>아니요</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
       <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
         <View style={styles.header}>
           <LineBadge groupId={groupIdOf(leg.lineId)} />
@@ -159,7 +191,10 @@ export default function AlertsScreen() {
           <Text style={[styles.meta, { color: theme.textSecondary }]}>
             승차 열차 {trip.boardedTrainNo}
             {progress?.livePosition ? ` · 현재 ${progress.livePosition.stationName}` : ' · 위치 확인 중'}
+            {trip.boardedBy === 'auto' ? ' · 자동 감지' : ''}
           </Text>
+        ) : trip.boarded && trip.boardedBy === 'auto' ? (
+          <Text style={[styles.meta, { color: theme.textSecondary }]}>열차 출발을 자동으로 감지해 승차 처리했습니다.</Text>
         ) : null}
       </View>
 
@@ -368,6 +403,11 @@ const styles = StyleSheet.create({
   legTitle: { fontSize: 15, fontWeight: '600' },
   legHint: { fontSize: 12 },
   prompt: { fontSize: 14, lineHeight: 20, paddingHorizontal: 4 },
+  promptActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  promptAction: { flex: 1, paddingVertical: 10 },
+  warning: { borderRadius: 14, padding: 16, gap: 4 },
+  warningTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  warningText: { color: '#fff', fontSize: 13, lineHeight: 18 },
   action: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1 },
   actionText: { fontSize: 15, fontWeight: '700' },
   link: { alignItems: 'center', paddingVertical: 4 },

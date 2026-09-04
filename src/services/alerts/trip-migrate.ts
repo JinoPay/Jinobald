@@ -43,6 +43,7 @@ export function migrateStoredTrip(raw: unknown): Trip | null {
     boarded: raw.boarded === true,
     boardedAt: typeof raw.boardedAt === 'number' ? raw.boardedAt : null,
     boardedTrainNo: typeof raw.boardedTrainNo === 'string' && raw.boardedTrainNo ? raw.boardedTrainNo : null,
+    boardedBy: raw.boardedBy === 'auto' ? 'auto' : raw.boarded === true ? 'manual' : null,
     doorGuides: readDoorGuides(raw),
     firedKeys: readFiredKeys(raw),
     scheduled,

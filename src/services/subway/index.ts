@@ -5,7 +5,7 @@ import { MockSubwayApi } from './MockSubwayApi';
 import { SeoulOpenApiClient } from './SeoulOpenApiClient';
 import type { SubwayApi, SubwayApiKind } from './SubwayApi';
 
-export type { RequestOptions, SubwayApi, SubwayApiKind, SubwayCapabilities } from './SubwayApi';
+export type { RequestOptions, SubwayApi, SubwayApiKind, SubwayCapabilities, TimetableOptions } from './SubwayApi';
 export * from './types';
 
 /**

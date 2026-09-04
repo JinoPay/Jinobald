@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 
 import { capabilities } from './capabilities';
-import { GEOFENCE_TASK, geofenceIdentifier } from './geofence-task';
+import { GEOFENCE_TASK, geofenceIdentifier } from './geofence-ids';
 
 import type { AlertKind } from '@/services/notifications/kinds';
 
@@ -73,6 +73,16 @@ export async function startTripGeofence(
   try {
     await Location.startGeofencingAsync(GEOFENCE_TASK, regions);
     return true;
+  } catch {
+    return false;
+  }
+}
+
+/** 지오펜스가 실제로 걸려 있는지. 재부팅 뒤 Android 는 조용히 사라지므로 복구 시 확인합니다. */
+export async function isTripGeofenceActive(): Promise<boolean> {
+  if (!capabilities.backgroundGeofencing) return false;
+  try {
+    return await Location.hasStartedGeofencingAsync(GEOFENCE_TASK);
   } catch {
     return false;
   }

@@ -3,6 +3,8 @@ import type {
   Direction,
   DisruptionNotice,
   DoorGuide,
+  TimetableDeparture,
+  TimetableResult,
   TrainPositionsResult,
 } from './types';
 
@@ -14,6 +16,14 @@ export interface SubwayCapabilities {
   trainPositions: boolean;
   fastExits: boolean;
   notices: boolean;
+  /** 시각표(다음 열차·막차). 백엔드가 있고 1~9호선일 때만. */
+  timetable: boolean;
+}
+
+export interface TimetableOptions extends RequestOptions {
+  /** 이 시각(운행일 자정 기준 초) 이후 출발. 생략하면 지금. */
+  afterSeconds?: number;
+  limit?: number;
 }
 
 export interface RequestOptions {
@@ -35,4 +45,8 @@ export interface SubwayApi {
   ): Promise<DoorGuide[]>;
   /** 운행 공지. 없으면 빈 배열. */
   getNotices(options?: RequestOptions): Promise<DisruptionNotice[]>;
+  /** 다음 출발 열차. 시각표가 없는 구현·노선이면 null. */
+  getNextDepartures(lineId: string, stationName: string, direction: Direction, options?: TimetableOptions): Promise<TimetableResult | null>;
+  /** 막차. 시각표가 없으면 null. */
+  getLastDeparture(lineId: string, stationName: string, direction: Direction, options?: RequestOptions): Promise<TimetableDeparture | null>;
 }

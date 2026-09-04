@@ -264,7 +264,8 @@ public sealed class DataGoKrClient : IDataGoKrClient
         {
             var title = Pick(item, "title", "ttl", "TITLE") ?? string.Empty;
             var starts = ParseDate(Pick(item, "startDt", "bgngDt", "START_DT")) ?? now;
-            var id = Pick(item, "id", "seq", "alarmId") ?? $"{starts:yyyyMMddHHmm}-{title.GetHashCode(StringComparison.Ordinal):x8}";
+            // string.GetHashCode 는 프로세스마다 다른 값이라 재시작 뒤 같은 공지가 새 행으로 쌓입니다. 내용 기반 해시를 씁니다.
+            var id = Pick(item, "id", "seq", "alarmId") ?? StableNoticeId(starts, title);
             rows.Add(new DisruptionNotice(
                 id,
                 Pick(item, "lineNo", "line", "LINE_NO"),
@@ -348,6 +349,41 @@ public sealed class DataGoKrClient : IDataGoKrClient
         return null;
     }
 
-    private static DateTimeOffset? ParseDate(string? text) =>
-        DateTimeOffset.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeLocal, out var d) ? d : null;
+    /// <summary>
+    /// 시작 시각 + 제목의 SHA-256 앞 16자. 같은 공지는 언제 받아도 같은 id 입니다.
+    /// </summary>
+    public static string StableNoticeId(DateTimeOffset startsAt, string title)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes($"{startsAt.ToUniversalTime():O}|{title}"));
+        return Convert.ToHexString(bytes)[..16].ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// 공공데이터포털은 오프셋 없는 한국 시각 문자열을 줍니다. 서버가 어느 시간대에 있든 KST 로 해석하고,
+    /// 오프셋이나 Z 가 붙어 있으면 그대로 믿습니다.
+    /// </summary>
+    public static DateTimeOffset? ParseDate(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        var trimmed = text.Trim();
+        var hasOffset = trimmed.EndsWith('Z') || System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"[+-]\d{2}:?\d{2}$");
+        if (hasOffset)
+        {
+            return DateTimeOffset.TryParse(trimmed, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var withOffset)
+                ? withOffset
+                : null;
+        }
+
+        if (DateTime.TryParse(trimmed, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var local))
+        {
+            var unspecified = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+            return new DateTimeOffset(unspecified, Time.KoreaClock.Zone.GetUtcOffset(unspecified));
+        }
+
+        return null;
+    }
 }

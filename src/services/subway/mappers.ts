@@ -63,10 +63,7 @@ export function parseSecondsUntilArrival(barvlDt: string | undefined): number | 
   return seconds;
 }
 
-/** 열차가 이미 승강장에 있거나 진입 중인 상태. */
-export function isAtStation(status: ArrivalStatus): boolean {
-  return status === 'arrived' || status === 'entering';
-}
+export { isAtStation } from './status';
 
 export function mapArrival(raw: RawArrival, requestedStationName: string, now: number): Arrival | null {
   const line = raw.subwayId ? getLineBySubwayId(raw.subwayId) : undefined;

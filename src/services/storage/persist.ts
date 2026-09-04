@@ -38,4 +38,6 @@ export const StorageKeys = {
   recentStations: 'recent-stations',
   favoriteStations: 'favorite-stations',
   settings: 'settings',
+  savedRoutes: 'saved-routes',
+  routines: 'routines',
 } as const;

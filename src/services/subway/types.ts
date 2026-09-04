@@ -110,6 +110,28 @@ export interface DisruptionNotice {
   endsAt: number | null;
 }
 
+/** 시각표 요일 구분 (백엔드 DAY/SAT/END). */
+export type TimetableDayType = 'DAY' | 'SAT' | 'END';
+
+/** 시각표 한 편. 시각은 운행일 자정 기준 초 (24시 이후는 86400 초과 — 00:20 막차는 87600). */
+export interface TimetableDeparture {
+  trainNo: string;
+  direction: Direction;
+  express: boolean;
+  /** 출발(종착역이면 도착) 초. */
+  seconds: number;
+  /** "07:32" 또는 "24:20". */
+  label: string;
+  destinationStation: string;
+}
+
+export interface TimetableResult {
+  dayType: TimetableDayType;
+  /** 조회 기준 초 (운행일 자정 기준). */
+  afterSeconds: number;
+  entries: TimetableDeparture[];
+}
+
 export type SubwayApiErrorKind =
   | 'network'
   | 'timeout'

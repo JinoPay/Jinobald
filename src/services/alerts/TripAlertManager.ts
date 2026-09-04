@@ -10,7 +10,13 @@ import { cancelNotifications, scheduleTripNotification } from '@/services/notifi
 import { rideSegmentsBetween } from '@/services/routing/graph';
 import type { RouteLeg } from '@/services/routing/types';
 
-import { computeAlertTimes, computeBoardAlertTime, shouldReschedule, trailingSegmentsSeconds } from './eta';
+import {
+  computeAlertTimes,
+  computeBoardAlertTime,
+  effectiveStationsBefore,
+  shouldReschedule,
+  trailingSegmentsSeconds,
+} from './eta';
 import type { TripProgress } from './progress';
 import {
   alightDoorGuide,
@@ -23,20 +29,34 @@ import {
   tripDestinationName,
   type Trip,
 } from './trip';
+import {
+  advanceLegState,
+  clearLegState,
+  consumeAlert,
+  reconcileElapsed,
+  scheduledIds,
+  type ReconcileOutcome,
+  type StateChange,
+} from './trip-state';
 
 export { computeProgress } from './progress';
 export type { TripProgress } from './progress';
 
-/** 알림 문구. 포그라운드 GPS 보정도 같은 문구를 써야 사용자가 헷갈리지 않습니다. */
+/**
+ * 알림 문구. 포그라운드 GPS 보정·지오펜스도 같은 문구를 써야 사용자가 헷갈리지 않습니다.
+ *
+ * @param stationsBefore 예비 알림이 "몇 정거장 전"에 가는지 — 예약 시점의 남은 정거장이
+ *   아니라 **발화 시점**의 값이어야 합니다. 9정거장 남았을 때 예약해도 알림은 2정거장 전에 울립니다.
+ */
 export function legAlertContent(
   trip: Trip,
   legIndex: number,
   kind: AlertKind,
-  stationsLeft: number,
+  stationsBefore: number,
   /** 승차 알림에 실을 열차 (도착정보의 첫 열차). */
   train?: { trainNo: string | null; terminalStationName: string } | null,
 ): { title: string; body: string } {
-  const remaining = Math.max(1, stationsLeft);
+  const remaining = Math.max(1, stationsBefore);
   const leg = legAt(trip, legIndex);
   const line = leg ? getLine(leg.lineId) : undefined;
 
@@ -90,11 +110,18 @@ export function legAlertContent(
   };
 }
 
+/** 순수 전이 결과를 OS 에 반영합니다 (알림 취소). */
+async function apply(change: StateChange): Promise<Trip> {
+  await cancelNotifications(change.cancelIds);
+  return change.trip;
+}
+
 /**
  * 진행 상황에 맞춰 알림을 다시 잡습니다.
  *
  * 폴링마다 무조건 취소·재예약하면 Android 에서 알림이 누락되거나 중복되므로,
- * 목표 시각이 임계값 이상 움직였을 때만 다시 잡습니다.
+ * 목표 시각이 임계값 이상 움직였을 때만 — 그리고 **실제 신호로 계산했을 때만** — 다시 잡습니다.
+ * 정적 추정은 아직 아무것도 잡히지 않았을 때 안전망으로만 씁니다 (`shouldReschedule` 참고).
  *
  * **현재 구간의 알림만** 예약합니다. 다음 구간의 알림 시각은 실제 환승 소요와
  * 다음 열차 대기에 달려 있어 지금 알 수 없고, 미리 잡아 두면 아직 첫 구간을 타고
@@ -109,25 +136,24 @@ export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Tr
   if (!capabilities.localNotifications) return trip;
 
   const now = Date.now();
+  const stationsBefore = effectiveStationsBefore(trip.alertNStationsBefore, leg.stationCount);
   // "N정거장 전"은 하차역 앞 N개 구간의 실측 초입니다. 구간 실측이 없으면 노선 평균과 같습니다.
   const segments = rideSegmentsBetween(line, leg.boardIndex, leg.alightIndex);
   const times = computeAlertTimes({
     nowMs: now,
     etaSeconds: progress.etaSeconds,
-    preAlertLeadSeconds: trailingSegmentsSeconds(segments, trip.alertNStationsBefore),
+    preAlertLeadSeconds: trailingSegmentsSeconds(segments, stationsBefore),
   });
 
   const legIndex = currentLegIndex(trip);
   const [preKind, arriveKind] = legAlertKinds(trip);
-  const targets: [AlertKind, number][] = [
-    [preKind, times.preAlertAtMs],
-    [arriveKind, times.arriveAlertAtMs],
-  ];
+  const targets: [AlertKind, number][] = [[arriveKind, times.arriveAlertAtMs]];
+  if (times.preAlertAtMs !== null) targets.unshift([preKind, times.preAlertAtMs]);
 
   // 승차 알림: 아직 안 탔고 탈 열차의 도착 초를 아는 동안만. 승차하면 더 이상 잡지 않습니다.
   const train = progress.matchedArrival;
-  if (!trip.boarded && train?.secondsUntilArrival != null) {
-    targets.unshift(['board', computeBoardAlertTime({ nowMs: now, secondsUntilTrain: train.secondsUntilArrival })]);
+  if (!trip.boarded && progress.secondsToTrain != null) {
+    targets.unshift(['board', computeBoardAlertTime({ nowMs: now, secondsUntilTrain: progress.secondsToTrain })]);
   }
 
   let next = trip;
@@ -135,21 +161,26 @@ export async function syncAlerts(trip: Trip, progress: TripProgress): Promise<Tr
     const key = alertKey(legIndex, kind);
     if (hasFired(next, key)) continue;
     const existing = next.scheduled[key];
-    if (!shouldReschedule(existing?.atMs ?? null, atMs)) continue;
+    // 예약 시각이 이미 지났으면 OS 가 발화했습니다. 옮기지 말고 발화한 것으로 소비합니다.
+    if (existing && existing.atMs <= now) {
+      next = await apply(consumeAlert(next, key));
+      continue;
+    }
+    if (!shouldReschedule(existing?.atMs ?? null, atMs, progress.fresh)) continue;
 
-    await cancelNotifications([existing?.notificationId]);
-    const { title, body } = legAlertContent(next, legIndex, kind, progress.stationsLeft, train);
+    const { title, body } = legAlertContent(next, legIndex, kind, stationsBefore, train);
     const notificationId = await scheduleTripNotification({
       title,
       body,
       atMs,
       payload: { tripId: next.id, legIndex, kind },
+      identifier: `${next.id}:${key}`,
     });
 
     next = {
       ...next,
       scheduled: { ...next.scheduled, [key]: { notificationId, atMs } },
-      // 예약 시점이 이미 지나 즉시 표시된 경우 발화한 것으로 기록합니다.
+      // 예약 시점이 이미 지나 즉시 표시된(또는 너무 지나 건너뛴) 경우 발화한 것으로 기록합니다.
       firedKeys: notificationId === null ? [...next.firedKeys, key] : next.firedKeys,
     };
   }
@@ -168,8 +199,8 @@ function stationBeforeAlight(line: Line, leg: RouteLeg, n: number): Station | un
 /**
  * 현재 구간의 지오펜스를 겁니다. 좌표를 모르는 역은 건너뛰고 ETA 알림만 씁니다.
  *
- * `startTripGeofence` 가 region 을 통째로 교체하므로 구간이 넘어갈 때마다 다시
- * 부르면 됩니다. iOS 의 앱당 20개 제한 때문에 한 구간에 2개까지만 겁니다.
+ * `startTripGeofence` 가 region 을 통째로 교체하므로 구간이 넘어갈 때마다, 그리고
+ * 앱을 다시 켤 때마다 다시 부르면 됩니다. iOS 의 앱당 20개 제한 때문에 한 구간에 2개까지만 겁니다.
  */
 export async function syncGeofence(trip: Trip): Promise<Trip> {
   if (!trip.useGps || trip.status !== 'active') return trip;
@@ -184,7 +215,7 @@ export async function syncGeofence(trip: Trip): Promise<Trip> {
 
   for (const [kind, station] of [
     [arriveKind, line.stations[leg.alightIndex]],
-    [preKind, stationBeforeAlight(line, leg, trip.alertNStationsBefore)],
+    [preKind, stationBeforeAlight(line, leg, effectiveStationsBefore(trip.alertNStationsBefore, leg.stationCount))],
   ] as const) {
     const { lat, lng } = station ?? {};
     if (lat == null || lng == null) continue;
@@ -209,51 +240,44 @@ async function clearGeofence(trip: Trip): Promise<Trip> {
 
 /** ETA 경로와 GPS 경로 중 먼저 도달한 쪽이 알림을 소비하고 나머지를 취소합니다. */
 export async function markFired(trip: Trip, key: AlertKey): Promise<Trip> {
-  if (hasFired(trip, key)) return trip;
-  await cancelNotifications([trip.scheduled[key]?.notificationId]);
-  const { [key]: _removed, ...restScheduled } = trip.scheduled;
-  return { ...trip, firedKeys: [...trip.firedKeys, key], scheduled: restScheduled };
+  return apply(consumeAlert(trip, key));
 }
 
 /**
- * 지난 구간에 걸어 둔 예약을 모두 거둡니다.
- *
- * 이걸 빼먹으면 이전 구간의 예비 알림이 다음 구간을 타는 도중에 발화합니다.
+ * 승차 취소. 이 구간의 예약과 발화 기록을 지우고 승차 전 상태로 돌립니다.
+ * 발화 기록을 남겨 두면 다시 예약되지 않아 제대로 탄 열차에서 알림이 오지 않습니다.
  */
-export async function cancelLegAlerts(trip: Trip, legIndex: number): Promise<Trip> {
-  const stale = Object.entries(trip.scheduled).filter(([key]) =>
-    key.startsWith(`${legIndex}:`),
-  ) as [AlertKey, { notificationId: string | null }][];
-  if (stale.length === 0) return trip;
-
-  await cancelNotifications(stale.map(([, value]) => value.notificationId));
-  const scheduled = { ...trip.scheduled };
-  for (const [key] of stale) delete scheduled[key];
-  return { ...trip, scheduled };
+export async function unboardLeg(trip: Trip): Promise<Trip> {
+  const cleared = await apply(clearLegState(trip, currentLegIndex(trip)));
+  return syncGeofence(cleared);
 }
 
 /**
- * 다음 구간으로 넘어갑니다.
- *
- * 승차 상태를 되돌리는 것이 중요합니다. "승차 전에만 실시간 도착정보를 쓴다"는
- * 규칙이 그대로 다음 구간의 승차 대기에 다시 적용되기 때문입니다.
+ * 다음 구간으로 넘어갑니다. 마지막 구간이면 아무 일도 하지 않습니다.
  */
 export async function advanceLeg(trip: Trip): Promise<Trip> {
-  const index = currentLegIndex(trip);
-  if (index >= trip.plan.legs.length - 1) return trip;
+  const change = advanceLegState(trip);
+  if (change.trip === trip) return trip;
+  return syncGeofence(await apply(change));
+}
 
-  const cleaned = await cancelLegAlerts(trip, index);
-  return syncGeofence({
-    ...cleaned,
-    currentLegIndex: index + 1,
-    boarded: false,
-    boardedAt: null,
-    boardedTrainNo: null,
-  });
+/**
+ * OS 가 이미 발화한 알림을 여정에 반영합니다 (복구 시와 매 폴링).
+ * 결과가 완료면 호출자가 여정을 끝내고, 전진이면 지오펜스를 다시 겁니다.
+ */
+export async function reconcileTrip(
+  trip: Trip,
+  nowMs = Date.now(),
+): Promise<{ trip: Trip; outcome: ReconcileOutcome }> {
+  const change = reconcileElapsed(trip, nowMs);
+  if (change.outcome === 'none' && change.trip === trip) return { trip, outcome: 'none' };
+  let next = await apply(change);
+  if (change.outcome === 'advanced') next = await syncGeofence(next);
+  return { trip: next, outcome: change.outcome };
 }
 
 export async function finishTrip(trip: Trip, status: 'completed' | 'cancelled'): Promise<Trip> {
-  await cancelNotifications(Object.values(trip.scheduled).map((s) => s?.notificationId));
+  await cancelNotifications(scheduledIds(trip));
   if (trip.geofenceActive) await stopTripGeofence();
   return { ...trip, status, scheduled: {}, geofenceActive: false };
 }
