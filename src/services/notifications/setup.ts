@@ -4,7 +4,23 @@ import { Platform } from 'react-native';
 
 import { capabilities } from '@/services/location/capabilities';
 
-export const TRIP_CHANNEL_ID = 'trip-alerts';
+/**
+ * 승하차 알람 채널.
+ *
+ * Android 채널 설정은 만든 뒤에 바꿀 수 없습니다. 소리·DND 우회를 추가하면서 id 를 올렸고,
+ * 옛 채널은 지웁니다 (사용자가 옛 채널에서 소리를 껐어도 새 채널은 기본값으로 시작합니다).
+ */
+export const TRIP_CHANNEL_ID = 'trip-alarm-v2';
+const LEGACY_TRIP_CHANNEL_ID = 'trip-alerts';
+/** 출퇴근 루틴 리마인더. 알람이 아니라 보통 알림입니다. */
+export const ROUTINE_CHANNEL_ID = 'routine-reminders';
+
+/**
+ * 번들한 알람음 (`assets/sounds/alarm.wav`, `scripts/generate-alarm-sound.mjs` 산출물).
+ * iOS 는 알림 콘텐츠의 `sound`, Android 는 채널의 `sound` 로 지정합니다.
+ * 파일은 app.config.ts 의 expo-notifications 플러그인 `sounds` 가 양쪽 네이티브 프로젝트에 복사합니다.
+ */
+export const ALARM_SOUND = 'alarm.wav';
 
 /**
  * 포그라운드에서도 배너를 띄웁니다.
@@ -19,23 +35,43 @@ Notifications.setNotificationHandler({
   }),
 });
 
-let channelReady: Promise<void> | null = null;
+let channelsReady: Promise<void> | null = null;
 
 /**
  * Android 알림 채널.
- * importance 가 MAX 가 아니면 헤드업 배너가 뜨지 않아 기능이 사실상 보이지 않습니다.
+ * importance 가 MAX 가 아니면 헤드업 배너가 뜨지 않아 기능이 사실상 보이지 않고,
+ * usage 가 ALARM 이 아니면 알림 볼륨(보통 낮음)으로 울립니다. bypassDnd 는 방해 금지에서도 울리게 합니다.
  */
-export function ensureChannel(): Promise<void> {
+export function ensureChannels(): Promise<void> {
   if (Platform.OS !== 'android') return Promise.resolve();
-  channelReady ??= Notifications.setNotificationChannelAsync(TRIP_CHANNEL_ID, {
-    name: '승하차 알림',
-    importance: Notifications.AndroidImportance.MAX,
-    vibrationPattern: [0, 250, 250, 250],
-    sound: 'default',
-    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-  }).then(() => undefined);
-  return channelReady;
+  channelsReady ??= (async () => {
+    await Notifications.setNotificationChannelAsync(TRIP_CHANNEL_ID, {
+      name: '승하차 알람',
+      description: '하차·환승역 도착 알람. 방해 금지 모드에서도 울립니다.',
+      importance: Notifications.AndroidImportance.MAX,
+      sound: ALARM_SOUND,
+      audioAttributes: {
+        usage: Notifications.AndroidAudioUsage.ALARM,
+        contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+      },
+      bypassDnd: true,
+      enableVibrate: true,
+      vibrationPattern: [0, 500, 300, 500],
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    });
+    await Notifications.setNotificationChannelAsync(ROUTINE_CHANNEL_ID, {
+      name: '출퇴근 루틴',
+      description: '정해 둔 시각에 여정 시작을 알립니다.',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      sound: 'default',
+    });
+    await Notifications.deleteNotificationChannelAsync(LEGACY_TRIP_CHANNEL_ID).catch(() => undefined);
+  })();
+  return channelsReady;
 }
+
+/** 이전 이름과의 호환. */
+export const ensureChannel = ensureChannels;
 
 export interface NotificationPermissionState {
   granted: boolean;
@@ -68,8 +104,10 @@ export async function getNotificationPermission(): Promise<NotificationPermissio
 
 export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
   if (!capabilities.localNotifications) return UNAVAILABLE;
-  await ensureChannel();
-  const { status, canAskAgain } = await Notifications.requestPermissionsAsync();
+  await ensureChannels();
+  const { status, canAskAgain } = await Notifications.requestPermissionsAsync({
+    ios: { allowAlert: true, allowSound: true, allowBadge: false },
+  });
   return {
     granted: status === 'granted',
     canAskAgain,

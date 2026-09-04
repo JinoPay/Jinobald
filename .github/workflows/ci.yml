@@ -26,6 +26,7 @@ jobs:
       - run: pnpm verify-routes
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm test
       - name: 생성 파일이 커밋된 것과 같은지
         run: git diff --exit-code -- src/data
       - name: 번들 스모크 (iOS)

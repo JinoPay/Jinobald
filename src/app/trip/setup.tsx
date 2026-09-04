@@ -67,7 +67,18 @@ export default function TripSetupScreen() {
         );
         return;
       }
-      if (useGps) await requestLocationPermission();
+      // GPS 보정은 "항상 허용" 권한이 있어야 동작합니다. 못 받았으면 조용히 끄지 않고 알려 줍니다.
+      let gps = useGps;
+      if (useGps) {
+        const location = await requestLocationPermission();
+        if (!location.background) {
+          gps = false;
+          Alert.alert(
+            'GPS 보정 없이 시작합니다',
+            '위치 권한이 "항상 허용"이 아니라 지오펜스를 걸 수 없습니다. 도착예정 기반 알림은 정상 동작합니다.',
+          );
+        }
+      }
 
       // 환승 칸은 번들 데이터에서 바로, 최종 하차역의 빠른하차 칸은 서버에서 (3초 안에 못 받으면 없이) 갑니다.
       const doorGuides = buildTransferDoorGuides(plan);
@@ -76,7 +87,7 @@ export default function TripSetupScreen() {
       const exit = await fetchFastExitWithin(last, 3_000);
       if (exit) doorGuides[doorGuideKey(lastIndex, 'alight')] = exit;
 
-      await start({ plan, alertNStationsBefore: alertN, useGps, doorGuides });
+      await start({ plan, alertNStationsBefore: alertN, useGps: gps, doorGuides });
       router.replace('/alerts');
     } catch {
       Alert.alert('여정을 시작할 수 없습니다', '경로를 다시 선택해 주세요.');

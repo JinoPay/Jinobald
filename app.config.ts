@@ -31,6 +31,15 @@ const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
 const insecureHosts = [...new Set([directBaseUrl, backendUrl].map(insecureHostOf).filter((h): h is string => h !== null))];
 // localhost 는 iOS ATS 가 기본 허용하고 Android 도 디버그에서 허용하지만, 명시해 두면 릴리스 구성 확인이 쉽습니다.
 
+/**
+ * iOS "시간 민감(Time Sensitive)" 알림 엔타이틀먼트.
+ *
+ * 있으면 집중 모드에서도 하차 알람이 전달됩니다. 무료 Personal Team 서명에서는 이 capability 가
+ * 서명 단계에서 거부될 수 있어 **옵트인**입니다: `IOS_TIME_SENSITIVE=1 pnpm prebuild`.
+ * 없어도 앱은 `interruptionLevel: 'timeSensitive'` 를 그대로 보내고, OS 가 조용히 일반 알림으로 낮춥니다.
+ */
+const iosTimeSensitive = process.env.IOS_TIME_SENSITIVE === '1';
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: '지노발드 지하철',
@@ -43,6 +52,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: 'com.jinopay.jinobald',
     supportsTablet: true,
+    entitlements: iosTimeSensitive
+      ? { 'com.apple.developer.usernotifications.time-sensitive': true }
+      : {},
     infoPlist:
       insecureHosts.length > 0
         ? {
@@ -66,6 +78,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    /**
+     * 정확한 시각의 알람. 없으면 expo-notifications 가 부정확 알람(setAndAllowWhileIdle)으로 떨어져
+     * Doze 에서 수 분 늦습니다. USE_EXACT_ALARM(API 33+)은 알람 앱에 자동 부여되고,
+     * SCHEDULE_EXACT_ALARM(API 31–32)은 설정 화면에서 사용자가 켜야 합니다.
+     */
+    permissions: [
+      'android.permission.SCHEDULE_EXACT_ALARM',
+      'android.permission.USE_EXACT_ALARM',
+      'android.permission.VIBRATE',
+      'android.permission.WAKE_LOCK',
+    ],
   },
   web: {
     output: 'static',
@@ -110,8 +133,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         icon: './assets/images/android-icon-monochrome.png',
         color: '#0052A4',
+        // 알람음. iOS 번들과 Android res/raw 양쪽에 복사됩니다 (scripts/generate-alarm-sound.mjs 산출물).
+        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
+    '@react-native-community/datetimepicker',
   ],
   experiments: {
     typedRoutes: true,
