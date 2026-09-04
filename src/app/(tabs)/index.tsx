@@ -11,6 +11,7 @@ import { HomeHeader } from '@/components/home/HomeHeader';
 import { LineChips } from '@/components/home/LineChips';
 import { NearbyStations } from '@/components/home/NearbyStations';
 import { NoticeStrip } from '@/components/home/NoticeStrip';
+import { RoutinePromptBanner } from '@/components/home/RoutinePromptBanner';
 import { RouteResults } from '@/components/home/RouteResults';
 import { RouteSearchCard, type Slot } from '@/components/home/RouteSearchCard';
 import { SavedRoutesStrip } from '@/components/home/SavedRoutesStrip';
@@ -26,6 +27,7 @@ import { notificationNotice } from '@/services/location/capabilities';
 import { findSavedForPair, resolveSavedRoute, type SavedRoute } from '@/services/routes/saved';
 import { findRoutes, isPlanValid } from '@/services/routing';
 import type { RoutePlan } from '@/services/routing/types';
+import { useRoutines } from '@/store/RoutinesContext';
 import { useUserData, type FavoriteLabel, type RecentSearch } from '@/store/UserDataContext';
 
 /** 검색창이 열린 이유 — 슬롯을 채우거나, 집/회사 칩에 역을 배정하거나. */
@@ -46,6 +48,7 @@ export default function HomeScreen() {
     updateSavedRoute,
     removeSavedRoute,
   } = useUserData();
+  const { routines } = useRoutines();
   const [origin, setOrigin] = useState<UniqueStation | null>(null);
   const [destination, setDestination] = useState<UniqueStation | null>(null);
   const [via, setVia] = useState<UniqueStation | null>(null);
@@ -293,9 +296,16 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <HomeHeader />
         <ActiveTripBanner />
+        <RoutinePromptBanner />
         {savedRoutes.length > 0 ? (
           <>
-            <SectionTitle title="내 경로" />
+            <SectionTitle
+              title="내 경로"
+              action={{
+                label: routines.length > 0 ? `출퇴근 루틴 ${routines.length}개` : '출퇴근 루틴 만들기',
+                onPress: () => router.push('/routines'),
+              }}
+            />
             <SavedRoutesStrip routes={savedRoutes} onPress={openSavedRoute} onLongPress={confirmRemoveSavedRoute} />
           </>
         ) : null}

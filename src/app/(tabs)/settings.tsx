@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import * as IntentLauncher from 'expo-intent-launcher';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -19,7 +20,9 @@ import {
   type NotificationPermissionState,
 } from '@/services/notifications/setup';
 import { describeSource, hasApiKey, hasBackendUrl, type DataSource } from '@/services/subway';
+import { useRoutines } from '@/store/RoutinesContext';
 import { useSettings } from '@/store/SettingsContext';
+import { useUserData } from '@/store/UserDataContext';
 
 /**
  * Android 12(API 31)·12L(32)에서는 정확한 알람 권한을 사용자가 설정에서 켜야 합니다.
@@ -47,6 +50,8 @@ const DATA_SOURCE_OPTIONS: { value: DataSource; label: string }[] = [
 export default function SettingsScreen() {
   const theme = useTheme();
   const { settings, update } = useSettings();
+  const { routines } = useRoutines();
+  const { savedRoutes } = useUserData();
   const [notification, setNotification] = useState<NotificationPermissionState | null>(null);
   const [location, setLocation] = useState<LocationPermissionState | null>(null);
 
@@ -125,6 +130,17 @@ export default function SettingsScreen() {
             </Text>
           </Pressable>
         ) : null}
+      </Section>
+
+      <Section title="출퇴근 루틴" theme={theme}>
+        <Row label="저장한 경로" value={`${savedRoutes.length}개`} theme={theme} />
+        <Row label="루틴" value={`${routines.length}개 · 켜짐 ${routines.filter((r) => r.enabled).length}개`} theme={theme} />
+        <Text style={[styles.note, { color: theme.textSecondary }]}>
+          정해 둔 요일·시각에 여정 시작을 알리고, 알림의 [여정 시작] 한 번으로 저장한 경로의 하차 알림이 시작됩니다.
+        </Text>
+        <Pressable onPress={() => router.push('/routines')} style={[styles.button, { borderColor: theme.border }]}>
+          <Text style={{ color: theme.accent, fontWeight: '600' }}>루틴 관리</Text>
+        </Pressable>
       </Section>
 
       <Section title="알람 기본값" theme={theme}>
