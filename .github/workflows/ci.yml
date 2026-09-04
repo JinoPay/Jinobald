@@ -47,6 +47,8 @@ jobs:
         run: dotnet run --project backend/src/Jinobald.Subway.Ingest --configuration Release --no-build -- import --raw scripts/data/raw --db /tmp/subway.db
       - name: 시뮬레이터 스냅샷
         run: dotnet run --project backend/src/Jinobald.Subway.Ingest --configuration Release --no-build -- simulate --line 2 --at 08:30 --db /tmp/subway.db
+      - name: Docker 이미지 빌드
+        run: docker build -f backend/src/Jinobald.Subway.Api/Dockerfile -t jinobald-subway .
       - uses: actions/upload-artifact@v4
         if: always()
         with:

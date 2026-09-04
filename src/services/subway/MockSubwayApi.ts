@@ -14,6 +14,8 @@ import type {
   Direction,
   DisruptionNotice,
   DoorGuide,
+  TimetableDeparture,
+  TimetableResult,
   TrainPosition,
   TrainPositionsResult,
 } from './types';
@@ -37,6 +39,7 @@ export class MockSubwayApi implements SubwayApi {
     trainPositions: true,
     fastExits: true,
     notices: true,
+    timetable: false,
   };
 
   async getArrivals(stationName: string, _options?: RequestOptions): Promise<ArrivalsResult> {
@@ -110,6 +113,15 @@ export class MockSubwayApi implements SubwayApi {
         endsAt: null,
       },
     ];
+  }
+
+  /** 시각표는 백엔드에만 있습니다. */
+  async getNextDepartures(): Promise<TimetableResult | null> {
+    return null;
+  }
+
+  async getLastDeparture(): Promise<TimetableDeparture | null> {
+    return null;
   }
 }
 

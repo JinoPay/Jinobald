@@ -1,8 +1,10 @@
+import DateTimePicker, { DateTimePickerAndroid, type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { SaveRouteSheet } from '@/components/home/SaveRouteSheet';
+import { DepartureTimesCard } from '@/components/subway/DepartureTimesCard';
 import { LineBadge } from '@/components/subway/LineBadge';
 import { RouteSummary } from '@/components/subway/RouteSummary';
 import { TransferHint } from '@/components/subway/TransferHint';
@@ -74,6 +76,19 @@ export default function TripSetupScreen() {
   const [useGps, setUseGps] = useState((savedRoute?.useGps ?? settings.useGps) && capabilities.backgroundGeofencing);
   const [submitting, setSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
+  // 출발 시각. "지금"이 기본이고, 나중 시각을 고르면 시각표(다음 열차·막차)만 그 시각 기준으로 봅니다.
+  const [departAt, setDepartAt] = useState<'now' | Date>('now');
+  const departValue = departAt === 'now' ? new Date() : departAt;
+  const onDepartChange = (_event: DateTimePickerEvent, date?: Date) => {
+    if (date) setDepartAt(date);
+  };
+  const pickDepartTime = () => {
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({ mode: 'time', value: departValue, is24Hour: true, onChange: onDepartChange });
+    } else {
+      setDepartAt(departValue);
+    }
+  };
 
   // 데이터셋이 바뀌어 저장 경로를 다시 찾았으면 저장값을 갱신합니다.
   useEffect(() => {
@@ -212,6 +227,40 @@ export default function TripSetupScreen() {
           <LegRow leg={leg} first={index === 0} />
         </View>
       ))}
+
+      <Text style={[styles.label, { color: theme.textSecondary }]}>출발 시각</Text>
+      <View style={styles.chips}>
+        <Pressable
+          onPress={() => setDepartAt('now')}
+          style={[
+            styles.chip,
+            {
+              borderColor: departAt === 'now' ? theme.accent : theme.border,
+              backgroundColor: departAt === 'now' ? theme.accent : theme.backgroundElement,
+            },
+          ]}>
+          <Text style={{ color: departAt === 'now' ? '#fff' : theme.text }}>지금</Text>
+        </Pressable>
+        <Pressable
+          onPress={pickDepartTime}
+          style={[
+            styles.chip,
+            {
+              borderColor: departAt !== 'now' ? theme.accent : theme.border,
+              backgroundColor: departAt !== 'now' ? theme.accent : theme.backgroundElement,
+            },
+          ]}>
+          <Text style={{ color: departAt !== 'now' ? '#fff' : theme.text }}>
+            {departAt === 'now'
+              ? '시각 지정'
+              : `${String(departAt.getHours()).padStart(2, '0')}:${String(departAt.getMinutes()).padStart(2, '0')} 출발`}
+          </Text>
+        </Pressable>
+      </View>
+      {Platform.OS === 'ios' && departAt !== 'now' ? (
+        <DateTimePicker value={departAt} mode="time" display="spinner" onChange={onDepartChange} locale="ko-KR" />
+      ) : null}
+      <DepartureTimesCard plan={plan} departAt={departAt} />
 
       <Text style={[styles.label, { color: theme.textSecondary }]}>알림</Text>
       <Text style={[styles.hint, { color: theme.textSecondary }]}>

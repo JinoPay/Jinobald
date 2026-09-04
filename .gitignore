@@ -64,8 +64,8 @@ backend/**/obj/
 backend/**/TestResults/
 backend/**/*.user
 backend/**/appsettings.*.local.json
-backend/data/*.db
-backend/data/*.db-*
+backend/**/data/*.db
+backend/**/data/*.db-*
 .vs/
 
 # 데이터셋 작업 사본 (scripts/fetch-datasets.mjs 가 만드는 압축 해제본)

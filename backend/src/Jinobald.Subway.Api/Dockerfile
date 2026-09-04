@@ -13,6 +13,9 @@ COPY scripts/data/station_code.raw.csv /data/station_code.raw.csv
 ENV Datasets__RawDir=/data/raw \
     Database__Path=/app/data/subway.db \
     ASPNETCORE_ENVIRONMENT=Production
+# 루트로 돌리지 않습니다. aspnet 이미지의 비루트 사용자 `app` 이 DB 디렉터리를 쓸 수 있어야 합니다.
+RUN mkdir -p /app/data && chown -R app:app /app/data
+USER app
 EXPOSE 5080
 VOLUME ["/app/data"]
 ENTRYPOINT ["dotnet", "Jinobald.Subway.Api.dll"]

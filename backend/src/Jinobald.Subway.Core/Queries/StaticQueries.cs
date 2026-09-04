@@ -133,6 +133,47 @@ public sealed class GetNextDeparturesQueryHandler : IQueryHandler<GetNextDepartu
 }
 
 /// <summary>
+/// 막차. <c>DayType</c> 이 null 이면 오늘(운행일 기준). 결과의 <c>AfterSeconds</c> 는 조회 시각입니다.
+/// </summary>
+public sealed record GetLastDeparturesQuery(string LineNo, string StationCd, DayType? DayType, string? Direction) : IQuery<NextDeparturesResult>, IValidatable
+{
+    public IEnumerable<string> Validate()
+    {
+        if (string.IsNullOrWhiteSpace(LineNo))
+        {
+            yield return "호선이 비어 있습니다.";
+        }
+
+        if (string.IsNullOrWhiteSpace(StationCd))
+        {
+            yield return "역코드가 비어 있습니다.";
+        }
+    }
+}
+
+public sealed class GetLastDeparturesQueryHandler : IQueryHandler<GetLastDeparturesQuery, NextDeparturesResult>
+{
+    private readonly ISubwayReadRepository _repository;
+    private readonly IClock _clock;
+    private readonly DayTypeResolver _dayTypes;
+
+    public GetLastDeparturesQueryHandler(ISubwayReadRepository repository, IClock clock, DayTypeResolver dayTypes)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _dayTypes = dayTypes ?? throw new ArgumentNullException(nameof(dayTypes));
+    }
+
+    public async Task<NextDeparturesResult> Handle(GetLastDeparturesQuery request, CancellationToken cancellationToken)
+    {
+        var (date, seconds) = KoreaClock.ServiceTime(_clock.UtcNow);
+        var dayType = request.DayType ?? _dayTypes.Resolve(date);
+        var entries = await _repository.GetLastDeparturesAsync(request.LineNo.Trim(), request.StationCd.Trim().PadLeft(4, '0'), dayType, request.Direction, cancellationToken).ConfigureAwait(false);
+        return new NextDeparturesResult(dayType, seconds, entries);
+    }
+}
+
+/// <summary>
 /// 빠른하차 정보. 저장된 값이 없고 키가 있으면 공공데이터포털에서 받아 저장합니다.
 /// </summary>
 public sealed record GetFastExitsQuery(string LineNo, string StationCd, string? StationName) : IQuery<Cached<IReadOnlyList<FastExit>>>;
@@ -175,7 +216,8 @@ public sealed class GetFastExitsQueryHandler : IQueryHandler<GetFastExitsQuery, 
             return new Cached<IReadOnlyList<FastExit>>(fetched, now, DataSource.Live);
         }
 
-        return new Cached<IReadOnlyList<FastExit>>(stored, now, stored.Count > 0 ? DataSource.Stale : DataSource.Live);
+        // 키가 있는데 아무것도 못 받았으면 "데이터 없음"입니다. Live 로 표시하면 앱이 진짜 빈 역과 구분하지 못합니다.
+        return new Cached<IReadOnlyList<FastExit>>(stored, now, stored.Count > 0 ? DataSource.Stale : DataSource.Mock);
     }
 }
 
@@ -253,9 +295,12 @@ public sealed class GetHealthQueryHandler : IQueryHandler<GetHealthQuery, Health
 
     public async Task<HealthReport> Handle(GetHealthQuery request, CancellationToken cancellationToken)
     {
-        var runs = await _repository.GetImportRunsAsync(cancellationToken).ConfigureAwait(false);
+        // DB 를 못 읽거나 시각표가 비어 있으면 서비스가 성립하지 않습니다 — 키 없이 동작하는 근거가 시각표이기 때문입니다.
+        var ok = await _repository.PingAsync(cancellationToken).ConfigureAwait(false)
+                 && await _repository.CountTimetableAsync(cancellationToken).ConfigureAwait(false) > 0;
+        var runs = ok ? await _repository.GetImportRunsAsync(cancellationToken).ConfigureAwait(false) : [];
         return new HealthReport(
-            true,
+            ok,
             _provider.Name,
             _seoul.Value.IsConfigured,
             _dataGoKr.IsConfigured,

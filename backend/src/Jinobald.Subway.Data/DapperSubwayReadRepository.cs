@@ -79,6 +79,21 @@ public sealed class DapperSubwayReadRepository : ISubwayReadRepository
         return rows.Select(Map).ToList();
     }
 
+    public async Task<IReadOnlyList<TimetableEntry>> GetLastDeparturesAsync(string lineNo, string stationCd, DayType dayType, string? direction, CancellationToken cancellationToken = default)
+    {
+        await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        // 방향마다 가장 늦은 출발(종착역이면 도착). ix_timetable_station 을 탑니다.
+        var sql = @"SELECT t.* FROM timetable_entries t
+                    WHERE t.line_no = @lineNo AND t.station_cd = @stationCd AND t.day_type = @dayType
+                      AND (@direction IS NULL OR t.direction = @direction)
+                      AND COALESCE(t.depart_seconds, t.arrive_seconds) = (
+                        SELECT MAX(COALESCE(u.depart_seconds, u.arrive_seconds)) FROM timetable_entries u
+                        WHERE u.line_no = t.line_no AND u.station_cd = t.station_cd AND u.day_type = t.day_type AND u.direction = t.direction)
+                    ORDER BY t.direction";
+        var rows = await c.QueryAsync<TimetableRow>(sql, new { lineNo, stationCd, dayType = dayType.ToCode(), direction = direction?.ToUpperInvariant() }).ConfigureAwait(false);
+        return rows.Select(Map).ToList();
+    }
+
     public async Task<IReadOnlyList<FastExit>> GetFastExitsAsync(string lineNo, string stationCd, CancellationToken cancellationToken = default)
     {
         await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -97,9 +112,12 @@ public sealed class DapperSubwayReadRepository : ISubwayReadRepository
     public async Task<IReadOnlyList<ImportRun>> GetImportRunsAsync(CancellationToken cancellationToken = default)
     {
         await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
-        var rows = await c.QueryAsync<ImportRunRow>("SELECT * FROM import_runs ORDER BY imported_at DESC").ConfigureAwait(false);
-        return rows.Select(r => new ImportRun(Enum.Parse<DatasetKind>(r.dataset), r.source_name, r.checksum, r.row_count, Dto(r.imported_at)))
-            .GroupBy(r => r.Dataset).Select(g => g.First()).ToList();
+        // 데이터셋마다 가장 최근 적재 하나. 이력이 쌓여도 전체를 읽지 않습니다.
+        var rows = await c.QueryAsync<ImportRunRow>(
+            @"SELECT r.* FROM import_runs r
+              WHERE r.imported_at = (SELECT MAX(imported_at) FROM import_runs WHERE dataset = r.dataset)
+              ORDER BY r.dataset").ConfigureAwait(false);
+        return rows.Select(r => new ImportRun(Enum.Parse<DatasetKind>(r.dataset), r.source_name, r.checksum, r.row_count, Dto(r.imported_at))).ToList();
     }
 
     public async Task<bool> HasImportRunAsync(DatasetKind dataset, string checksum, CancellationToken cancellationToken = default)
@@ -107,6 +125,25 @@ public sealed class DapperSubwayReadRepository : ISubwayReadRepository
         await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
         var count = await c.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM import_runs WHERE dataset = @dataset AND checksum = @checksum", new { dataset = dataset.ToString(), checksum }).ConfigureAwait(false);
         return count > 0;
+    }
+
+    public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+            return await c.ExecuteScalarAsync<int>("SELECT 1").ConfigureAwait(false) == 1;
+        }
+        catch (Exception ex) when (ex is Microsoft.Data.Sqlite.SqliteException or IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    public async Task<long> CountTimetableAsync(CancellationToken cancellationToken = default)
+    {
+        await using var c = await _factory.OpenAsync(cancellationToken).ConfigureAwait(false);
+        return await c.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM timetable_entries").ConfigureAwait(false);
     }
 
     private static TimetableEntry Map(TimetableRow r) => new(

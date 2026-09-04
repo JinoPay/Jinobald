@@ -12,6 +12,8 @@ import {
   type DoorGuide,
   type TrainPosition,
   type TrainPositionsResult,
+  type TimetableDeparture,
+  type TimetableResult,
 } from './types';
 
 interface ClientOptions {
@@ -51,6 +53,7 @@ export class SeoulOpenApiClient implements SubwayApi {
     trainPositions: true,
     fastExits: false,
     notices: false,
+    timetable: false,
   };
 
   private readonly options: ClientOptions;
@@ -96,6 +99,15 @@ export class SeoulOpenApiClient implements SubwayApi {
 
   async getNotices(): Promise<DisruptionNotice[]> {
     return [];
+  }
+
+  /** 시각표는 백엔드에만 있습니다. */
+  async getNextDepartures(): Promise<TimetableResult | null> {
+    return null;
+  }
+
+  async getLastDeparture(): Promise<TimetableDeparture | null> {
+    return null;
   }
 
   /** null 은 "해당 데이터 없음"(INFO-200) 입니다. */

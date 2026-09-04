@@ -1,0 +1,19 @@
+# docker build -f backend/src/Jinobald.Subway.Api/Dockerfile . (컨텍스트 = 저장소 루트)
+# 백엔드 소스와 데이터셋 원본만 보냅니다.
+node_modules
+ios
+android
+dist
+.expo
+.git
+.claude
+assets
+src
+scripts/data/raw/*.unpacked.csv
+backend/**/bin
+backend/**/obj
+backend/**/TestResults
+backend/**/data/*.db
+backend/**/data/*.db-*
+**/*.db
+**/*.db-*

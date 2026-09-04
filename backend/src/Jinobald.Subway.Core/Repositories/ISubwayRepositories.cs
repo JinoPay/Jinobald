@@ -42,6 +42,16 @@ public interface ISubwayReadRepository
         int windowSeconds,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// 한 역의 막차. 방향을 주지 않으면 방향마다 하나씩.
+    /// </summary>
+    Task<IReadOnlyList<TimetableEntry>> GetLastDeparturesAsync(
+        string lineNo,
+        string stationCd,
+        DayType dayType,
+        string? direction,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<FastExit>> GetFastExitsAsync(string lineNo, string stationCd, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<DisruptionNotice>> GetNoticesAsync(DateTimeOffset? activeAt, CancellationToken cancellationToken = default);
@@ -49,6 +59,16 @@ public interface ISubwayReadRepository
     Task<IReadOnlyList<ImportRun>> GetImportRunsAsync(CancellationToken cancellationToken = default);
 
     Task<bool> HasImportRunAsync(DatasetKind dataset, string checksum, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// DB 파일을 실제로 읽을 수 있는지 (SELECT 1). /health 가 씁니다.
+    /// </summary>
+    Task<bool> PingAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 시각표 행 수. 0 이면 적재가 안 된 것입니다.
+    /// </summary>
+    Task<long> CountTimetableAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
